@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design System · BuildCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<script src="assets/icons.js"></script>
+<script src="assets/tokens-data.js"></script>
+<script src="assets/contrast-data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/charts.js"></script>
+</head>
+<body>
+<main class="container" style="padding-block:var(--s-6) var(--s-12)">
+  <div class="row between wrap">
+    <div><h1 class="t-h1">Design System</h1><p class="muted">ค่าออกแบบทั้งหมดของ BuildCheck ใช้เป็นต้นทางทั้งใน Figma และ Tailwind</p></div>
+    <button class="btn btn--secondary" id="theme-toggle" aria-label="สลับโหมดสว่าง/มืด"><i data-i="moon"></i>สลับโหมด</button>
+  </div>
+
+  <section class="ds-sec" style="margin-top:var(--s-6)">
+    <h2 class="t-h2">แนวคิด</h2>
+    <ul class="grid-3" style="margin-top:var(--s-4)">
+      <li class="card card--pad"><h3 class="t-h4">แผงหน้าปัดเครื่องมือ</h3><p class="t-sm muted" style="margin-top:4px">หน้าตาเหมือนเครื่องมือวัดที่เชื่อถือได้ พื้นเรียบ เส้นบาง ให้ตัวเลข เกจ และสถานะเป็นสิ่งที่เด่นที่สุดบนหน้า</p></li>
+      <li class="card card--pad"><h3 class="t-h4">สีต้องมีความหมาย</h3><p class="t-sm muted" style="margin-top:4px">น้ำเงินใช้กับสิ่งที่กดได้ แดง เหลือง เขียว ฟ้า ใช้กับสถานะเท่านั้น ม่วงใช้กับเรื่องมือสองเท่านั้น</p></li>
+      <li class="card card--pad"><h3 class="t-h4">สถานะไม่พึ่งสีอย่างเดียว</h3><p class="t-sm muted" style="margin-top:4px">ทุกสถานะมีไอคอนและข้อความกำกับ คนตาบอดสีและรูปขาวดำยังอ่านได้ครบ</p></li>
+    </ul>
+  </section>
+
+  <section class="ds-sec">
+    <h2 class="t-h2">สีสถานะ</h2>
+    <p class="muted t-sm" style="margin-block:4px var(--s-4)">ไอคอนจาก Lucide: <span class="mono">circle-x, triangle-alert, circle-check, info</span> ห้ามใช้สีเปล่าโดยไม่มีไอคอน</p>
+    <div class="grid-4" id="status"></div>
+  </section>
+
+  <section class="ds-sec">
+    <h2 class="t-h2">สีทั้งหมด</h2>
+    <p class="muted t-sm" style="margin-block:4px var(--s-4)">แต่ละช่องซ้าย = โหมดสว่าง ขวา = โหมดมืด ชื่อ token ใช้เป็นชื่อ Variable ใน Figma</p>
+    <div class="swatches" id="swatches"></div>
+  </section>
+
+  <section class="ds-sec">
+    <h2 class="t-h2">ตัวอักษร</h2>
+    <p class="muted t-sm" style="margin-block:4px var(--s-3)">ฟอนต์หลัก IBM Plex Sans Thai น้ำหนัก 400 500 600 700 · ตัวเลขสเปกและรหัสกฎใช้ IBM Plex Mono · line-height ของภาษาไทยตั้งสูงกว่าปกติเพื่อไม่ให้สระบนล่างชนกัน · ไม่ใช้ letter-spacing กว้างกับภาษาไทย</p>
+    <div id="type"></div>
+  </section>
+
+  <section class="ds-sec">
+    <h2 class="t-h2">ระยะห่าง มุมโค้ง เงา</h2>
+    <div class="grid-3" style="margin-top:var(--s-4)">
+      <div class="card card--pad"><h3 class="t-h4" style="margin-bottom:var(--s-3)">ระยะห่าง ฐาน 4 px</h3><div class="stack-2" id="space"></div></div>
+      <div class="card card--pad"><h3 class="t-h4" style="margin-bottom:var(--s-3)">มุมโค้ง</h3><div class="stack-3" id="radius"></div></div>
+      <div class="card card--pad"><h3 class="t-h4" style="margin-bottom:var(--s-3)">เงา</h3><div class="stack-4" id="shadow"></div></div>
+    </div>
+  </section>
+
+  <section class="ds-sec">
+    <h2 class="t-h2">โครงตาราง (Grid)</h2>
+    <div class="tbl-wrap card" style="margin-top:var(--s-4)"><table class="tbl">
+      <thead><tr><th>ขนาดจอ</th><th>เฟรมใน Figma</th><th>คอลัมน์</th><th>Gutter</th><th>Margin</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td>คอมพิวเตอร์ ≥ 1024</td><td class="mono">1440 × ยืดตามเนื้อหา</td><td class="mono">12</td><td class="mono">24</td><td class="mono">80 (เนื้อหากว้าง 1280)</td><td>แผงสรุปกว้าง 360 ติดด้านขวา</td></tr>
+        <tr><td>แท็บเล็ต 768–1023</td><td class="mono">768</td><td class="mono">8</td><td class="mono">16</td><td class="mono">24</td><td>แถบเมนูย้ายลงล่าง แผงสรุปเป็นแถบล่าง</td></tr>
+        <tr><td>มือถือ 360–767</td><td class="mono">390 (เช็กที่ 360 ด้วย)</td><td class="mono">4</td><td class="mono">12</td><td class="mono">16</td><td>หน้าต่างเลือกอะไหล่เต็มจอ</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section class="ds-sec">
+    <h2 class="t-h2">คอมโพเนนต์พื้นฐาน</h2>
+    <div class="grid-3" style="margin-top:var(--s-4);align-items:start">
+      <div class="card card--pad stack-3" data-c="Button"><h3 class="t-h4">Button</h3>
+        <div class="row wrap"><button class="btn btn--primary">หลัก</button><button class="btn btn--secondary">รอง</button><button class="btn btn--ghost">โปร่ง</button><button class="btn btn--danger">อันตราย</button></div>
+        <div class="row wrap"><button class="btn btn--primary btn--lg">ใหญ่ 48</button><button class="btn btn--primary">ปกติ 40</button><button class="btn btn--primary btn--sm">เล็ก 32</button></div>
+        <div class="row wrap"><button class="btn btn--secondary btn--icon" aria-label="ตัวอย่างปุ่มไอคอน"><i data-i="share-2"></i></button><button class="btn btn--primary" disabled>ปิดใช้งาน</button></div>
+      </div>
+      <div class="card card--pad stack-3" data-c="Input"><h3 class="t-h4">Input</h3>
+        <div class="field"><label for="d1">ป้ายกำกับ</label><input class="input" id="d1" placeholder="ข้อความตัวอย่าง"><p class="hint">คำอธิบายเพิ่มเติม</p></div>
+        <div class="input-wrap"><i data-i="search" class="ic-16"></i><input class="input" placeholder="ค้นหา" aria-label="ตัวอย่างช่องค้นหา"></div>
+        <select class="select" aria-label="ตัวอย่างตัวเลือก"><option>ตัวเลือก</option></select>
+        <div class="input-affix"><span class="affix">฿</span><input class="input mono" value="25,000" aria-label="ตัวอย่างช่องจำนวนเงิน"></div>
+      </div>
+      <div class="card card--pad stack-3" data-c="Controls"><h3 class="t-h4">สวิตช์และตัวเลือก</h3>
+        <label class="switch"><input type="checkbox" checked><span class="switch__track"></span><span>กรองอัจฉริยะ</span></label>
+        <label class="check"><input type="checkbox" checked>ช่องทำเครื่องหมาย</label>
+        <div class="seg" role="group" aria-label="ตัวอย่าง Segmented"><button aria-pressed="true">การ์ด</button><button aria-pressed="false">ตาราง</button></div>
+        <div class="seg seg--sm" role="group" aria-label="ตัวอย่างสภาพอะไหล่"><button aria-pressed="false">มือหนึ่ง</button><button aria-pressed="true" data-used="1"><i data-i="recycle" class="ic-14"></i>มือสอง</button></div>
+      </div>
+      <div class="card card--pad stack-3" data-c="Badge"><h3 class="t-h4">Badge และ Chip</h3>
+        <div class="row wrap"><span class="badge badge--err"><i data-i="circle-x" class="ic-14"></i>ผิดพลาด</span><span class="badge badge--warn"><i data-i="triangle-alert" class="ic-14"></i>เตือน</span><span class="badge badge--ok"><i data-i="circle-check" class="ic-14"></i>ผ่าน</span><span class="badge badge--info"><i data-i="info" class="ic-14"></i>ข้อมูล</span></div>
+        <div class="row wrap"><span class="badge badge--used"><i data-i="recycle" class="ic-14"></i>มือสอง เกรด B</span><span class="badge badge--brand">แนะนำ</span><span class="badge badge--neutral">เล่นเกม</span></div>
+        <div class="row wrap"><span class="chip">AM5</span><span class="chip">DDR5</span><span class="chip">65 W</span><span class="code">R01</span><span class="code">U06</span></div>
+      </div>
+      <div class="card card--pad stack-3" data-c="UsedBadges" style="grid-column:span 2"><h3 class="t-h4">ป้ายมือสอง (หัวข้อ 3.11, 4.6)</h3>
+        <p class="t-sm muted">ความน่าเชื่อถือของราคา</p>
+        <div class="row wrap"><span class="badge badge--ok"><i data-i="shield-check" class="ic-14"></i>สูง</span><span class="badge badge--info"><i data-i="shield-check" class="ic-14"></i>กลาง</span><span class="badge badge--neutral"><i data-i="shield-check" class="ic-14"></i>ประมาณการ</span></div>
+        <p class="t-sm muted">ผลประเมินราคาที่เจอจริง</p>
+        <div class="row wrap"><span class="badge badge--err"><i data-i="triangle-alert" class="ic-14"></i>ถูกผิดปกติ ระวังของเสียหรือมิจฉาชีพ</span><span class="badge badge--ok"><i data-i="circle-check" class="ic-14"></i>ถูก</span><span class="badge badge--neutral"><i data-i="scale" class="ic-14"></i>สมเหตุสมผล</span><span class="badge badge--warn"><i data-i="trending-up" class="ic-14"></i>แพงกว่าตลาด ต่อรองได้</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ds-sec">
+    <h2 class="t-h2">PowerGauge เกจกำลังไฟ</h2>
+    <p class="muted t-sm" style="margin-block:4px var(--s-4)">โซนสีตามหัวข้อ 4.3: ต่ำกว่า 70% เขียว · 70–85% เหลือง · เกิน 85% แดง · สัญลักษณ์และข้อความบอกสถานะเสมอ</p>
+    <div class="grid-4" id="gauges"></div>
+  </section>
+
+  <section class="ds-sec">
+    <h2 class="t-h2">IssueList ผลตรวจ</h2>
+    <p class="muted t-sm" style="margin-block:4px var(--s-4)">ข้อความแรกคือตัวอย่างจากเอกสารหัวข้อ 4.1</p>
+    <div data-c="IssueList">
+      <article class="issue" data-l="err"><i data-i="circle-x" class="ic-24"></i><div><div class="issue__title"><span class="code">R01</span>Socket ไม่ตรงกัน</div><p class="issue__body">Intel Core i5-14400F ใช้ Socket LGA1700 แต่ ASUS TUF B650-PLUS ใช้ AM5 ทั้งสองชิ้นใส่ด้วยกันไม่ได้</p><div class="issue__fix"><button class="btn btn--secondary btn--sm"><i data-i="lightbulb" class="ic-14"></i>ดูเมนบอร์ด LGA1700 ในงบใกล้เคียง</button></div></div></article>
+      <article class="issue" data-l="warn"><i data-i="triangle-alert" class="ic-24"></i><div><div class="issue__title"><span class="code">U02</span>PSU มือสอง</div><p class="issue__body">PSU เสียอาจพาอะไหล่อื่นเสียด้วย แนะนำซื้อใหม่</p></div></article>
+      <article class="issue" data-l="info"><i data-i="info" class="ic-24"></i><div><div class="issue__title">ใส่แรมแถวเดียว</div><p class="issue__body">แนะนำ 2 แถวเพื่อ Dual Channel</p></div></article>
+    </div>
+  </section>
+
+  <section class="ds-sec">
+    <h2 class="t-h2">ผลตรวจ Contrast (WCAG 2.x)</h2>
+    <p class="muted t-sm" style="margin-block:4px var(--s-4)">คำนวณจากค่าสีจริงด้วยสคริปต์ ไม่ได้กะด้วยตา เกณฑ์: ตัวอักษร 4.5:1 · ไอคอนและเส้นขอบ 3:1</p>
+    <div class="tbl-wrap card"><table class="tbl"><thead><tr><th>สีหน้า</th><th>บนพื้น</th><th class="r">เกณฑ์</th><th class="r">สว่าง</th><th class="r">มืด</th><th>ผล</th></tr></thead><tbody id="contrast"></tbody></table></div>
+  </section>
+</main>
+<script>
+  const STAT = [['err', 'ผิดพลาด', 'circle-x', 'ประกอบไม่ได้หรือเปิดไม่ติด'], ['warn', 'เตือน', 'triangle-alert', 'ใช้ได้แต่เสียประสิทธิภาพหรือเสี่ยง'], ['ok', 'ผ่าน', 'circle-check', 'เข้ากันได้ ไม่พบปัญหา'], ['info', 'ข้อมูล', 'info', 'คำแนะนำทั่วไป ไม่กระทบสถานะรวม']];
+  document.getElementById('status').innerHTML = STAT.map(([k, t, ic, d]) => `<div class="card" style="overflow:hidden"><div class="status-banner status-banner--${k === 'info' ? 'none' : k}" style="border-radius:0;${k === 'info' ? 'background:var(--info-soft);color:var(--info-fg)' : ''}">${BC.icon(ic, 'ic-28')}<div><h3 class="t-h4">${t}</h3></div></div><div style="padding:var(--s-3) var(--s-4)" class="t-sm muted">${d}<div class="mono t-xs faint" style="margin-top:6px">--${k} · --${k}-fg<br>--${k}-soft · --${k}-border</div></div></div>`).join('');
+  document.getElementById('swatches').innerHTML = BC_TOKENS.map((t) => `<div class="swatch"><div class="swatch__pair"><span style="background:${t.light}"></span><span style="background:${t.dark}"></span></div><div class="swatch__meta"><b>--${t.name}</b>${t.light} / ${t.dark}</div></div>`).join('');
+  const TYPE = [['Display', 't-display', '44/58 · 700', 'เช็กก่อนซื้อ ประกอบคอมไม่พลาด'], ['H1', 't-h1', '32/44 · 700', 'จัดสเปกตามงบ'], ['H2', 't-h2', '24/34 · 600', 'สเปกยอดนิยมสัปดาห์นี้'], ['H3', 't-h3', '20/30 · 600', 'ผลตรวจความเข้ากันได้'], ['H4', 't-h4', '17/26 · 600', 'เลือกอะไหล่ 8 หมวด'], ['Body', 't-body', '16/26 · 400', 'เลือกอะไหล่ทีละชิ้น ระบบบอกทันทีว่าใส่กันได้ไหม ไฟพอไหม'], ['Small', 't-sm', '14/22 · 400', 'ใช้กับป้ายกำกับ ปุ่ม และเนื้อหาในการ์ด'], ['Caption', 't-xs', '13/20 · 400', 'คำอธิบายเล็ก วันที่ หมายเหตุ'], ['Number XL', 't-num-xl', '36/44 · 600', '฿29,200'], ['Number LG', 't-num-lg', '24/32 · 600', '372 W'], ['Code', 't-code', 'Mono 13/20 · 500', 'R01 · AM5 · DDR5 · 6000 MT/s']];
+  document.getElementById('type').innerHTML = TYPE.map(([n, c, s, x]) => `<div class="type-row"><div><div class="t-sm" style="font-weight:600">${n}</div><div class="mono t-xs faint">${s}</div></div><div class="${c}">${x}</div></div>`).join('');
+  document.getElementById('space').innerHTML = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20].map((n) => `<div class="sp-row"><span style="width:44px">s-${n}</span><i style="width:${n * 4}px"></i><span class="faint">${n * 4}</span></div>`).join('');
+  document.getElementById('radius').innerHTML = [['r-xs', 4, 'รหัสกฎ ชิป'], ['r-sm', 6, 'Badge ปุ่มเล็ก'], ['r-md', 8, 'ปุ่ม ช่องกรอก'], ['r-lg', 12, 'การ์ด แผง'], ['r-xl', 16, 'หน้าต่าง แผ่นดึงขึ้น']].map(([k, v, d]) => `<div class="row-3"><span style="width:40px;height:40px;background:var(--brand-soft);border:1px solid var(--border-strong);border-radius:${v}px;flex:none"></span><span class="t-sm"><b class="mono" style="font-weight:600">${k} ${v}</b><br><span class="muted">${d}</span></span></div>`).join('');
+  document.getElementById('shadow').innerHTML = [['shadow-sm', 'ปุ่มที่เลือกใน Segmented'], ['shadow-md', 'Hover การ์ด, Tooltip'], ['shadow-lg', 'หน้าต่าง ปุ่มลอย']].map(([k, d]) => `<div class="card" style="padding:var(--s-3);box-shadow:var(--${k})"><b class="mono t-xs">${k}</b><div class="t-xs muted">${d}</div></div>`).join('');
+  const G = [[42, 282, 650, 'ok', 'circle-check', 'ไฟเหลือเพียงพอ'], [74, 372, 500, 'warn', 'triangle-alert', 'ได้ขนาดที่แนะนำแล้ว แต่โหลดเกิน 70%'], [92, 415, 450, 'err', 'triangle-alert', 'โหลดสูงมาก แนะนำ PSU 550 W ขึ้นไป'], [112, 502, 450, 'err', 'circle-x', 'PSU ไฟไม่พอ ควรใช้อย่างน้อย 700 W']];
+  const drawG = () => { document.getElementById('gauges').innerHTML = G.map(([p, w, psu, l, ic, t]) => `<div class="card card--pad"><div class="gauge" data-c="PowerGauge">${BCChart.gaugeSvg(p)}<div class="gauge__center"><div class="gauge__w">${w} <small>W</small></div></div></div><div class="t-xs muted" style="text-align:center">ใช้ <b class="mono">${p}%</b> ของ PSU ${psu} W</div><div class="gauge-status" data-l="${l}">${BC.icon(ic, 'ic-16')}<span>${t}</span></div></div>`).join(''); };
+  drawG();
+  document.getElementById('contrast').innerHTML = BC_CONTRAST.map((c) => `<tr><td class="mono t-xs">--${c.fg}</td><td class="mono t-xs">--${c.bg}</td><td class="r mono">${c.min}</td><td class="r mono">${c.light.toFixed(2)}</td><td class="r mono">${c.dark.toFixed(2)}</td><td>${c.pass ? `<span class="badge badge--ok">${BC.icon('circle-check', 'ic-14')}ผ่าน</span>` : `<span class="badge badge--err">${BC.icon('circle-x', 'ic-14')}ไม่ผ่าน</span>`}</td></tr>`).join('');
+</script>
+</body>
+</html>

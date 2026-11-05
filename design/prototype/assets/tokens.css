@@ -1,0 +1,185 @@
+/* ==========================================================================
+   BuildCheck Design Tokens
+   ไฟล์นี้คือแหล่งจริงแหล่งเดียวของค่าออกแบบ — เฟส 1 จะย้ายเข้า globals.css ของ Tailwind 4 (@theme)
+   ใน Figma: สร้าง Variable Collection ชื่อ "Color" มี 2 Mode (Light/Dark) ตามชื่อ token ด้านล่าง
+   ========================================================================== */
+
+:root {
+  /* ---- พื้นผิว (Surface) ---- */
+  --bg: #F5F6F8;            /* พื้นหลังหน้า */
+  --surface: #FFFFFF;       /* การ์ด แผง หน้าต่าง */
+  --surface-2: #F0F2F5;     /* พื้นรอง ช่องกรอก hover */
+  --surface-3: #E5E8ED;     /* พื้นเน้น แทร็กของสวิตช์ */
+  --border: #DCE0E7;        /* เส้นขอบปกติ */
+  --border-strong: #868F9D; /* เส้นขอบช่องกรอก (ต้องได้ 3:1 กับ --surface ตาม WCAG) */
+
+  /* ---- ตัวอักษร ---- */
+  --text: #141820;          /* ข้อความหลัก */
+  --text-2: #4A5361;        /* ข้อความรอง */
+  --text-3: #636D7C;        /* คำอธิบายเล็ก placeholder */
+
+  /* ---- สีแบรนด์ (ปุ่มหลัก ลิงก์ สถานะเลือก) ---- */
+  --brand: #2753D6;
+  --brand-hover: #1F43AE;
+  --on-brand: #FFFFFF;
+  --brand-soft: #EDF2FF;
+  --brand-soft-fg: #1F43AE;
+  --link: #2753D6;          /* ลิงก์และข้อความสีแบรนด์ */
+  --focus: #2753D6;
+
+  /* ---- สถานะ: ผิดพลาด ---- */
+  --err: #D92D20;           /* เติมสี เกจ ไอคอนใหญ่ */
+  --err-fg: #B42318;        /* ข้อความสีบนพื้น soft */
+  --err-soft: #FEF1EF;
+  --err-border: #F5C2BC;
+
+  /* ---- สถานะ: เตือน ---- */
+  --warn: #C47600;
+  --warn-fg: #8A4F00;
+  --warn-soft: #FFF6E3;
+  --warn-border: #F2D393;
+
+  /* ---- สถานะ: ผ่าน ---- */
+  --ok: #129160;
+  --ok-fg: #0E6B47;
+  --ok-soft: #E9F7F0;
+  --ok-border: #AEE0C8;
+
+  /* ---- สถานะ: ข้อมูล ---- */
+  --info: #0B7FA5;
+  --info-fg: #09617E;
+  --info-soft: #E8F5FA;
+  --info-border: #B2DCEA;
+
+  /* ---- มือสอง (แยกจากสีสถานะ เพื่อไม่ให้สับสนกับผิดพลาด/เตือน/ผ่าน) ---- */
+  --used: #6D4BD8;
+  --used-fg: #5438B5;
+  --used-soft: #F3F0FF;
+  --used-border: #D5CBFB;
+
+  /* ---- สีกราฟ (ผ่าน validator: แยกสีได้ทั้งคนตาปกติและตาบอดสี) ---- */
+  --chart-1: #2753D6;
+  --chart-2: #0E8FB8;
+  --chart-3: #8B5CF6;
+  --chart-4: #D9538F;
+  --chart-n1: #5B6472;
+  --chart-n2: #7A8391;
+  --chart-n3: #96A0AD;
+  --chart-n4: #B0B8C3;
+  --chart-n5: #C7CDD6;
+  --chart-n6: #DADEE5;
+  --chart-grid: #E5E8ED;
+
+  /* ---- เงา ---- */
+  --shadow-sm: 0 1px 2px rgb(20 24 32 / 0.06);
+  --shadow-md: 0 4px 12px rgb(20 24 32 / 0.08);
+  --shadow-lg: 0 16px 48px rgb(20 24 32 / 0.18);
+  --scrim: rgb(13 16 22 / 0.5);
+
+  /* ---- ไม่ขึ้นกับโหมด: ฟอนต์ ---- */
+  --font-sans: 'IBM Plex Sans Thai', 'Noto Sans Thai', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+
+  /* ---- ไม่ขึ้นกับโหมด: ระยะห่าง (ฐาน 4 px) ---- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px; --s-20: 80px;
+
+  /* ---- ไม่ขึ้นกับโหมด: มุมโค้ง ---- */
+  --r-xs: 4px;   /* ป้ายเล็ก โค้ดกฎ */
+  --r-sm: 6px;   /* ชิป ปุ่มเล็ก */
+  --r-md: 8px;   /* ปุ่ม ช่องกรอก */
+  --r-lg: 12px;  /* การ์ด แผง */
+  --r-xl: 16px;  /* หน้าต่าง แผ่นดึงขึ้น */
+  --r-full: 999px;
+
+  /* ---- ไม่ขึ้นกับโหมด: โครงหน้า ---- */
+  --h-header: 64px;
+  --h-tabbar: 56px;
+  --h-mbar: 64px;
+  --w-container: 1280px;
+  --w-summary: 360px;
+  --w-admin-nav: 240px;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0F1218;
+  --surface: #171B23;
+  --surface-2: #1F242E;
+  --surface-3: #2A303B;
+  --border: #2C323E;
+  --border-strong: #6E7787;
+
+  --text: #EEF0F4;
+  --text-2: #B7BECA;
+  --text-3: #929BAA;
+
+  --brand: #3B6CF0;
+  --brand-hover: #5B86F7;
+  --on-brand: #FFFFFF;
+  --brand-soft: #1A2540;
+  --brand-soft-fg: #A9C1FF;
+  --link: #8EB0FF;
+  --focus: #8EB0FF;
+
+  --err: #F04438;
+  --err-fg: #FF9C8F;
+  --err-soft: #2C1614;
+  --err-border: #5C2520;
+
+  --warn: #F5A524;
+  --warn-fg: #FFC661;
+  --warn-soft: #2B2110;
+  --warn-border: #5A4216;
+
+  --ok: #2BC27F;
+  --ok-fg: #6BDDA6;
+  --ok-soft: #10261C;
+  --ok-border: #1F4C37;
+
+  --info: #38B6DC;
+  --info-fg: #7AD0EA;
+  --info-soft: #0F2630;
+  --info-border: #1E4A5A;
+
+  --used: #A68EFA;
+  --used-fg: #BDAAFF;
+  --used-soft: #211A3D;
+  --used-border: #3D3270;
+
+  --chart-1: #4F7DF3;
+  --chart-2: #0F9E9A;
+  --chart-3: #9B6CF6;
+  --chart-4: #E0559A;
+  --chart-n1: #A7AFBC;
+  --chart-n2: #8C95A4;
+  --chart-n3: #737C8B;
+  --chart-n4: #5C6573;
+  --chart-n5: #474F5C;
+  --chart-n6: #363D49;
+  --chart-grid: #2A303B;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.45);
+  --shadow-lg: 0 16px 48px rgb(0 0 0 / 0.6);
+  --scrim: rgb(0 0 0 / 0.65);
+}
+
+/* โหมด Wireframe ของต้นแบบ: เปลี่ยน token ทั้งชุดเป็นเทา ได้โครงหน้าเดียวกับ Mockup เป๊ะ
+   ไม่ได้ใช้ในเว็บจริง */
+:root[data-fidelity='wire'] {
+  --bg: #FFFFFF; --surface: #FFFFFF; --surface-2: #F2F2F2; --surface-3: #E2E2E2;
+  --border: #9A9A9A; --border-strong: #6E6E6E;
+  --text: #222222; --text-2: #555555; --text-3: #777777;
+  --brand: #444444; --brand-hover: #222222; --on-brand: #FFFFFF;
+  --brand-soft: #EEEEEE; --brand-soft-fg: #222222; --link: #222222; --focus: #000000;
+  --err: #444444; --err-fg: #222222; --err-soft: #F2F2F2; --err-border: #6E6E6E;
+  --warn: #777777; --warn-fg: #222222; --warn-soft: #F7F7F7; --warn-border: #9A9A9A;
+  --ok: #999999; --ok-fg: #222222; --ok-soft: #FAFAFA; --ok-border: #BBBBBB;
+  --info: #999999; --info-fg: #222222; --info-soft: #FAFAFA; --info-border: #BBBBBB;
+  --used: #666666; --used-fg: #222222; --used-soft: #F2F2F2; --used-border: #9A9A9A;
+  --chart-1: #333333; --chart-2: #666666; --chart-3: #999999; --chart-4: #BBBBBB;
+  --chart-n1: #777777; --chart-n2: #8A8A8A; --chart-n3: #A0A0A0; --chart-n4: #B4B4B4; --chart-n5: #C8C8C8; --chart-n6: #DCDCDC;
+  --chart-grid: #E2E2E2;
+  --shadow-sm: none; --shadow-md: none; --shadow-lg: none;
+  --r-xs: 2px; --r-sm: 2px; --r-md: 2px; --r-lg: 2px; --r-xl: 2px;
+}

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รายละเอียดสเปก · BuildCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<script src="assets/icons.js"></script>
+<script src="assets/tokens-data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/charts.js"></script>
+<script src="assets/proto-engine.js"></script>
+</head>
+<body>
+<main class="container" style="padding-top:var(--s-2)">
+  <nav class="crumb" aria-label="เส้นทาง"><a href="home.html">หน้าแรก</a><i data-i="chevron-right" class="ic-14"></i><a href="build.html">ชุมชน</a><i data-i="chevron-right" class="ic-14"></i><span>สเปกเล่นเกมงบ 3 หมื่น</span></nav>
+
+  <header data-c="BuildHeader" style="margin-bottom:var(--s-5)">
+    <div class="row wrap" style="margin-bottom:var(--s-2)">
+      <span class="badge badge--neutral">เล่นเกม</span>
+      <span class="badge badge--warn"><i data-i="triangle-alert" class="ic-14"></i>ใส่ได้ แต่มีข้อควรระวัง</span>
+    </div>
+    <h1 class="t-h1">สเปกเล่นเกมงบ 3 หมื่น</h1>
+    <div class="row wrap t-sm muted" style="margin-top:var(--s-2);gap:var(--s-1) var(--s-3)">
+      <a class="row" href="#"><span class="avatar avatar--sm">ม</span><b style="font-weight:500;color:var(--text)">มือใหม่หัดประกอบ</b></a>
+      <span class="row"><i data-i="git-fork" class="ic-14"></i>Fork จาก <a class="link" href="#">สเปกต้นฉบับของ ช่างตัดเย็น</a></span>
+      <span class="row"><i data-i="eye" class="ic-14"></i><span class="mono">1,204</span> ครั้ง</span>
+      <span>อัปเดต 3 พ.ย.</span>
+    </div>
+    <p style="margin-top:var(--s-3);max-width:720px">เน้นเล่นเกม 1080p ลื่นๆ เลือกของที่หาซื้อง่าย ขอความเห็นเรื่อง PSU ว่าควรขยับเพิ่มไหม</p>
+    <div class="row wrap" style="margin-top:var(--s-4)" data-c="BuildActions">
+      <div class="vote" role="group" aria-label="โหวตสเปกนี้">
+        <button aria-label="โหวตขึ้น" aria-pressed="true" id="up"><i data-i="arrow-big-up"></i></button><output id="score">128</output><button aria-label="โหวตลง" aria-pressed="false" id="down"><i data-i="arrow-big-down"></i></button>
+      </div>
+      <button class="btn btn--secondary" id="fav" aria-pressed="false"><i data-i="bookmark" class="ic-16"></i>รายการโปรด</button>
+      <a class="btn btn--primary" href="builder.html?state=doc"><i data-i="git-fork" class="ic-16"></i>Fork มาแก้ต่อ</a>
+      <button class="btn btn--ghost" style="margin-left:auto"><i data-i="flag" class="ic-16"></i>รายงาน</button>
+    </div>
+  </header>
+
+  <div class="bld" style="padding-top:0">
+    <div class="stack-6" style="min-width:0">
+      <section class="card" aria-labelledby="parts-t" data-c="BuildPartList">
+        <h2 class="t-h4" id="parts-t" style="padding:var(--s-4) var(--s-4) var(--s-2)">อะไหล่ในสเปกนี้</h2>
+        <div id="parts"></div>
+      </section>
+
+      <section aria-labelledby="iss-t">
+        <h2 class="t-h3" id="iss-t" style="margin-bottom:var(--s-3)">ผลตรวจความเข้ากันได้</h2>
+        <div id="issue-list" data-c="IssueList"></div>
+      </section>
+
+      <section class="card card--pad" aria-labelledby="cm-t" data-c="Comments">
+        <h2 class="t-h3" id="cm-t" style="margin-bottom:var(--s-4)">ความคิดเห็น <span class="mono muted">3</span></h2>
+        <form class="comment" style="margin-bottom:var(--s-6)">
+          <span class="avatar avatar--lg">ว</span>
+          <div class="stack-2">
+            <textarea class="input" style="height:80px;padding-block:var(--s-2);resize:vertical;display:block" placeholder="แสดงความคิดเห็นหรือแนะนำอะไหล่" aria-label="เขียนความคิดเห็น" maxlength="1000"></textarea>
+            <div class="row between wrap"><span class="t-xs faint">ไม่เกิน 1,000 ตัวอักษร</span><button class="btn btn--primary btn--sm" type="button">ส่งความคิดเห็น</button></div>
+          </div>
+        </form>
+        <article class="comment">
+          <span class="avatar avatar--lg">ช</span>
+          <div>
+            <div class="comment__meta"><b>ช่างตัดเย็น</b><span>2 ชั่วโมงก่อน</span></div>
+            <p class="t-sm" style="margin-top:2px">PSU รุ่นนี้ใช้ได้ แต่ถ้าวางแผนเปลี่ยนการ์ดจอในอนาคต ขยับไป 650 W จะสบายใจกว่า</p>
+            <div class="row" style="margin-top:var(--s-1)"><button class="btn btn--ghost btn--sm"><i data-i="message-square" class="ic-14"></i>ตอบกลับ</button><button class="btn btn--ghost btn--sm"><i data-i="flag" class="ic-14"></i>รายงาน</button></div>
+            <article class="comment comment--reply">
+              <span class="avatar avatar--sm">ม</span>
+              <div><div class="comment__meta"><b>มือใหม่หัดประกอบ</b><span class="badge badge--brand" style="height:20px;font-size:12px;padding-inline:6px">เจ้าของสเปก</span><span>1 ชั่วโมงก่อน</span></div>
+                <p class="t-sm" style="margin-top:2px">ขอบคุณครับ เดี๋ยวลองดูงบอีกที</p></div>
+            </article>
+          </div>
+        </article>
+        <article class="comment">
+          <span class="avatar avatar--lg">น</span>
+          <div><div class="comment__meta"><b>นักบัญชีสายคอม</b><span>เมื่อวาน</span></div>
+            <p class="t-sm" style="margin-top:2px">เคสนี้ลมดีครับ เคยใช้อยู่</p>
+            <div class="row" style="margin-top:var(--s-1)"><button class="btn btn--ghost btn--sm"><i data-i="message-square" class="ic-14"></i>ตอบกลับ</button><button class="btn btn--ghost btn--sm"><i data-i="flag" class="ic-14"></i>รายงาน</button></div></div>
+        </article>
+      </section>
+    </div>
+
+    <aside class="stack-4" style="position:sticky;top:calc(var(--h-header) + var(--s-4))" id="aside">
+      <div class="card" data-c="BuildSummary" id="sum"></div>
+      <div class="card card--pad stack-3" data-c="SharePanel">
+        <h2 class="t-h4">แชร์สเปกนี้</h2>
+        <div class="row-3" style="align-items:flex-start">
+          <div class="qr" id="qr"></div>
+          <div class="grow stack-2">
+            <button class="btn btn--secondary btn--block btn--sm"><i data-i="copy" class="ic-14"></i>คัดลอกลิงก์</button>
+            <button class="btn btn--secondary btn--block btn--sm"><i data-i="download" class="ic-14"></i>บันทึก QR</button>
+            <button class="btn btn--secondary btn--block btn--sm"><i data-i="image" class="ic-14"></i>ส่งออกรูปสรุป</button>
+          </div>
+        </div>
+        <p class="t-xs faint mono" style="word-break:break-all">buildcheck.app/b/x7Kp2mQa9d</p>
+      </div>
+    </aside>
+  </div>
+</main>
+<style>
+  @media (max-width: 1023px) {
+    #aside { position: static !important; }
+    .bld { padding-bottom: var(--s-8) !important; }
+  }
+</style>
+<script>
+  const { CATS, find, power, totals, check, score, fakeQR, unitPrice } = BCProto;
+  const it = (id) => ({ id, qty: 1, cond: 'new', grade: 'B', offer: null });
+  const build = { cpu: [it('A1')], mb: [it('M1')], ram: [it('R1')], gpu: [{ ...it('G1'), cond: 'used' }], storage: [it('S1')], psu: [it('P2')], case: [it('C1')], cooler: [it('K1')] };
+  document.getElementById('parts').innerHTML = CATS.map((c) => {
+    const row = build[c.k][0], p = find(c.k, row.id);
+    return `<div class="part-row"><div class="thumb thumb--40">${BC.icon(c.icon, 'ic-20')}</div><div style="min-width:0"><div class="part-row__cat">${c.th}</div><a href="part.html" style="font-weight:500;font-size:15px;line-height:24px">${p.name}</a>${row.cond === 'used' ? ` <span class="badge badge--used" style="height:20px;font-size:12px;padding-inline:6px">${BC.icon('recycle', 'ic-14')}มือสอง เกรด ${row.grade}</span>` : ''}</div><div class="mono" style="font-weight:600">${BC.baht(unitPrice(c.k, row))}</div></div>`;
+  }).join('');
+  const issues = check(build);
+  document.getElementById('issue-list').innerHTML = issues.map((x) => `<article class="issue" data-l="${x.level}">${BC.icon({ err: 'circle-x', warn: 'triangle-alert', info: 'info' }[x.level], 'ic-24')}<div><div class="issue__title"><span class="code">${x.code}</span><span>${x.title}</span></div><p class="issue__body">${x.body}</p></div></article>`).join('');
+  const t = totals(build), pw = power(build), psu = find('psu', 'P2'), pct = Math.round((pw.total / psu.watt) * 100);
+  document.getElementById('sum').innerHTML = `
+    <div class="summary__block stack-2"><div><div class="t-sm muted">ราคารวมแบบผสม</div><div class="price-big">${BC.baht(t.price)}</div></div><div class="save-line"><span class="row">${BC.icon('recycle', 'ic-14')}ประหยัดกว่าซื้อใหม่ทั้งชุด</span><b class="mono">${BC.baht(t.save)}</b></div></div>
+    <div class="summary__block" style="border-top:1px solid var(--border)">
+      <div class="gauge" data-c="PowerGauge" role="meter" aria-label="กำลังไฟที่ใช้" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-valuetext="${pw.total} วัตต์ จาก ${psu.watt} วัตต์">${BCChart.gaugeSvg(pct)}<div class="gauge__center"><div class="gauge__w">${pw.total} <small>W</small></div></div></div>
+      <div class="t-xs muted" style="text-align:center">ใช้ <b class="mono">${pct}%</b> ของ PSU ${psu.watt} W</div>
+    </div>
+    <dl class="stats-3 summary__block" style="border-top:1px solid var(--border)">
+      <div><dt>คะแนน</dt><dd class="mono">${score(build, 'gaming')}/100</dd></div>
+      <div><dt>แนะนำ PSU</dt><dd class="mono">${pw.rec} W</dd></div>
+      <div><dt>จำนวนชิ้น</dt><dd class="mono">${t.count}</dd></div>
+    </dl>`;
+  document.getElementById('qr').innerHTML = fakeQR();
+  let vote = 1;
+  const paint = () => { document.getElementById('score').textContent = 127 + vote; document.getElementById('up').setAttribute('aria-pressed', vote === 1); document.getElementById('down').setAttribute('aria-pressed', vote === -1); };
+  document.getElementById('up').onclick = () => { vote = vote === 1 ? 0 : 1; paint(); };
+  document.getElementById('down').onclick = () => { vote = vote === -1 ? 0 : -1; paint(); };
+  document.getElementById('fav').onclick = (e) => { const b = e.currentTarget; const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on); b.classList.toggle('btn--secondary', !on); b.style.background = on ? 'var(--brand-soft)' : ''; b.style.color = on ? 'var(--brand-soft-fg)' : ''; };
+  BC.chrome({ active: 'community' });
+</script>
+</body>
+</html>

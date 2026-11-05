@@ -1,0 +1,305 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/* โหมดมืดใช้ class .dark บน <html> (สวิตช์จริงทำในเฟส 13) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   Design Tokens จากเฟส 0: ชื่อตรงกับ Variable ใน Figma และ design/tokens.json
+   แก้สีที่นี่ที่เดียว ทุกคอมโพเนนต์จะเปลี่ยนตาม
+   ========================================================================== */
+:root {
+  /* พื้นผิว */
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --surface-3: #e5e8ed;
+  --border: #dce0e7;
+  --border-strong: #868f9d;
+
+  /* ตัวอักษร */
+  --text: #141820;
+  --text-2: #4a5361;
+  --text-3: #636d7c;
+
+  /* แบรนด์: สิ่งที่กดได้ */
+  --brand: #2753d6;
+  --brand-hover: #1f43ae;
+  --on-brand: #ffffff;
+  --brand-soft: #edf2ff;
+  --brand-soft-fg: #1f43ae;
+  --link: #2753d6;
+  --focus: #2753d6;
+
+  /* สถานะ: ใช้คู่กับไอคอนเสมอ */
+  --err: #d92d20;
+  --err-fg: #b42318;
+  --err-soft: #fef1ef;
+  --err-border: #f5c2bc;
+  --warn: #c47600;
+  --warn-fg: #8a4f00;
+  --warn-soft: #fff6e3;
+  --warn-border: #f2d393;
+  --ok: #129160;
+  --ok-fg: #0e6b47;
+  --ok-soft: #e9f7f0;
+  --ok-border: #aee0c8;
+  --info: #0b7fa5;
+  --info-fg: #09617e;
+  --info-soft: #e8f5fa;
+  --info-border: #b2dcea;
+
+  /* มือสอง: ไม่ใช้สีนี้กับเรื่องอื่น */
+  --used: #6d4bd8;
+  --used-fg: #5438b5;
+  --used-soft: #f3f0ff;
+  --used-border: #d5cbfb;
+
+  /* กราฟ */
+  --chart-1: #2753d6;
+  --chart-2: #0e8fb8;
+  --chart-3: #8b5cf6;
+  --chart-4: #d9538f;
+  --chart-n1: #5b6472;
+  --chart-n2: #7a8391;
+  --chart-n3: #96a0ad;
+  --chart-n4: #b0b8c3;
+  --chart-n5: #c7cdd6;
+  --chart-n6: #dadee5;
+  --chart-grid: #e5e8ed;
+
+  /* เงา */
+  --elevation-sm: 0 1px 2px rgb(20 24 32 / 0.06);
+  --elevation-md: 0 4px 12px rgb(20 24 32 / 0.08);
+  --elevation-lg: 0 16px 48px rgb(20 24 32 / 0.18);
+  --scrim: rgb(13 16 22 / 0.5);
+
+  /* ชื่อที่ shadcn/ui ใช้ ชี้กลับไปที่ Token ของเรา */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary: var(--brand);
+  --primary-foreground: var(--on-brand);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-2);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--text);
+  --destructive: var(--err-fg);
+  --input: var(--border-strong);
+  --ring: var(--focus);
+}
+
+.dark {
+  --bg: #0f1218;
+  --surface: #171b23;
+  --surface-2: #1f242e;
+  --surface-3: #2a303b;
+  --border: #2c323e;
+  --border-strong: #6e7787;
+
+  --text: #eef0f4;
+  --text-2: #b7beca;
+  --text-3: #929baa;
+
+  --brand: #3b6cf0;
+  --brand-hover: #5b86f7;
+  --on-brand: #ffffff;
+  --brand-soft: #1a2540;
+  --brand-soft-fg: #a9c1ff;
+  --link: #8eb0ff;
+  --focus: #8eb0ff;
+
+  --err: #f04438;
+  --err-fg: #ff9c8f;
+  --err-soft: #2c1614;
+  --err-border: #5c2520;
+  --warn: #f5a524;
+  --warn-fg: #ffc661;
+  --warn-soft: #2b2110;
+  --warn-border: #5a4216;
+  --ok: #2bc27f;
+  --ok-fg: #6bdda6;
+  --ok-soft: #10261c;
+  --ok-border: #1f4c37;
+  --info: #38b6dc;
+  --info-fg: #7ad0ea;
+  --info-soft: #0f2630;
+  --info-border: #1e4a5a;
+
+  --used: #a68efa;
+  --used-fg: #bdaaff;
+  --used-soft: #211a3d;
+  --used-border: #3d3270;
+
+  --chart-1: #4f7df3;
+  --chart-2: #0f9e9a;
+  --chart-3: #9b6cf6;
+  --chart-4: #e0559a;
+  --chart-n1: #a7afbc;
+  --chart-n2: #8c95a4;
+  --chart-n3: #737c8b;
+  --chart-n4: #5c6573;
+  --chart-n5: #474f5c;
+  --chart-n6: #363d49;
+  --chart-grid: #2a303b;
+
+  --elevation-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elevation-md: 0 4px 12px rgb(0 0 0 / 0.45);
+  --elevation-lg: 0 16px 48px rgb(0 0 0 / 0.6);
+  --scrim: rgb(0 0 0 / 0.65);
+
+  color-scheme: dark;
+}
+
+/* เปิดให้เรียกผ่าน class ของ Tailwind เช่น bg-surface, text-err-fg, border-ok-border */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border-strong: var(--border-strong);
+  --color-subtle: var(--text-3);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-soft-fg: var(--brand-soft-fg);
+  --color-link: var(--link);
+
+  --color-err: var(--err);
+  --color-err-fg: var(--err-fg);
+  --color-err-soft: var(--err-soft);
+  --color-err-border: var(--err-border);
+  --color-warn: var(--warn);
+  --color-warn-fg: var(--warn-fg);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-border: var(--warn-border);
+  --color-ok: var(--ok);
+  --color-ok-fg: var(--ok-fg);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-border: var(--ok-border);
+  --color-info: var(--info);
+  --color-info-fg: var(--info-fg);
+  --color-info-soft: var(--info-soft);
+  --color-info-border: var(--info-border);
+  --color-used: var(--used);
+  --color-used-fg: var(--used-fg);
+  --color-used-soft: var(--used-soft);
+  --color-used-border: var(--used-border);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-grid: var(--chart-grid);
+
+  --font-sans: var(--font-plex-sans), 'Noto Sans Thai', system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, 'Cascadia Mono', monospace;
+  --font-heading: var(--font-plex-sans), 'Noto Sans Thai', system-ui, sans-serif;
+
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+}
+
+/* ขนาดตัวอักษรและมุมโค้งตาม Design System
+   line-height ตั้งสูงกว่าค่าเริ่มต้น เพื่อไม่ให้สระบนล่างของภาษาไทยชนกัน */
+@theme {
+  --text-2xs: 12px;
+  --text-2xs--line-height: 18px;
+  --text-xs: 13px;
+  --text-xs--line-height: 20px;
+  --text-sm: 14px;
+  --text-sm--line-height: 22px;
+  --text-base: 16px;
+  --text-base--line-height: 26px;
+  --text-lg: 17px;
+  --text-lg--line-height: 26px;
+  --text-xl: 20px;
+  --text-xl--line-height: 30px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 34px;
+  --text-3xl: 32px;
+  --text-3xl--line-height: 44px;
+  --text-4xl: 36px;
+  --text-4xl--line-height: 44px;
+  --text-5xl: 44px;
+  --text-5xl--line-height: 58px;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --breakpoint-xl: 1240px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-base text-foreground antialiased;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* หัวข้อที่ย่อขนาดบนมือถือตาม Design System */
+@utility t-display {
+  font-size: 32px;
+  line-height: 44px;
+  font-weight: 700;
+  @media (width >= 48rem) {
+    font-size: 44px;
+    line-height: 58px;
+  }
+}
+@utility t-h1 {
+  font-size: 26px;
+  line-height: 36px;
+  font-weight: 700;
+  @media (width >= 48rem) {
+    font-size: 32px;
+    line-height: 44px;
+  }
+}
+@utility t-h2 {
+  font-size: 21px;
+  line-height: 30px;
+  font-weight: 600;
+  @media (width >= 48rem) {
+    font-size: 24px;
+    line-height: 34px;
+  }
+}

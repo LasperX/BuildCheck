@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สเปกทุกหน้า · BuildCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<script src="assets/icons.js"></script>
+<script src="assets/tokens-data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/specs.js"></script>
+<style>
+  .doc { max-width: 860px; margin-inline: auto; padding: var(--s-8) var(--s-5) var(--s-16); }
+  .doc section { padding-block: var(--s-6); border-top: 1px solid var(--border); break-inside: avoid-page; }
+  .doc h3 { font-size: 16px; line-height: 26px; font-weight: 600; margin-top: var(--s-4); }
+  .doc li { font-size: 14px; line-height: 22px; color: var(--text-2); padding-left: 14px; position: relative; }
+  .doc li + li { margin-top: 4px; }
+  .doc li::before { content: ''; position: absolute; left: 0; top: 9px; width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); }
+  @media print { .no-print { display: none; } body { background: #fff; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="row between wrap">
+    <div><h1 class="t-h1">สเปกหน้าจอ BuildCheck</h1><p class="muted">สำหรับวาดต่อใน Figma ตัวเลขทั้งหมดมีหน่วยเป็น px และตรงกับต้นแบบ HTML</p></div>
+    <button class="btn btn--secondary no-print" onclick="print()"><i data-i="download" class="ic-16"></i>พิมพ์หรือบันทึก PDF</button>
+  </div>
+  <div id="out" style="margin-top:var(--s-6)"></div>
+</main>
+<script>
+  document.getElementById('out').innerHTML = Object.values(BC_SPECS).map((sp) => `<section>
+    <h2 class="t-h2">${sp.title}</h2>
+    <p class="mono t-xs faint">${sp.url}</p>
+    <p class="t-sm muted">เฟรมใน Figma: ${sp.frames}</p>
+    ${sp.sections.map((s) => `<h3>${s.name}</h3><ul>${s.rows.map((r) => `<li>${r}</li>`).join('')}</ul>`).join('')}
+    ${sp.states ? `<h3>สถานะที่ต้องวาด</h3><ul>${sp.states.map((r) => `<li>${r}</li>`).join('')}</ul>` : ''}
+    ${sp.notes ? `<h3>หมายเหตุ</h3><ul>${sp.notes.map((r) => `<li>${r}</li>`).join('')}</ul>` : ''}
+  </section>`).join('');
+</script>
+</body>
+</html>

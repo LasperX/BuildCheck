@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BuildCheck · จัดสเปกคอมพร้อมเช็กความเข้ากันได้</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<script src="assets/icons.js"></script>
+<script src="assets/tokens-data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/charts.js"></script>
+</head>
+<body>
+<main>
+  <section class="hero" data-c="Hero">
+    <div class="container hero__in">
+      <div>
+        <h1 class="t-display">เช็กก่อนซื้อ<br>ประกอบคอมไม่พลาด</h1>
+        <p class="muted" style="font-size:18px;line-height:30px;margin-top:var(--s-4);max-width:560px">เลือกอะไหล่ทีละชิ้น ระบบบอกทันทีว่าใส่กันได้ไหม ไฟพอไหม ราคารวมเท่าไหร่ ถ้าใส่ไม่ได้ก็อธิบายเหตุผลเป็นภาษาไทยพร้อมวิธีแก้</p>
+        <div class="row wrap" style="margin-top:var(--s-6)">
+          <a class="btn btn--primary btn--lg" href="builder.html"><i data-i="cpu" class="ic-18"></i>เริ่มจัดสเปก</a>
+          <a class="btn btn--secondary btn--lg" href="build.html">ดูสเปกจากชุมชน</a>
+        </div>
+        <form class="quick" style="margin-top:var(--s-6);max-width:600px" action="budget.html" data-c="QuickBudget">
+          <div class="field"><label for="q-budget">มีงบเท่าไหร่</label>
+            <div class="input-affix"><span class="affix">฿</span><input class="input mono" id="q-budget" inputmode="numeric" value="25,000"></div></div>
+          <div class="field"><label for="q-usage">ใช้ทำอะไร</label>
+            <select class="select" id="q-usage"><option>เล่นเกม</option><option>ทำงานออฟฟิศ</option><option>ตัดต่อ/กราฟิก</option><option>สตรีม</option></select></div>
+          <button class="btn btn--secondary" type="submit">จัดให้ตามงบ<i data-i="arrow-right" class="ic-16"></i></button>
+        </form>
+      </div>
+
+      <div class="card hero-demo" data-c="HeroDemo" aria-label="ตัวอย่างผลตรวจ">
+        <div class="status-banner status-banner--err"><i data-i="circle-x" class="ic-28"></i><div><h2>ใส่ด้วยกันไม่ได้</h2><p>ต้องแก้ 1 ปัญหาก่อนประกอบ</p></div></div>
+        <div style="padding:var(--s-3) var(--s-5)">
+          <div class="mini-slot"><i data-i="cpu" class="ic-18"></i><span class="grow">CPU ตัวอย่าง B1</span><span class="chip">LGA1700</span></div>
+          <div class="mini-slot"><i data-i="circuit-board" class="ic-18"></i><span class="grow">เมนบอร์ดตัวอย่าง M1</span><span class="chip">AM5</span></div>
+          <div class="mini-slot"><i data-i="gpu" class="ic-18"></i><span class="grow">การ์ดจอตัวอย่าง G1</span><span class="chip">220 W</span></div>
+        </div>
+        <div style="padding:0 var(--s-4) var(--s-4)">
+          <div class="issue" data-l="err" style="padding:var(--s-3)">
+            <i data-i="circle-x" class="ic-24"></i>
+            <div><div class="issue__title"><span class="code">R01</span>Socket ไม่ตรงกัน</div>
+              <p class="issue__body">CPU ใช้ LGA1700 แต่เมนบอร์ดใช้ AM5</p>
+              <div class="issue__fix"><span class="btn btn--secondary btn--sm"><i data-i="lightbulb" class="ic-14"></i>ดูเมนบอร์ด LGA1700</span></div></div>
+          </div>
+        </div>
+        <div class="row between" style="padding:var(--s-3) var(--s-5);border-top:1px solid var(--border)">
+          <div><div class="t-xs muted">ราคารวม</div><div class="t-num-lg">฿21,100</div></div>
+          <div style="text-align:right"><div class="t-xs muted">กำลังไฟ</div><div class="t-num-lg">350 W</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section" aria-labelledby="how">
+    <h2 class="t-h2" id="how" style="margin-bottom:var(--s-5)">ใช้งานง่าย 3 ขั้นตอน</h2>
+    <ol class="steps" data-c="HowItWorks">
+      <li class="card step"><div class="step__n">1</div><h3 class="t-h4">เลือกอะไหล่ 8 หมวด</h3><p class="t-sm muted" style="margin-top:var(--s-1)">เลือกของใหม่หรือมือสองก็ได้ เปิดกรองอัจฉริยะให้เห็นเฉพาะรุ่นที่ใส่กันได้</p></li>
+      <li class="card step"><div class="step__n">2</div><h3 class="t-h4">ดูผลตรวจทันที</h3><p class="t-sm muted" style="margin-top:var(--s-1)">ตรวจ 18 กฎ คำนวณไฟและราคาให้ทุกครั้งที่เปลี่ยน พร้อมปุ่มแนะนำรุ่นที่แก้ปัญหาได้</p></li>
+      <li class="card step"><div class="step__n">3</div><h3 class="t-h4">บันทึกและแชร์</h3><p class="t-sm muted" style="margin-top:var(--s-1)">สมัครฟรีเพื่อเก็บสเปก ส่งลิงก์หรือ QR ให้เพื่อนช่วยดู หรือโพสต์ขอความเห็นในชุมชน</p></li>
+    </ol>
+  </section>
+
+  <section class="container section" style="padding-top:0" aria-labelledby="popular">
+    <div class="sec-head"><h2 class="t-h2" id="popular">สเปกยอดนิยมสัปดาห์นี้</h2><a class="link t-sm" href="build.html">ดูทั้งหมด</a></div>
+    <div class="grid-3" id="popular-grid" data-c="BuildCard"></div>
+  </section>
+
+  <section class="container section" style="padding-top:0" aria-labelledby="new">
+    <div class="sec-head"><h2 class="t-h2" id="new">อะไหล่มาใหม่</h2><a class="link t-sm" href="part.html">ดูคลังอะไหล่</a></div>
+    <div class="grid-4" id="new-grid" data-c="PartCard"></div>
+  </section>
+</main>
+<script>
+  const popular = [
+    ['สเปกเล่นเกมงบ 3 หมื่น', 'มือใหม่หัดประกอบ', 'เล่นเกม', 'warn', '฿23,300', '372 W', 128],
+    ['ตัดต่อวิดีโอไม่สะดุด', 'ช่างตัดเย็น', 'ตัดต่อ/กราฟิก', 'ok', '฿58,900', '520 W', 94],
+    ['ออฟฟิศเงียบ ประหยัดไฟ', 'นักบัญชีสายคอม', 'ทำงานออฟฟิศ', 'ok', '฿14,200', '135 W', 61],
+  ];
+  const st = { ok: ['badge--ok', 'circle-check', 'เข้ากันได้'], warn: ['badge--warn', 'triangle-alert', 'มีข้อควรระวัง'] };
+  document.getElementById('popular-grid').innerHTML = popular.map(([t, a, u, s, p, w, v]) => `
+    <a class="card card--hover bcard" href="build.html">
+      <div class="row between"><span class="badge badge--neutral">${u}</span><span class="badge ${st[s][0]}">${BC.icon(st[s][1], 'ic-14')}${st[s][2]}</span></div>
+      <h3 class="t-h4" style="margin-top:var(--s-2)">${t}</h3>
+      <div class="bcard__meta" style="margin-top:2px"><span class="row"><span class="avatar avatar--sm">${a[0]}</span>${a}</span></div>
+      <div class="bcard__stat"><div><div class="t-h3">${p}</div><div class="t-xs muted mono">${w}</div></div><span class="row t-sm muted">${BC.icon('arrow-big-up', 'ic-18')}<span class="mono">${v}</span></span></div>
+    </a>`).join('');
+  const parts = [['cpu', 'CPU ตัวอย่าง A2', ['AM5', '8 คอร์'], '฿9,900'], ['gpu', 'การ์ดจอตัวอย่าง G2', ['16 GB', '350 W'], '฿24,000'], ['memory-stick', 'แรมตัวอย่าง R1', ['DDR5', '32 GB'], '฿2,400'], ['hard-drive', 'SSD ตัวอย่าง S1', ['NVMe', '1 TB'], '฿1,500']];
+  document.getElementById('new-grid').innerHTML = parts.map(([i, n, c, p]) => `
+    <a class="card card--hover pcard" href="part.html"><div class="thumb">${BC.icon(i, 'ic-28')}</div>
+      <h3 style="font-size:15px;line-height:24px;font-weight:500">${n}</h3>
+      <div class="chips" style="margin-top:2px">${c.map((x) => `<span class="chip">${x}</span>`).join('')}</div>
+      <div class="mono" style="font-weight:600;margin-top:var(--s-2)">${p}</div></a>`).join('');
+  BC.chrome({ active: 'home' });
+</script>
+</body>
+</html>

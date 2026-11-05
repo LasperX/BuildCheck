@@ -1,0 +1,24 @@
+# ฐานข้อมูลสำหรับพัฒนาในเครื่องเท่านั้น ค่าอ่านจากไฟล์ .env (คัดลอกจาก .env.example)
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: buildcheck-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?ตั้งค่า POSTGRES_USER ใน .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?ตั้งค่า POSTGRES_PASSWORD ใน .env}
+      POSTGRES_DB: ${POSTGRES_DB:?ตั้งค่า POSTGRES_DB ใน .env}
+    ports:
+      # ผูกกับ 127.0.0.1 เพื่อให้เข้าถึงได้จากเครื่องนี้เท่านั้น
+      - '127.0.0.1:5432:5432'
+    volumes:
+      # PostgreSQL 18 ขึ้นไปต้อง mount ที่ /var/lib/postgresql ไม่ใช่ .../data
+      - buildcheck_pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  buildcheck_pgdata:

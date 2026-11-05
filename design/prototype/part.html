@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รายละเอียดอะไหล่ · BuildCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<script src="assets/icons.js"></script>
+<script src="assets/tokens-data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/charts.js"></script>
+<script src="assets/proto-engine.js"></script>
+</head>
+<body>
+<main class="container">
+  <nav class="crumb" aria-label="เส้นทาง"><a href="home.html">หน้าแรก</a><i data-i="chevron-right" class="ic-14"></i><a href="part.html">คลังอะไหล่</a><i data-i="chevron-right" class="ic-14"></i><a href="part.html">การ์ดจอ</a><i data-i="chevron-right" class="ic-14"></i><span>การ์ดจอตัวอย่าง G1</span></nav>
+
+  <section class="part-head" data-c="PartHeader">
+    <div class="thumb part-img"><i data-i="gpu" style="width:72px;height:72px"></i></div>
+    <div>
+      <div class="t-sm muted">ยี่ห้อตัวอย่าง 1 · วางขายปี 2024</div>
+      <h1 class="t-h1">การ์ดจอตัวอย่าง G1</h1>
+      <div class="chips" style="margin-top:var(--s-2)"><span class="chip">8 GB</span><span class="chip">220 W</span><span class="chip">ยาว 300 mm</span><span class="chip">2 ช่อง</span></div>
+      <p class="row t-sm muted" style="margin-top:var(--s-3)"><i data-i="layers" class="ic-16"></i><span>อยู่ในสเปกของสมาชิก <b class="mono">326</b> ชุด</span></p>
+    </div>
+    <aside class="card card--pad part-head__buy stack-3" data-c="PartPriceCard">
+      <div class="seg seg--block" role="group" aria-label="แสดงราคา" id="price-mode">
+        <button aria-pressed="true" data-m="new">มือหนึ่ง</button><button aria-pressed="false" data-m="used" data-used="1"><i data-i="recycle" class="ic-14"></i>มือสอง</button>
+      </div>
+      <div id="price-new"><div class="t-sm muted">ราคาอ้างอิงล่าสุด</div><div class="t-num-xl">฿12,000</div><div class="t-xs faint">อัปเดตโดยแอดมิน · ราคาอ้างอิง ไม่ใช่ราคาขาย</div></div>
+      <div id="price-used" hidden><div class="t-sm muted">ราคากลางมือสอง · เกรด B</div><div class="t-num-xl">฿6,100</div><div class="row t-xs muted wrap"><span class="badge badge--neutral" style="height:20px;font-size:12px;padding-inline:6px">ประมาณการ</span>จากสูตรค่าเสื่อม</div></div>
+      <a class="btn btn--primary btn--block" href="builder.html?state=doc"><i data-i="plus" class="ic-16"></i>เพิ่มลงสเปก</a>
+      <button class="btn btn--secondary btn--block"><i data-i="bell" class="ic-16"></i>ตั้งเตือนราคา</button>
+    </aside>
+  </section>
+
+  <div class="tabs" role="tablist" aria-label="รายละเอียดอะไหล่" style="margin-top:var(--s-6)" id="tabs" data-c="Tabs">
+    <button role="tab" aria-selected="true" aria-controls="p-spec" id="t-spec">สเปกเต็ม</button>
+    <button role="tab" aria-selected="false" aria-controls="p-hist" id="t-hist"><i data-i="history" class="ic-16"></i>ประวัติราคา</button>
+    <button role="tab" aria-selected="false" aria-controls="p-used" id="t-used"><i data-i="recycle" class="ic-16"></i>ราคามือสอง</button>
+    <button role="tab" aria-selected="false" aria-controls="p-builds" id="t-builds"><i data-i="layers" class="ic-16"></i>สเปกที่ใช้ชิ้นนี้</button>
+  </div>
+
+  <div style="padding-block:var(--s-5) var(--s-8)">
+    <section id="p-spec" role="tabpanel" aria-labelledby="t-spec">
+      <div class="card" style="max-width:720px;overflow:hidden"><table class="tbl spec-table">
+        <tr><th scope="row">ชิปประมวลผลกราฟิก</th><td>รุ่นสมมติ G1</td></tr>
+        <tr><th scope="row">VRAM</th><td>8 GB</td></tr>
+        <tr><th scope="row">ความยาวการ์ด</th><td>300 mm <span class="faint" style="font-family:var(--font-sans)">ใช้ตรวจ R09</span></td></tr>
+        <tr><th scope="row">ความหนา</th><td>2.0 ช่อง</td></tr>
+        <tr><th scope="row">TBP (กำลังไฟการ์ด)</th><td>220 W <span class="faint" style="font-family:var(--font-sans)">ใช้คำนวณเกจไฟ</span></td></tr>
+        <tr><th scope="row">ช่องเสียบไฟ</th><td>8-pin × 1 <span class="faint" style="font-family:var(--font-sans)">ใช้ตรวจ R16</span></td></tr>
+        <tr><th scope="row">คะแนนประสิทธิภาพ</th><td>66 / 100</td></tr>
+      </table></div>
+    </section>
+
+    <section id="p-hist" role="tabpanel" aria-labelledby="t-hist" hidden>
+      <div class="card card--pad" style="max-width:860px"><h2 class="t-h4" style="margin-bottom:var(--s-3)">ราคาอ้างอิงที่แอดมินบันทึก (บาท)</h2><div id="c-hist"></div></div>
+    </section>
+
+    <section id="p-used" role="tabpanel" aria-labelledby="t-used" hidden>
+      <div class="split-2">
+        <div class="stack-4">
+          <div class="card card--pad" data-c="UsedPriceStats">
+            <div class="row between wrap" style="margin-bottom:var(--s-4)">
+              <div class="seg" role="group" aria-label="เลือกเกรด" id="grade">
+                <button aria-pressed="false" data-g="A" title="ดีมาก มีประกัน">เกรด A</button><button aria-pressed="true" data-g="B" title="ใช้งานปกติ มีรอย">เกรด B</button><button aria-pressed="false" data-g="C" title="มีตำหนิ ไม่มีกล่อง">เกรด C</button>
+              </div>
+              <span class="badge badge--info" id="conf"></span>
+            </div>
+            <dl class="grade-stat" id="gstat"></dl>
+            <p class="t-xs faint" style="margin-top:var(--s-3)" id="src"></p>
+          </div>
+          <div class="card card--pad" data-c="UsedPriceChart">
+            <div class="row between wrap" style="margin-bottom:var(--s-3)"><h2 class="t-h4">แนวโน้มราคากลางรายสัปดาห์ (บาท)</h2>
+              <div class="legend" id="lg"></div></div>
+            <div id="c-used"></div>
+          </div>
+          <div class="card" data-c="UsedReportTable">
+            <div class="row between wrap" style="padding:var(--s-4) var(--s-5) var(--s-2)"><h2 class="t-h4">รายงานล่าสุด</h2><a class="btn btn--secondary btn--sm" href="#"><i data-i="flag" class="ic-14"></i>รายงานราคาที่เจอ</a></div>
+            <div class="tbl-wrap"><table class="tbl">
+              <thead><tr><th>ราคา</th><th>เกรด</th><th>ประเภท</th><th>ช่องทาง</th><th>จังหวัด</th><th>วันที่</th></tr></thead>
+              <tbody id="reports"></tbody>
+            </table></div>
+          </div>
+        </div>
+        <div class="stack-4">
+          <div class="card card--pad stack-3" data-c="OfferChecker">
+            <h2 class="t-h4">ราคาที่เจอจริง</h2>
+            <p class="t-sm muted">ใส่ราคาที่ผู้ขายเสนอ ระบบเทียบกับราคากลางให้ทันที</p>
+            <div class="input-affix"><span class="affix">฿</span><input class="input mono" id="offer" inputmode="numeric" placeholder="เช่น 5,500" aria-label="ราคาที่ผู้ขายเสนอ"></div>
+            <div id="offer-res" aria-live="polite"></div>
+          </div>
+          <div class="card card--pad" data-c="BuyChecklist">
+            <h2 class="t-h4" style="margin-bottom:var(--s-3)">เช็กลิสต์ก่อนซื้อการ์ดจอมือสอง</h2>
+            <ul class="checklist">
+              <li><i data-i="clipboard-check" class="ic-16"></i>ขอดูรันทดสอบ 15 นาที</li>
+              <li><i data-i="clipboard-check" class="ic-16"></i>ถามประวัติการใช้ขุดเหรียญ</li>
+              <li><i data-i="clipboard-check" class="ic-16"></i>ดูอุณหภูมิขณะทดสอบ</li>
+              <li><i data-i="clipboard-check" class="ic-16"></i>ถามประกันที่เหลือและกล่องเดิม</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-builds" role="tabpanel" aria-labelledby="t-builds" hidden>
+      <div class="grid-3" id="b-grid"></div>
+    </section>
+  </div>
+</main>
+<script>
+  const { usedPrice, evalOffer, find } = BCProto;
+  const part = find('gpu', 'G1');
+  const tabs = ['spec', 'hist', 'used', 'builds'];
+  function show(tab) {
+    tabs.forEach((t) => {
+      document.getElementById('t-' + t).setAttribute('aria-selected', t === tab);
+      document.getElementById('p-' + t).hidden = t !== tab;
+    });
+    draw();
+  }
+  document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('[role=tab]'); if (b) show(b.id.slice(2)); });
+
+  // คะแนนเกรดและตัวอย่างราคาเป็นข้อมูลสมมติ ราคา B = 6,100 ตามตัวอย่างสูตรค่าเสื่อมในเอกสาร 4.6
+  const GRADES = {
+    A: { m: usedPrice('gpu', part, 'A'), range: '฿6,300 – ฿7,100', n: 12, conf: ['สูง', 'จากรายงานสมาชิก 12 รายงานใน 60 วันล่าสุด'], date: '2 พ.ย.' },
+    B: { m: usedPrice('gpu', part, 'B'), range: '—', n: 0, conf: ['ประมาณการ', 'ยังไม่มีข้อมูลตลาด ใช้สูตร: 12,000 × 0.75² × 0.90 = 6,075 ≈ 6,100 บาท'], date: '5 พ.ย.' },
+    C: { m: usedPrice('gpu', part, 'C'), range: '฿4,700 – ฿5,300', n: 4, conf: ['กลาง', 'จากรายงานสมาชิก 4 รายงานใน 60 วันล่าสุด'], date: '28 ต.ค.' },
+  };
+  let grade = 'B';
+  const CONF_CLS = { 'สูง': 'badge--ok', 'กลาง': 'badge--info', 'ประมาณการ': 'badge--neutral' };
+  function drawGrade() {
+    const g = GRADES[grade];
+    document.getElementById('gstat').innerHTML = `
+      <div><dt>ราคากลาง</dt><dd class="mono">${BC.baht(g.m)}</dd></div>
+      <div><dt>ช่วงที่พบบ่อย</dt><dd class="mono" style="font-size:15px">${g.range}</dd></div>
+      <div><dt>จำนวนรายงาน</dt><dd class="mono">${g.n}</dd></div>
+      <div><dt>อัปเดต</dt><dd style="font-size:15px">${g.date}</dd></div>`;
+    const c = document.getElementById('conf');
+    c.className = 'badge ' + CONF_CLS[g.conf[0]];
+    c.innerHTML = `${BC.icon('shield-check', 'ic-14')}ความน่าเชื่อถือ: ${g.conf[0]}`;
+    document.getElementById('src').textContent = g.conf[1];
+    drawOffer();
+  }
+  function drawOffer() {
+    const v = Number(document.getElementById('offer').value.replace(/[^\d]/g, ''));
+    const box = document.getElementById('offer-res');
+    if (!v) { box.innerHTML = ''; return; }
+    const m = GRADES[grade].m;
+    const ev = evalOffer(v, m);
+    const cls = { err: 'badge--err', warn: 'badge--warn', ok: 'badge--ok', none: 'badge--neutral' }[ev.l];
+    box.innerHTML = `<span class="badge ${cls}" style="height:auto;white-space:normal;padding-block:2px">${BC.icon(ev.ic, 'ic-14')}${ev.t}</span><p class="t-xs muted" style="margin-top:4px">คิดเป็น <span class="mono">${Math.round((v / m) * 100)}%</span> ของราคากลางเกรด ${grade} (${BC.baht(m)})</p>`;
+  }
+  document.getElementById('offer').addEventListener('input', drawOffer);
+  document.getElementById('grade').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-g]'); if (!b) return;
+    grade = b.dataset.g;
+    document.querySelectorAll('#grade [data-g]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    drawGrade();
+  });
+  document.getElementById('price-mode').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-m]'); if (!b) return;
+    document.querySelectorAll('#price-mode [data-m]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    document.getElementById('price-new').hidden = b.dataset.m !== 'new';
+    document.getElementById('price-used').hidden = b.dataset.m !== 'used';
+  });
+
+  const reports = [['฿6,400', 'A', 'ซื้อจริง', 'กลุ่ม Facebook', 'กรุงเทพฯ', '2 พ.ย.'], ['฿5,000', 'C', 'เห็นประกาศ', 'แอปซื้อขาย', 'เชียงใหม่', '28 ต.ค.'], ['฿6,900', 'A', 'ขายได้จริง', 'ร้านมือสอง', 'ขอนแก่น', '24 ต.ค.']];
+  document.getElementById('reports').innerHTML = reports.map((r) => `<tr><td class="mono" style="font-weight:600">${r[0]}</td><td><span class="code">${r[1]}</span></td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td class="faint">${r[5]}</td></tr>`).join('');
+
+  const SERIES = [
+    { name: 'เกรด A', token: 'chart-1', data: [7300, 7200, 7150, 7100, 7000, 6950, 6850, 6800] },
+    { name: 'เกรด B', token: 'chart-2', data: [6650, 6600, 6500, 6450, 6350, 6300, 6200, 6100] },
+    { name: 'เกรด C', token: 'chart-3', data: [5450, 5400, 5400, 5300, 5250, 5200, 5100, 5000] },
+  ];
+  const WEEKS = ['ก.ย. 1', 'ก.ย. 2', 'ก.ย. 3', 'ก.ย. 4', 'ต.ค. 1', 'ต.ค. 2', 'ต.ค. 3', 'ต.ค. 4'];
+  function draw() {
+    if (!document.getElementById('p-used').hidden) {
+      BCChart.line(document.getElementById('c-used'), { label: 'แนวโน้มราคากลางมือสองแยกเกรด', labels: WEEKS, series: SERIES, yMin: 4000, valueFmt: (d) => BC.baht(d) });
+      document.getElementById('lg').innerHTML = SERIES.map((s) => `<span><i style="background:var(--${s.token})"></i>${s.name}</span>`).join('');
+    }
+    if (!document.getElementById('p-hist').hidden) {
+      BCChart.line(document.getElementById('c-hist'), { label: 'ประวัติราคาอ้างอิง', labels: ['พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.'], series: [{ name: 'ราคาอ้างอิง', token: 'chart-1', data: [13500, 13500, 12900, 12900, 12500, 12000, 12000] }], yMin: 10000, area: true, valueFmt: (d) => BC.baht(d) });
+    }
+  }
+  document.getElementById('b-grid').innerHTML = ['สเปกเล่นเกมงบ 3 หมื่น', 'เล่นเกมเงียบๆ ในห้องนอน', 'สตรีมมือใหม่'].map((t, i) => `<a class="card card--hover bcard" href="build.html"><h3 class="t-h4">${t}</h3><div class="bcard__stat"><div class="t-h3">${['฿23,300', '฿33,100', '฿36,800'][i]}</div><span class="row t-sm muted">${BC.icon('arrow-big-up', 'ic-18')}<span class="mono">${[128, 56, 41][i]}</span></span></div></a>`).join('');
+  drawGrade();
+  document.addEventListener('bc-theme', draw);
+  document.getElementById('offer').value = BC.params.get('offer') || '';
+  drawOffer();
+  BC.chrome({ active: BC.params.get('tab') === 'used' ? 'used' : 'parts' });
+  show(BC.params.get('tab') || 'spec');
+</script>
+</body>
+</html>

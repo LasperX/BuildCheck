@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BuildCheck ต้นแบบเฟส 0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<script src="assets/icons.js"></script>
+<script src="assets/tokens-data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/specs.js"></script>
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  .shell { display: grid; grid-template-columns: 224px minmax(0, 1fr) 360px; grid-template-rows: auto minmax(0, 1fr); height: 100%; }
+  .shell[data-spec='0'] { grid-template-columns: 224px minmax(0, 1fr); }
+  .shell[data-spec='0'] .spec { display: none; }
+  .bar { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-4); background: var(--surface); border-bottom: 1px solid var(--border); }
+  .pages { background: var(--surface); border-right: 1px solid var(--border); padding: var(--s-3); overflow-y: auto; }
+  .pages h2 { font-size: 12px; line-height: 18px; color: var(--text-3); font-weight: 500; padding: var(--s-2) var(--s-3) var(--s-1); }
+  .page-link { display: flex; width: 100%; align-items: center; gap: var(--s-2); min-height: 40px; padding: var(--s-1) var(--s-3); border-radius: var(--r-md); font-size: 14px; line-height: 20px; font-weight: 500; color: var(--text-2); text-align: left; }
+  .page-link:hover { background: var(--surface-2); color: var(--text); }
+  .page-link[aria-current='true'] { background: var(--brand-soft); color: var(--brand-soft-fg); }
+  .stage { position: relative; overflow: auto; background: var(--surface-3); display: flex; justify-content: center; padding: var(--s-4); }
+  .frame-wrap { flex: none; transform-origin: top center; }
+  .frame { display: block; border: 0; background: var(--bg); box-shadow: var(--shadow-lg); border-radius: var(--r-md); }
+  .spec { background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; padding: var(--s-4) var(--s-5) var(--s-8); }
+  .spec h3 { font-size: 15px; line-height: 24px; font-weight: 600; margin-top: var(--s-5); }
+  .spec ul { margin-top: var(--s-1); }
+  .spec li { font-size: 13px; line-height: 20px; color: var(--text-2); padding-left: 12px; position: relative; }
+  .spec li + li { margin-top: 6px; }
+  .spec li::before { content: ''; position: absolute; left: 0; top: 8px; width: 4px; height: 4px; border-radius: 50%; background: var(--text-3); }
+  .ctl-label { font-size: 12px; line-height: 18px; color: var(--text-3); }
+  .scale-note { font: 500 12px/18px var(--font-mono); color: var(--text-3); }
+  @media (max-width: 1023px) {
+    html, body { overflow: auto; height: auto; }
+    .shell, .shell[data-spec='0'] { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; height: auto; }
+    .pages { display: flex; gap: var(--s-1); overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+    .pages h2 { display: none; } .page-link { white-space: nowrap; width: auto; }
+    .stage { min-height: 70vh; padding: var(--s-2); }
+    .spec { border-left: 0; border-top: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<div class="shell" id="shell" data-spec="1">
+  <div class="bar">
+    <span class="logo" style="font-size:16px" id="logo"></span>
+    <span class="badge badge--neutral">ต้นแบบเฟส 0</span>
+    <div class="grow"></div>
+    <div class="seg seg--sm" role="group" aria-label="ความละเอียด" id="fid"><button data-v="0" aria-pressed="true">Mockup</button><button data-v="1" aria-pressed="false">Wireframe</button></div>
+    <div class="seg seg--sm" role="group" aria-label="โหมดสี" id="thm"><button data-v="light" aria-pressed="true"><i data-i="sun" class="ic-14"></i>สว่าง</button><button data-v="dark" aria-pressed="false"><i data-i="moon" class="ic-14"></i>มืด</button></div>
+    <div class="seg seg--sm" role="group" aria-label="ขนาดจอ" id="dev"><button data-v="1440" aria-pressed="true"><i data-i="monitor" class="ic-14"></i>1440</button><button data-v="768" aria-pressed="false"><i data-i="tablet" class="ic-14"></i>768</button><button data-v="390" aria-pressed="false"><i data-i="smartphone" class="ic-14"></i>390</button><button data-v="360" aria-pressed="false">360</button></div>
+    <label class="switch t-xs"><input type="checkbox" id="insp"><span class="switch__track"></span><span>วัดระยะ (Inspector)</span></label>
+    <label class="switch t-xs"><input type="checkbox" id="spec-on" checked><span class="switch__track"></span><span>สเปก</span></label>
+    <span class="scale-note" id="scale"></span>
+  </div>
+  <nav class="pages" aria-label="หน้าต้นแบบ">
+    <h2>พื้นฐาน</h2><div id="nav-a"></div>
+    <h2>หน้าเว็บ</h2><div id="nav-b"></div>
+    <h2>เอกสาร</h2>
+    <a class="page-link" href="specs.html" target="_blank"><i data-i="file-text" class="ic-16"></i>สเปกทุกหน้า (พิมพ์ได้)</a>
+  </nav>
+  <div class="stage" id="stage"><div class="frame-wrap" id="wrap"><iframe class="frame" id="frame" title="พื้นที่แสดงต้นแบบ"></iframe></div></div>
+  <aside class="spec" id="spec" aria-label="สเปกหน้านี้"></aside>
+</div>
+<script>
+  const PAGES = {
+    'design-system': { file: 'design-system.html', icon: 'palette', label: 'Design System', group: 'a' },
+    home: { file: 'home.html', icon: 'house', label: 'หน้าแรก', group: 'b' },
+    builder: { file: 'builder.html', icon: 'cpu', label: 'จัดสเปก', group: 'b', states: [['r01', 'ผิดพลาด R01'], ['doc', 'ตัวอย่างเอกสาร 372 W'], ['ok', 'ผ่านทั้งชุด'], ['power', 'ไฟไม่พอ R14'], ['used', 'ผสมมือสอง'], ['partial', 'เลือกบางส่วน'], ['empty', 'ว่าง']] },
+    picker: { file: 'builder.html', icon: 'search', label: 'หน้าต่างเลือกอะไหล่', group: 'b', states: [['smart', 'กรองอัจฉริยะเปิด'], ['all', 'ปิด แสดงทั้งหมด']] },
+    budget: { file: 'budget.html', icon: 'wallet', label: 'จัดสเปกตามงบ', group: 'b' },
+    part: { file: 'part.html', icon: 'package', label: 'รายละเอียดอะไหล่', group: 'b', states: [['used', 'แท็บราคามือสอง'], ['spec', 'แท็บสเปกเต็ม'], ['hist', 'แท็บประวัติราคา']] },
+    build: { file: 'build.html', icon: 'layers', label: 'รายละเอียดสเปก', group: 'b' },
+    admin: { file: 'admin.html', icon: 'layout-dashboard', label: 'Dashboard แอดมิน', group: 'b' },
+  };
+  const qs = new URLSearchParams(location.search);
+  const S = { page: qs.get('page') || 'builder', state: qs.get('s') || null, wire: '0', theme: 'light', width: 1440, insp: false };
+
+  document.getElementById('logo').innerHTML = BC.logo();
+  ['a', 'b'].forEach((g) => {
+    document.getElementById('nav-' + g).innerHTML = Object.entries(PAGES).filter(([, p]) => p.group === g).map(([k, p]) => `<button class="page-link" data-p="${k}">${BC.icon(p.icon, 'ic-16')}<span>${p.label}</span></button>`).join('');
+  });
+
+  function url() {
+    const p = PAGES[S.page];
+    const u = new URLSearchParams({ theme: S.theme });
+    if (S.wire === '1') u.set('wire', '1');
+    if (S.insp) u.set('inspect', '1');
+    const st = S.state || (p.states ? p.states[0][0] : null);
+    if (S.page === 'builder') u.set('state', st);
+    if (S.page === 'picker') { u.set('state', 'r01'); u.set('open', 'mb'); if (st === 'all') u.set('smart', '0'); }
+    if (S.page === 'part') u.set('tab', st);
+    return p.file + '?' + u.toString();
+  }
+
+  function renderSpec() {
+    const sp = BC_SPECS[S.page];
+    const p = PAGES[S.page];
+    const stateBtns = p.states ? `<div style="margin-top:var(--s-3)"><div class="ctl-label" style="margin-bottom:4px">สถานการณ์</div><select class="select select--sm" id="state" aria-label="เลือกสถานการณ์">${p.states.map(([k, l]) => `<option value="${k}" ${k === (S.state || p.states[0][0]) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>` : '';
+    document.getElementById('spec').innerHTML = `
+      <h2 class="t-h3">${sp.title}</h2>
+      <p class="mono t-xs faint">${sp.url}</p>
+      <p class="t-xs muted" style="margin-top:var(--s-1)">เฟรมใน Figma: ${sp.frames}</p>
+      ${stateBtns}
+      ${sp.sections.map((s) => `<h3>${s.name}</h3><ul>${s.rows.map((r) => `<li>${r}</li>`).join('')}</ul>`).join('')}
+      ${sp.states ? `<h3>สถานะที่ต้องวาด</h3><ul>${sp.states.map((r) => `<li>${r}</li>`).join('')}</ul>` : ''}
+      ${sp.notes ? `<h3>หมายเหตุ</h3><ul>${sp.notes.map((r) => `<li>${r}</li>`).join('')}</ul>` : ''}`;
+    const sel = document.getElementById('state');
+    if (sel) sel.addEventListener('change', (e) => { S.state = e.target.value; load(); });
+  }
+
+  function fit() {
+    const stage = document.getElementById('stage'), wrap = document.getElementById('wrap'), frame = document.getElementById('frame');
+    const availW = stage.clientWidth - 32, availH = stage.clientHeight - 32;
+    const scale = Math.min(1, availW / S.width);
+    const h = Math.max(640, availH / scale);
+    frame.style.width = S.width + 'px';
+    frame.style.height = h + 'px';
+    wrap.style.transform = `scale(${scale})`;
+    wrap.style.width = S.width + 'px';
+    wrap.style.height = h + 'px';
+    wrap.style.marginInline = scale < 1 ? `${-(S.width - S.width * scale) / 2}px` : '0';
+    document.getElementById('scale').textContent = scale < 1 ? `ย่อ ${Math.round(scale * 100)}%` : '';
+  }
+
+  function load() {
+    document.getElementById('frame').src = url();
+    document.querySelectorAll('.page-link[data-p]').forEach((b) => (b.dataset.p === S.page ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current')));
+    renderSpec();
+    fit();
+  }
+
+  document.querySelector('.pages').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-p]'); if (!b) return;
+    S.page = b.dataset.p; S.state = null;
+    if (S.page === 'picker' && S.width > 1100) S.width = 1440;
+    load();
+  });
+  const seg = (id, fn) => document.getElementById(id).addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll(`#${id} button`).forEach((x) => x.setAttribute('aria-pressed', x === b));
+    fn(b.dataset.v); load();
+  });
+  seg('fid', (v) => { S.wire = v; });
+  seg('thm', (v) => { S.theme = v; document.documentElement.dataset.theme = v; });
+  seg('dev', (v) => { S.width = +v; });
+  document.getElementById('insp').addEventListener('change', (e) => { S.insp = e.target.checked; load(); });
+  document.getElementById('spec-on').addEventListener('change', (e) => { document.getElementById('shell').dataset.spec = e.target.checked ? '1' : '0'; fit(); });
+  addEventListener('resize', fit);
+  document.documentElement.dataset.theme = S.theme;
+  load();
+</script>
+</body>
+</html>

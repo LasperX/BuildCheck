@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>จัดสเปก · BuildCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<script src="assets/icons.js"></script>
+<script src="assets/tokens-data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/charts.js"></script>
+<script src="assets/proto-engine.js"></script>
+</head>
+<body>
+<main class="container">
+  <div class="bld">
+    <div>
+      <div class="bld__head" data-c="BuilderHeader">
+        <div class="grow">
+          <input class="bld__title" id="title" value="สเปกเล่นเกมงบ 3 หมื่น" aria-label="ชื่อสเปก">
+          <div class="row t-xs muted"><i data-i="clock" class="ic-14"></i><span id="save-state">บันทึกอัตโนมัติแล้ว · เมื่อสักครู่</span></div>
+        </div>
+        <div class="row wrap">
+          <button class="btn btn--ghost btn--icon" id="undo" aria-label="ย้อนกลับ" title="ย้อนกลับ"><i data-i="undo-2"></i></button>
+          <button class="btn btn--ghost btn--icon" id="redo" aria-label="ทำซ้ำ" title="ทำซ้ำ"><i data-i="redo-2"></i></button>
+          <button class="btn btn--secondary" id="share" aria-label="แชร์"><i data-i="share-2" class="ic-16"></i><span class="hide-sm">แชร์</span></button>
+          <button class="btn btn--secondary" id="export" aria-label="ส่งออกรูป"><i data-i="image" class="ic-16"></i><span class="hide-sm">ส่งออกรูป</span></button>
+          <button class="btn btn--primary"><i data-i="save" class="ic-16"></i>บันทึก</button>
+        </div>
+      </div>
+
+      <div class="card bld__meta" data-c="BuildMeta">
+        <div class="field f-usage"><label for="usage">ประเภทการใช้งาน</label>
+          <select class="select" id="usage">
+            <option value="gaming">เล่นเกม</option><option value="office">ทำงานออฟฟิศ</option><option value="creator">ตัดต่อ/กราฟิก</option><option value="streaming">สตรีม</option>
+          </select></div>
+        <div class="field f-budget"><label for="budget">งบ (บาท)</label>
+          <input class="input mono" id="budget" inputmode="numeric" value="30000"></div>
+        <div class="field f-desc"><label for="desc">คำอธิบาย</label>
+          <input class="input" id="desc" placeholder="เช่น เน้นเล่นเกม 1080p เงียบ ไม่แรงเกินงบ"></div>
+      </div>
+
+      <section aria-label="ช่องอะไหล่"><div class="slots" id="slots" data-c="PartSlot"></div></section>
+
+      <section id="issues" style="margin-top:var(--s-6);scroll-margin-top:80px" aria-live="polite">
+        <h2 class="t-h3" style="margin-bottom:var(--s-3)">ผลตรวจความเข้ากันได้</h2>
+        <div id="issue-list" data-c="IssueList"></div>
+      </section>
+    </div>
+
+    <aside class="bld__side card" aria-label="สรุปสเปก" id="side" data-c="SummaryPanel"></aside>
+  </div>
+</main>
+
+<button class="mbar" id="mbar" aria-haspopup="dialog" data-c="MobileSummaryBar"></button>
+<dialog class="sheet" id="sheet" data-c="SummarySheet" aria-label="สรุปสเปก"></dialog>
+
+<dialog class="picker" id="picker" data-c="PartPicker" aria-labelledby="picker-title"></dialog>
+
+<dialog id="share-dlg" data-c="ShareDialog" style="border-radius:var(--r-xl);width:min(480px,calc(100vw - 32px));margin:auto;box-shadow:var(--shadow-lg)" aria-labelledby="share-title">
+  <div style="padding:var(--s-5)" class="stack-4">
+    <div class="row between"><h2 class="t-h3" id="share-title">แชร์สเปกนี้</h2>
+      <form method="dialog"><button class="btn btn--ghost btn--icon btn--sm" aria-label="ปิด"><i data-i="x"></i></button></form></div>
+    <div class="row-3" style="align-items:flex-start">
+      <div class="qr" id="qr"></div>
+      <div class="grow stack-3">
+        <div class="field"><label for="short">ลิงก์สั้น</label>
+          <div class="row"><input class="input mono" id="short" readonly value="buildcheck.app/b/x7Kp2mQa9d"><button class="btn btn--secondary btn--icon" aria-label="คัดลอกลิงก์"><i data-i="copy" class="ic-16"></i></button></div></div>
+        <div class="field"><label for="vis">ใครเห็นได้</label>
+          <select class="select" id="vis"><option>ทุกคนที่มีลิงก์ (ไม่แสดงในหน้าชุมชน)</option><option>สาธารณะ (แสดงในหน้าชุมชน)</option><option>ส่วนตัว (เฉพาะฉัน)</option></select></div>
+      </div>
+    </div>
+    <p class="t-xs faint">QR ในต้นแบบเป็นภาพตัวอย่าง สแกนไม่ได้จริง</p>
+  </div>
+</dialog>
+
+<script src="assets/builder.js"></script>
+<script>BC.chrome({ active: 'builder', fab: false, footer: true }); BC.icons();</script>
+</body>
+</html>

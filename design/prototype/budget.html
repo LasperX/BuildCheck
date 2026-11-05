@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>จัดสเปกตามงบ · BuildCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<script src="assets/icons.js"></script>
+<script src="assets/tokens-data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/charts.js"></script>
+</head>
+<body>
+<main class="container" style="padding-block:var(--s-6)">
+  <h1 class="t-h1">จัดสเปกตามงบ</h1>
+  <p class="muted" style="margin-top:var(--s-1)">บอกงบและการใช้งาน ระบบจะแบ่งงบแล้วเลือกชุดที่เข้ากันได้ให้ 3 ตัวเลือก</p>
+
+  <form class="card card--pad" style="margin-top:var(--s-5)" id="form" data-c="BudgetForm">
+    <div class="budget-form">
+      <div class="field"><label for="b">งบประมาณ (บาท)</label>
+        <div class="input-affix"><span class="affix">฿</span><input class="input mono" id="b" inputmode="numeric" value="30,000"></div></div>
+      <div class="field"><span class="label" id="u-l">ประเภทการใช้งาน</span>
+        <div class="seg seg--block" id="usage" role="group" aria-labelledby="u-l" style="overflow-x:auto">
+          <button type="button" data-u="gaming" aria-pressed="true">เล่นเกม</button><button type="button" data-u="office" aria-pressed="false">ออฟฟิศ</button><button type="button" data-u="creator" aria-pressed="false">ตัดต่อ/กราฟิก</button><button type="button" data-u="streaming" aria-pressed="false">สตรีม</button>
+        </div></div>
+      <div class="field"><label for="brand">ยี่ห้อ CPU ที่ชอบ (ไม่บังคับ)</label>
+        <select class="select" id="brand"><option>ไม่ระบุ</option><option>ยี่ห้อตัวอย่าง 1</option><option>ยี่ห้อตัวอย่าง 2</option></select></div>
+      <button class="btn btn--primary" type="submit">จัดให้เลย<i data-i="arrow-right" class="ic-16"></i></button>
+    </div>
+    <div style="margin-top:var(--s-4);padding-top:var(--s-4);border-top:1px solid var(--border)">
+      <label class="switch"><input type="checkbox" id="allow-used"><span class="switch__track"></span><span>ยอมใช้มือสอง เพื่อให้ได้สเปกแรงขึ้นในงบเท่าเดิม</span></label>
+      <div id="used-cats" hidden style="margin-top:var(--s-3)">
+        <p class="t-xs muted" style="margin-bottom:var(--s-2)">เลือกหมวดที่ยอมเป็นมือสอง</p>
+        <div class="row wrap" style="gap:var(--s-1) var(--s-4)">
+          <label class="check"><input type="checkbox" checked>CPU</label><label class="check"><input type="checkbox" checked>การ์ดจอ</label><label class="check"><input type="checkbox" checked>เมนบอร์ด</label><label class="check"><input type="checkbox" checked>แรม</label><label class="check"><input type="checkbox">เก็บข้อมูล</label><label class="check"><input type="checkbox">PSU</label><label class="check"><input type="checkbox" checked>เคส</label><label class="check"><input type="checkbox" checked>ชุดระบายความร้อน</label>
+        </div>
+        <p class="t-xs" style="margin-top:var(--s-2);color:var(--warn-fg)"><span class="row" style="align-items:flex-start"><i data-i="triangle-alert" class="ic-14" style="margin-top:3px"></i>PSU ปิดไว้เป็นค่าเริ่มต้น เพราะ PSU เสียอาจพาอะไหล่อื่นเสียด้วย</span></p>
+      </div>
+    </div>
+  </form>
+
+  <h2 class="t-h2" style="margin-top:var(--s-8);margin-bottom:var(--s-4)">3 ตัวเลือกจากงบ <span class="mono" id="res-b">฿30,000</span></h2>
+  <div class="grid-3 budget-opts" id="opts" data-c="BudgetOption"></div>
+
+  <section class="card card--pad" style="margin-top:var(--s-6)" aria-labelledby="alloc-t" data-c="BudgetAllocation">
+    <h2 class="t-h3" id="alloc-t">งบถูกแบ่งอย่างไร</h2>
+    <p class="t-sm muted" style="margin-bottom:var(--s-4)">สัดส่วนตั้งต้นของประเภทนี้ แอดมินปรับได้ในหน้าตั้งค่า</p>
+    <div class="alloc"><div id="donut"></div><div id="alloc-list"></div></div>
+  </section>
+</main>
+<script>
+  // สัดส่วนงบจากเอกสารหัวข้อ 4.5 (ออฟฟิศ: เอกสารให้เป็นช่วง ต้นแบบใช้ 5% ตามข้อเสนอในรายการคำถาม)
+  const RATIO = {
+    gaming: [40, 20, 10, 7, 7, 7, 6, 3], office: [5, 30, 15, 12, 15, 8, 10, 5],
+    creator: [30, 25, 10, 12, 10, 6, 5, 2], streaming: [35, 22, 10, 9, 9, 7, 6, 2],
+  };
+  const NAMES = ['การ์ดจอ', 'CPU', 'เมนบอร์ด', 'แรม', 'เก็บข้อมูล', 'PSU', 'เคส', 'ชุดระบายความร้อน'];
+  const COLORS = ['chart-1', 'chart-2', 'chart-n1', 'chart-n2', 'chart-n3', 'chart-n4', 'chart-n5', 'chart-n6'];
+  const budget = 30000;
+  let usage = BC.params.get('usage') || 'gaming';
+
+  function drawAlloc() {
+    const r = RATIO[usage];
+    BCChart.donut(document.getElementById('donut'), { label: 'สัดส่วนงบแยกตามหมวด', center: BC.baht(budget), sub: 'งบทั้งหมด', segments: r.map((v, i) => ({ name: NAMES[i], token: COLORS[i], value: v })) });
+    document.getElementById('alloc-list').innerHTML = r.map((v, i) => `<div class="alloc__row"><i style="background:var(--${COLORS[i]})"></i><span>${NAMES[i]}</span><span class="mono">${v}%</span><span class="mono">${BC.baht((budget * v) / 100)}</span></div>`).join('');
+  }
+  document.getElementById('usage').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-u]'); if (!b) return;
+    usage = b.dataset.u;
+    document.querySelectorAll('#usage [data-u]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    drawAlloc();
+  });
+  document.getElementById('allow-used').addEventListener('change', (e) => { document.getElementById('used-cats').hidden = !e.target.checked; });
+  document.getElementById('form').addEventListener('submit', (e) => e.preventDefault());
+
+  // ตัวเลขในตัวเลือกเป็นข้อมูลสมมติ ประหยัด = 85% ของงบ ตามหัวข้อ 4.5
+  const OPTS = [
+    { k: 'ประหยัด', sub: 'ใช้ประมาณ 85% ของงบ', ic: 'coins', price: 25900, score: 47, watt: 292, value: 18.1,
+      lines: [['การ์ดจอตัวอย่าง G3', 6900], ['CPU ตัวอย่าง A1', 5900], ['เมนบอร์ดตัวอย่าง M1', 3900], ['แรมตัวอย่าง R1', 2400], ['SSD S1 + HDD S2', 2800], ['PSU ตัวอย่าง P3', 2000], ['เคสตัวอย่าง C1', 1500], ['ซิงก์ลมตัวอย่าง K1', 500]] },
+    { k: 'สมดุล', sub: 'ใช้งบใกล้ 100%', ic: 'scale', price: 29200, score: 65, watt: 372, value: 22.3, rec: 1,
+      lines: [['การ์ดจอตัวอย่าง G1', 12000], ['CPU ตัวอย่าง A1', 5900], ['เมนบอร์ดตัวอย่าง M1', 3900], ['แรมตัวอย่าง R1', 2400], ['SSD ตัวอย่าง S1', 1500], ['PSU ตัวอย่าง P2', 1500], ['เคสตัวอย่าง C1', 1500], ['ซิงก์ลมตัวอย่าง K1', 500]] },
+    { k: 'คุ้มสุด', sub: 'คะแนนต่อราคาสูงสุดในงบ', ic: 'badge-check', price: 26900, score: 64, watt: 367, value: 23.8,
+      lines: [['การ์ดจอตัวอย่าง G1', 12000], ['CPU ตัวอย่าง B1', 5200], ['เมนบอร์ดตัวอย่าง M4', 3400], ['แรมตัวอย่าง R3', 1300], ['SSD ตัวอย่าง S1', 1500], ['PSU ตัวอย่าง P2', 1500], ['เคสตัวอย่าง C1', 1500], ['ซิงก์ลมตัวอย่าง K1', 500]] },
+  ];
+  document.getElementById('opts').innerHTML = OPTS.map((o) => `
+    <article class="card opt" data-rec="${o.rec || 0}">
+      <div class="opt__head">
+        <div class="row between"><h3 class="t-h3 row">${BC.icon(o.ic, 'ic-18')}${o.k}</h3>${o.rec ? '<span class="badge badge--brand">แนะนำ</span>' : ''}</div>
+        <p class="t-xs muted">${o.sub}</p>
+        <div class="t-num-xl" style="margin-top:var(--s-2)">${BC.baht(o.price)}</div>
+        <dl class="opt__stats">
+          <div><dt>คะแนน</dt><dd class="mono">${o.score}</dd></div>
+          <div><dt>ความคุ้มค่า</dt><dd class="mono">${o.value}</dd></div>
+          <div><dt>กำลังไฟ</dt><dd class="mono">${o.watt} W</dd></div>
+        </dl>
+      </div>
+      <div class="opt__body">
+        ${o.lines.map(([n, p]) => `<div class="opt__line"><span class="muted" style="min-width:0">${n}</span><span class="mono">${BC.baht(p)}</span></div>`).join('')}
+      </div>
+      <div class="opt__foot stack-2">
+        <span class="badge badge--ok">${BC.icon('circle-check', 'ic-14')}เข้ากันได้ ไม่มีข้อผิดพลาด</span>
+        <a class="btn ${o.rec ? 'btn--primary' : 'btn--secondary'} btn--block" href="builder.html?state=doc">นำไปแก้ต่อ${BC.icon('arrow-right', 'ic-16')}</a>
+      </div>
+    </article>`).join('');
+  drawAlloc();
+  document.addEventListener('bc-theme', drawAlloc);
+  BC.chrome({ active: 'budget' });
+</script>
+</body>
+</html>

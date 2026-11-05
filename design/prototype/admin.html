@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard แอดมิน · BuildCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<script src="assets/icons.js"></script>
+<script src="assets/tokens-data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/charts.js"></script>
+</head>
+<body>
+<div class="adm">
+  <nav class="adm__nav" id="nav" aria-label="เมนูแอดมิน" data-c="AdminNav"></nav>
+  <main class="adm__main">
+    <div class="adm__top" data-c="AdminTopbar">
+      <div class="row">
+        <button class="btn btn--secondary btn--icon adm__menu" id="menu" aria-label="เปิดเมนู"><i data-i="menu"></i></button>
+        <div><h1 class="t-h2">Dashboard</h1><p class="t-xs muted">ภาพรวมการใช้งานเว็บ</p></div>
+      </div>
+      <div class="row wrap">
+        <span class="badge badge--warn"><i data-i="info" class="ic-14"></i>ข้อมูลตัวอย่างในต้นแบบ ไม่ใช่สถิติจริง</span>
+        <div class="seg" role="group" aria-label="ช่วงเวลา" id="range"><button aria-pressed="false">7 วัน</button><button aria-pressed="true">30 วัน</button><button aria-pressed="false">90 วัน</button></div>
+        <button class="btn btn--ghost btn--icon" id="theme-toggle" aria-label="สลับโหมดสว่าง/มืด"><i data-i="moon"></i></button>
+      </div>
+    </div>
+
+    <section class="kpis" aria-label="ตัวเลขสรุป" data-c="KpiCard" id="kpis"></section>
+
+    <div class="adm-grid">
+      <section class="card card--pad span-8" data-c="DailyChart" aria-labelledby="c1">
+        <div class="card__head"><h2 class="t-h4" id="c1">สมาชิกใหม่และสเปกใหม่รายวัน</h2><div class="legend" id="lg1"></div></div>
+        <div id="daily"></div>
+      </section>
+      <section class="card card--pad span-4" data-c="QueueCard" aria-labelledby="c2">
+        <div class="card__head"><h2 class="t-h4" id="c2">งานรอจัดการ</h2></div>
+        <ul class="stack-2">
+          <li><a class="adm__link" style="padding-inline:var(--s-2)" href="#"><i data-i="recycle" class="ic-18"></i>รายงานราคามือสองรออนุมัติ<span class="count-pill">14</span></a></li>
+          <li><a class="adm__link" style="padding-inline:var(--s-2)" href="#"><i data-i="flag" class="ic-18"></i>รายงานเนื้อหาไม่เหมาะสม<span class="count-pill">3</span></a></li>
+        </ul>
+        <h3 class="t-sm" style="font-weight:600;margin-top:var(--s-4);margin-bottom:var(--s-2)">รุ่นที่ราคาเปลี่ยนมากสุด</h3>
+        <div id="movers"></div>
+      </section>
+
+      <section class="card card--pad span-6" data-c="TopParts" aria-labelledby="c3">
+        <div class="card__head"><h2 class="t-h4" id="c3">อะไหล่ที่ถูกเลือกบ่อย</h2>
+          <select class="select select--sm" style="width:auto" aria-label="เลือกหมวด"><option>CPU</option><option>เมนบอร์ด</option><option>แรม</option><option>การ์ดจอ</option><option>เก็บข้อมูล</option><option>PSU</option><option>เคส</option><option>ชุดระบายความร้อน</option></select></div>
+        <div id="top"></div>
+      </section>
+      <section class="card card--pad span-6" data-c="CommonIssues" aria-labelledby="c4">
+        <div class="card__head"><h2 class="t-h4" id="c4">ปัญหาความเข้ากันได้ที่เกิดบ่อย</h2></div>
+        <div id="issues"></div>
+      </section>
+
+      <section class="card card--pad span-6" data-c="BrandShare" aria-labelledby="c5">
+        <div class="card__head"><h2 class="t-h4" id="c5">สัดส่วนยี่ห้อในสเปกทั้งหมด</h2></div>
+        <div id="brands" class="stack-4"></div>
+      </section>
+      <section class="card card--pad span-6" data-c="AvgBudget" aria-labelledby="c6">
+        <div class="card__head"><h2 class="t-h4" id="c6">งบเฉลี่ยแยกตามประเภทการใช้งาน</h2></div>
+        <div id="avg"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<script>
+  const NAV = [['layout-dashboard', 'Dashboard', 1], ['package', 'จัดการอะไหล่'], ['plus', 'เพิ่ม/แก้อะไหล่'], ['file-up', 'นำเข้า CSV'], ['recycle', 'จัดการราคามือสอง', 0, 14], ['users', 'จัดการผู้ใช้'], ['flag', 'จัดการรายงาน', 0, 3], ['settings', 'ตั้งค่าระบบ'], ['history', 'บันทึกการทำงาน']];
+  document.getElementById('nav').innerHTML = BC.logo() + NAV.map(([i, l, cur, n]) => `<a class="adm__link" href="#" ${cur ? 'aria-current="page"' : ''}>${BC.icon(i, 'ic-18')}${l}${n ? `<span class="count-pill">${n}</span>` : ''}</a>`).join('') + `<a class="adm__link" href="home.html" style="margin-top:var(--s-6)">${BC.icon('log-out', 'ic-18')}กลับหน้าเว็บ</a>`;
+  document.getElementById('menu').onclick = () => { const n = document.getElementById('nav'); n.dataset.open = n.dataset.open === '1' ? '0' : '1'; };
+
+  document.getElementById('kpis').innerHTML = [
+    ['users', 'สมาชิกทั้งหมด', '1,284', '+86 ใน 30 วัน'], ['user', 'สมาชิกใหม่', '86', 'เทียบ 30 วันก่อนหน้า +12'],
+    ['layers', 'สเปกทั้งหมด', '3,917', '+412 ใน 30 วัน'], ['package', 'อะไหล่ในระบบ', '186', 'เป้าหมาย 150–200 รายการ'],
+  ].map(([i, l, v, d]) => `<div class="card kpi"><div class="kpi__l">${BC.icon(i, 'ic-16')}${l}</div><div class="kpi__v">${v}</div><div class="kpi__d">${d}</div></div>`).join('');
+
+  const days = Array.from({ length: 30 }, (_, i) => `${i + 1} ต.ค.`);
+  const wave = (b, a, s) => days.map((_, i) => Math.round(b + a * Math.sin(i / s) + ((i * 7) % 5) + i * 0.15));
+  const S = [{ name: 'สเปกใหม่', token: 'chart-1', data: wave(12, 4, 3) }, { name: 'สมาชิกใหม่', token: 'chart-2', data: wave(2, 1.5, 4) }];
+  const draw = () => BCChart.line(document.getElementById('daily'), { label: 'สมาชิกใหม่และสเปกใหม่รายวัน', labels: days, series: S, height: 240 });
+  document.getElementById('lg1').innerHTML = S.map((s) => `<span><i style="background:var(--${s.token})"></i>${s.name}</span>`).join('');
+  draw();
+  document.addEventListener('bc-theme', draw);
+
+  const bars = (el, rows, fmt = (v) => v.toLocaleString('en-US')) => {
+    const m = Math.max(...rows.map((r) => r[1]));
+    document.getElementById(el).innerHTML = rows.map(([l, v]) => `<div class="hbar"><span style="min-width:0">${l}</span><span class="mono" style="font-size:13px">${fmt(v)}</span><div class="hbar__track"><span style="width:${(v / m) * 100}%"></span></div></div>`).join('');
+  };
+  bars('top', [['CPU ตัวอย่าง A1', 412], ['CPU ตัวอย่าง B1', 356], ['CPU ตัวอย่าง A2', 241], ['CPU ตัวอย่าง A3', 188], ['CPU ตัวอย่าง B2', 97]]);
+  bars('issues', [['<span class="code">R14</span> PSU ไฟไม่พอ', 318], ['<span class="code">R01</span> Socket ไม่ตรงกัน', 274], ['<span class="code">R04</span> ชนิดแรมไม่ตรง', 203], ['<span class="code">R09</span> การ์ดจอยาวเกินเคส', 88], ['<span class="code">R18</span> ไม่มีภาพออกจอ', 61]]);
+  bars('avg', [['ตัดต่อ/กราฟิก', 58200], ['สตรีม', 46800], ['เล่นเกม', 34500], ['ทำงานออฟฟิศ', 16900]], (v) => BC.baht(v));
+  const share = (t, rows) => `<div><div class="t-sm" style="font-weight:500;margin-bottom:6px">${t}</div>
+    <div class="stack-bar" role="img" aria-label="${t}: ${rows.map((r) => `${r[0]} ${r[1]}%`).join(', ')}">${rows.map((r) => `<span style="width:${r[1]}%;background:var(--${r[2]})" title="${r[0]} ${r[1]}%"></span>`).join('')}</div>
+    <div class="legend" style="margin-top:6px">${rows.map((r) => `<span><i style="background:var(--${r[2]});height:8px;width:8px;border-radius:2px"></i>${r[0]} <b class="mono" style="font-weight:500">${r[1]}%</b></span>`).join('')}</div></div>`;
+  document.getElementById('brands').innerHTML = share('CPU', [['ยี่ห้อตัวอย่าง 1', 58, 'chart-1'], ['ยี่ห้อตัวอย่าง 2', 42, 'chart-2']]) + share('การ์ดจอ', [['ยี่ห้อตัวอย่าง 3', 71, 'chart-1'], ['ยี่ห้อตัวอย่าง 4', 22, 'chart-2'], ['ยี่ห้อตัวอย่าง 5', 7, 'chart-3']]);
+  document.getElementById('movers').innerHTML = [['การ์ดจอตัวอย่าง G1', '-12%', 'trending-down'], ['แรมตัวอย่าง R1', '-8%', 'trending-down'], ['CPU ตัวอย่าง A2', '+5%', 'trending-up']].map(([n, d, i]) => `<div class="row between t-sm" style="padding-block:4px"><span style="min-width:0">${n}</span><span class="row mono" style="font-size:13px">${BC.icon(i, 'ic-14')}${d}</span></div>`).join('');
+</script>
+</body>
+</html>
