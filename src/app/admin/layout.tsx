@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import { AdminNav } from '@/components/admin/admin-nav';
 
@@ -9,7 +10,10 @@ export default function AdminLayout({ children }: LayoutProps<'/admin'>) {
         <Link href="/admin" className="mb-2 block px-3 py-1 text-lg font-bold lg:mb-4">
           BuildCheck
         </Link>
-        <AdminNav />
+        {/* เมนูอ่าน URL ปัจจุบัน จึงต้องอยู่ใน Suspense ส่วนโครงหน้าจะได้โหลดทันที */}
+        <Suspense>
+          <AdminNav />
+        </Suspense>
       </aside>
       <main className="min-w-0 p-4 lg:p-6">{children}</main>
     </div>
