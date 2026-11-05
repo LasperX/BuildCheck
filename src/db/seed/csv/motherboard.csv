@@ -1,0 +1,4 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,socket,chipset,form_factor,memory_type,memory_slots,max_memory_gb,max_memory_speed,m2_slots,sata_ports,supported_generations,bios_update_generations,wifi
+ยี่ห้อตัวอย่าง,ตัวอย่างเมนบอร์ด 1,3900,2024,50,,,รอตรวจสอบ,AM5,X-A,ATX,DDR5,4,128,6400,2,4,Gen-A,,true
+ยี่ห้อตัวอย่าง,ตัวอย่างเมนบอร์ด 2,3400,2023,50,,,รอตรวจสอบ,LGA1700,X-B,ATX,DDR5,4,128,5600,2,4,Gen-B,,false
+ยี่ห้อตัวอย่าง,ตัวอย่างเมนบอร์ด 3,2900,2023,50,,,รอตรวจสอบ,LGA1700,X-C,mATX,DDR4,2,64,3200,1,4,Gen-C,Gen-B,false

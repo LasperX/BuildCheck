@@ -1,0 +1,4 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,wattage,efficiency,form_factor,modular,pcie_connectors
+ยี่ห้อตัวอย่าง,ตัวอย่าง PSU 1,1200,2023,,,,รอตรวจสอบ,450,Bronze,ATX,none,8pin:1
+ยี่ห้อตัวอย่าง,ตัวอย่าง PSU 2,1500,2024,,,,รอตรวจสอบ,500,Bronze,ATX,none,8pin:2
+ยี่ห้อตัวอย่าง,ตัวอย่าง PSU 3,2000,2025,,,,รอตรวจสอบ,650,Gold,ATX,semi,8pin:2

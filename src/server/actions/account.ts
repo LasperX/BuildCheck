@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { users } from '@/db/schema';
 import { db } from '@/lib/db';
 import { type ActionResult, authorizeMember } from '@/lib/session';
+import { uploadImage } from '@/lib/storage';
 import { profileSchema } from '@/lib/validators/auth';
 
 /** แก้ชื่อที่แสดงและคำแนะนำตัวของบัญชีตัวเอง */
@@ -26,6 +27,22 @@ export async function updateProfile(input: unknown): Promise<ActionResult> {
     .set({ displayName: parsed.data.displayName, bio: parsed.data.bio || null })
     .where(eq(users.id, authz.user.id));
 
+  revalidatePath('/me/settings');
+  return { ok: true };
+}
+
+/** อัปโหลดรูปโปรไฟล์ของบัญชีตัวเอง ไฟล์ถูกตรวจชนิดและขนาดใน uploadImage */
+export async function updateAvatar(formData: FormData): Promise<ActionResult> {
+  const authz = await authorizeMember();
+  if (!authz.ok) return authz;
+
+  const file = formData.get('file');
+  if (!(file instanceof File)) return { ok: false, error: 'ไม่พบไฟล์รูป' };
+
+  const uploaded = await uploadImage(file, 'avatars');
+  if (!uploaded.ok) return uploaded;
+
+  await db.update(users).set({ image: uploaded.url }).where(eq(users.id, authz.user.id));
   revalidatePath('/me/settings');
   return { ok: true };
 }

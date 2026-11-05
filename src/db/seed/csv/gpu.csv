@@ -1,0 +1,4 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,chipset,vram_gb,length_mm,slot_width,tbp_watt,power_connectors,perf_score
+ยี่ห้อตัวอย่าง,ตัวอย่างการ์ดจอ 1,12000,2024,,,,รอตรวจสอบ,ชิปตัวอย่าง 1,8,300,2.0,220,8pin:1,66
+ยี่ห้อตัวอย่าง,ตัวอย่างการ์ดจอ 2,24000,2025,,,,รอตรวจสอบ,ชิปตัวอย่าง 2,16,340,3.0,350,8pin:2,92
+ยี่ห้อตัวอย่าง,ตัวอย่างการ์ดจอ 3,6900,2023,,,,รอตรวจสอบ,ชิปตัวอย่าง 3,8,230,2.0,130,8pin:1,41

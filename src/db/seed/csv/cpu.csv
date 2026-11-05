@@ -1,0 +1,4 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,socket,generation,cores,threads,base_clock_ghz,boost_clock_ghz,tdp_watt,has_igpu,includes_cooler,memory_types,perf_score
+ยี่ห้อตัวอย่าง,ตัวอย่าง CPU 1,5900,2024,,,,รอตรวจสอบ,AM5,Gen-A,6,12,3.5,4.5,65,false,true,DDR5,62
+ยี่ห้อตัวอย่าง,ตัวอย่าง CPU 2,9900,2025,,,,รอตรวจสอบ,AM5,Gen-A,8,16,3.8,5.0,105,true,false,DDR5,81
+ยี่ห้อตัวอย่าง,ตัวอย่าง CPU 3,5200,2023,,,,รอตรวจสอบ,LGA1700,Gen-B,6,12,2.5,4.4,65,false,true,DDR4|DDR5,58

@@ -1,0 +1,4 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,type,capacity_per_stick_gb,sticks_in_kit,speed_mts,cas_latency,rgb
+ยี่ห้อตัวอย่าง,ตัวอย่างแรม 1,2400,2024,,,,รอตรวจสอบ,DDR5,16,2,6000,30,false
+ยี่ห้อตัวอย่าง,ตัวอย่างแรม 2,1300,2024,,,,รอตรวจสอบ,DDR5,16,1,5600,36,false
+ยี่ห้อตัวอย่าง,ตัวอย่างแรม 3,1200,2023,,,,รอตรวจสอบ,DDR4,8,2,3200,16,false

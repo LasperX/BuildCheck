@@ -1,0 +1,4 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,supported_form_factors,max_gpu_length_mm,max_cooler_height_mm,radiator_support_mm,psu_form_factors,included_fans,side_panel
+ยี่ห้อตัวอย่าง,ตัวอย่างเคส 1,1500,2024,,,,รอตรวจสอบ,ATX|mATX|ITX,350,165,240|360,ATX,3,glass
+ยี่ห้อตัวอย่าง,ตัวอย่างเคส 2,2400,2025,,,,รอตรวจสอบ,ITX,280,70,,SFX,1,mesh
+ยี่ห้อตัวอย่าง,ตัวอย่างเคส 3,1100,2023,,,,รอตรวจสอบ,mATX|ITX,300,155,240,ATX,1,solid

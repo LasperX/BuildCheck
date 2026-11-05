@@ -1,0 +1,4 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,type,supported_sockets,height_mm,radiator_mm,max_tdp_watt
+ยี่ห้อตัวอย่าง,ตัวอย่างซิงก์ลม 1,500,2024,,,,รอตรวจสอบ,air,AM5|LGA1700,155,,180
+ยี่ห้อตัวอย่าง,ตัวอย่างชุดน้ำ 2,3200,2025,,,,รอตรวจสอบ,aio,AM5|LGA1700,,240,250
+ยี่ห้อตัวอย่าง,ตัวอย่างซิงก์ลม 3,300,2023,,,,รอตรวจสอบ,air,LGA1700,60,,65

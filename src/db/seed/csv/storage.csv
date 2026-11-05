@@ -1,0 +1,4 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,type,interface,capacity_gb,read_mbps,write_mbps
+ยี่ห้อตัวอย่าง,ตัวอย่าง SSD 1,1500,2025,,,,รอตรวจสอบ,NVMe,M2,1000,5000,4000
+ยี่ห้อตัวอย่าง,ตัวอย่าง SSD 2,900,2023,,,,รอตรวจสอบ,SATA_SSD,SATA,500,550,500
+ยี่ห้อตัวอย่าง,ตัวอย่าง HDD 3,1300,2023,,,,รอตรวจสอบ,HDD,SATA,2000,180,180

@@ -50,7 +50,12 @@ export function RegisterForm({ googleEnabled }: { googleEnabled: boolean }) {
           {error}
         </FormAlert>
       ) : null}
-      <form className="flex flex-col gap-4" noValidate onSubmit={handleSubmit(onSubmit)}>
+      <form
+        method="post"
+        className="flex flex-col gap-4"
+        noValidate
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <FormField id="email" label="อีเมล" error={errors.email?.message}>
           <Input
             id="email"

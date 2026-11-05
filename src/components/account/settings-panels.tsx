@@ -18,7 +18,7 @@ import {
   type ProfileInput,
   profileSchema,
 } from '@/lib/validators/auth';
-import { updateProfile } from '@/server/actions/account';
+import { updateAvatar, updateProfile } from '@/server/actions/account';
 
 type Feedback = { variant: 'ok' | 'err'; text: string } | null;
 
@@ -134,6 +134,7 @@ function EmailPanel({ email, verified }: { email: string; verified: boolean }) {
 function ProfilePanel({ user }: { user: SettingsUser }) {
   const router = useRouter();
   const [feedback, setFeedback] = useState<Feedback>(null);
+  const [uploading, setUploading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -142,6 +143,23 @@ function ProfilePanel({ user }: { user: SettingsUser }) {
     resolver: zodResolver(profileSchema),
     defaultValues: { displayName: user.displayName, bio: user.bio },
   });
+
+  async function onPickAvatar(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const data = new FormData();
+    data.set('file', file);
+    const result = await updateAvatar(data);
+    setFeedback(
+      result.ok
+        ? { variant: 'ok', text: 'เปลี่ยนรูปโปรไฟล์แล้ว' }
+        : { variant: 'err', text: result.error },
+    );
+    setUploading(false);
+    event.target.value = '';
+    if (result.ok) router.refresh();
+  }
 
   async function onSubmit(values: ProfileInput) {
     const result = await updateProfile(values);
@@ -160,11 +178,27 @@ function ProfilePanel({ user }: { user: SettingsUser }) {
         <CardDescription>ข้อมูลนี้แสดงบนหน้าโปรไฟล์สาธารณะ</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="flex flex-col gap-4" noValidate onSubmit={handleSubmit(onSubmit)}>
+        <form
+          method="post"
+          className="flex flex-col gap-4"
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <div className="flex items-center gap-3">
             <UserAvatar name={user.displayName} image={user.image} size={56} />
             <div className="min-w-0 text-sm">
               <p className="truncate font-mono text-xs text-muted-foreground">@{user.username}</p>
+              <label className="mt-1 inline-flex h-8 cursor-pointer items-center rounded-sm border border-input bg-surface px-3 text-xs font-medium focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring hover:bg-surface-2">
+                {uploading ? 'กำลังอัปโหลด...' : 'เปลี่ยนรูป'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  disabled={uploading}
+                  onChange={onPickAvatar}
+                />
+              </label>
+              <p className="mt-1 text-xs text-subtle">JPG, PNG หรือ WebP ไม่เกิน 2 MB</p>
             </div>
           </div>
           <FormField id="displayName" label="ชื่อที่แสดง" error={errors.displayName?.message}>
@@ -229,7 +263,12 @@ function PasswordPanel() {
         <CardTitle>เปลี่ยนรหัสผ่าน</CardTitle>
       </CardHeader>
       <CardContent>
-        <form className="flex flex-col gap-4" noValidate onSubmit={handleSubmit(onSubmit)}>
+        <form
+          method="post"
+          className="flex flex-col gap-4"
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <FormField
             id="currentPassword"
             label="รหัสผ่านปัจจุบัน"
