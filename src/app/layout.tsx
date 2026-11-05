@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, IBM_Plex_Sans_Thai } from 'next/font/google';
 
+import { Providers } from '@/components/providers';
+import { StoreHydrator } from '@/components/site/store-hydrator';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 import './globals.css';
@@ -29,7 +31,10 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="th" className={`${plexSans.variable} ${plexMono.variable} h-full`}>
       <body className="flex min-h-full flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
+        <Providers>
+          <TooltipProvider>{children}</TooltipProvider>
+          <StoreHydrator />
+        </Providers>
       </body>
     </html>
   );

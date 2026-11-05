@@ -1,10 +1,12 @@
-import { SiteHeader } from '@/components/site-header';
+import { SiteFloating, SiteFooter, SiteHeader } from '@/components/site-header';
 
 export default function MeLayout({ children }: LayoutProps<'/me'>) {
   return (
     <>
       <SiteHeader />
-      {children}
+      <div className="flex-1">{children}</div>
+      <SiteFooter />
+      <SiteFloating />
     </>
   );
 }

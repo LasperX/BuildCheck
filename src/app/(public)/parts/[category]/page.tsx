@@ -1,0 +1,48 @@
+import { ChevronRight } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
+
+import { PartCatalog } from '@/components/parts/part-catalog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CATEGORY_LABELS, CATEGORY_SLUGS, isCategorySlug } from '@/lib/parts/spec-fields';
+import { getPartFacets } from '@/server/queries/parts';
+
+// หมวดมีจำนวนคงที่ จึงสร้างหน้าไว้ล่วงหน้าได้
+export function generateStaticParams() {
+  return CATEGORY_SLUGS.map((category) => ({ category }));
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps<'/parts/[category]'>): Promise<Metadata> {
+  const { category } = await params;
+  if (!isCategorySlug(category)) return { title: 'ไม่พบหมวด · BuildCheck' };
+  return {
+    title: `${CATEGORY_LABELS[category]} · คลังอะไหล่ BuildCheck`,
+    description: `ค้นหา กรอง และเปรียบเทียบ${CATEGORY_LABELS[category]} พร้อมสเปกและราคาอ้างอิง`,
+  };
+}
+
+export default async function CategoryPage({ params }: PageProps<'/parts/[category]'>) {
+  const { category } = await params;
+  if (!isCategorySlug(category)) notFound();
+  const facets = await getPartFacets(category);
+
+  return (
+    <main className="mx-auto w-full max-w-[1328px] px-4 py-4 md:px-6">
+      <nav aria-label="เส้นทาง" className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Link href="/parts" className="hover:underline">
+          คลังอะไหล่
+        </Link>
+        <ChevronRight aria-hidden className="size-3.5" />
+        <span aria-current="page">{CATEGORY_LABELS[category]}</span>
+      </nav>
+      <h1 className="mt-1 mb-4 t-h1">{CATEGORY_LABELS[category]}</h1>
+      <Suspense fallback={<Skeleton className="h-96 rounded-lg" />}>
+        <PartCatalog key={category} category={category} facets={facets} />
+      </Suspense>
+    </main>
+  );
+}

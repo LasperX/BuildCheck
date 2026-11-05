@@ -1,7 +1,7 @@
 'use server';
 
 import { eq } from 'drizzle-orm';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 import { writePart } from '@/db/parts-write';
 import { adminLogs, brands, partPriceHistory, parts } from '@/db/schema';
@@ -18,7 +18,8 @@ const MAX_CSV_BYTES = 2 * 1024 * 1024;
 
 function revalidateParts() {
   revalidatePath('/admin/parts');
-  revalidatePath('/parts', 'layout');
+  // ล้างแคชหน้าคลังอะไหล่และหน้ารายละเอียด ผู้ใช้จะเห็นราคาใหม่ทันที
+  updateTag('parts');
 }
 
 /** ตรวจว่าเป็น Error คีย์นอกจาก PostgreSQL หรือไม่ (รหัส 23503) */
