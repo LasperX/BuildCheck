@@ -35,6 +35,7 @@ const EXPECTED_TABLES = [
   'reports',
   'settings',
   'admin_logs',
+  'rate_limits', // มติเฟส 3
   // 6.8
   'part_used_prices',
   'used_price_reports',
@@ -92,7 +93,11 @@ async function main() {
     const names = tables.rows.map((r) => r.table_name);
     const missing = EXPECTED_TABLES.filter((t) => !names.includes(t));
     const extra = names.filter((t) => !EXPECTED_TABLES.includes(t));
-    report(names.length === 29 && missing.length === 0, 'มีครบ 29 ตาราง', `พบ ${names.length}`);
+    report(
+      names.length === EXPECTED_TABLES.length && missing.length === 0,
+      `มีครบ ${EXPECTED_TABLES.length} ตาราง`,
+      `พบ ${names.length}`,
+    );
     if (missing.length) report(false, 'ตารางที่ขาด', missing.join(', '));
     if (extra.length) report(false, 'ตารางเกิน', extra.join(', '));
 

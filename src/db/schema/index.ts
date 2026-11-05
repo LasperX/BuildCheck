@@ -1,4 +1,4 @@
-// รวม Schema ทุกกลุ่มไว้ที่เดียว รวม 29 ตาราง (ดูมติ Q1 ใน docs/spec-review.md)
+// รวม Schema ทุกกลุ่มไว้ที่เดียว รวม 30 ตาราง (ดูมติใน docs/spec-review.md)
 export * from './users';
 export * from './parts';
 export * from './specs';

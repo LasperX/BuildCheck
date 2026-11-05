@@ -1,6 +1,7 @@
 import {
   bigserial,
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -91,3 +92,13 @@ export const adminLogs = pgTable(
   },
   (t) => [index('admin_logs_admin_created_idx').on(t.adminId, t.createdAt)],
 );
+
+// ตัวนับจำกัดการใช้งาน ตามหัวข้อ 9.1 (ล็อกอินผิด 5 ครั้งต่อ 15 นาที, คอมเมนต์ 10 ครั้งต่อนาที)
+// เก็บในฐานข้อมูลเพราะบน Vercel แต่ละคำขออาจอยู่คนละเครื่อง เก็บในหน่วยความจำจะนับไม่ตรง
+// key เป็นค่าแฮช จึงไม่เก็บอีเมลหรือ IP แบบอ่านได้
+// ตารางนี้เพิ่มจากเอกสารสเปกตามมติเฟส 3 จึงมีทั้งหมด 30 ตาราง
+export const rateLimits = pgTable('rate_limits', {
+  key: varchar('key', { length: 64 }).primaryKey(),
+  count: integer('count').notNull().default(0),
+  windowStart: timestamp('window_start', { withTimezone: true }).notNull().defaultNow(),
+});

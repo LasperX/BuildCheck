@@ -44,7 +44,7 @@ pnpm db:seed
 pnpm db:verify
 ```
 
-เปิดเว็บ (ปกติอยู่ที่ <http://localhost:3000> ถ้าพอร์ตไม่ว่างดูพอร์ตจริงในหน้าจอ Terminal)
+เปิดเว็บ (อยู่ที่ <http://localhost:3100>)
 
 ```bash
 pnpm dev
@@ -52,21 +52,22 @@ pnpm dev
 
 ## คำสั่ง
 
-| คำสั่ง             | ใช้ทำอะไร                                   |
-| ------------------ | ------------------------------------------- |
-| `pnpm dev`         | เปิดเว็บสำหรับพัฒนา                         |
-| `pnpm build`       | สร้างเว็บสำหรับใช้งานจริง                   |
-| `pnpm check`       | ตรวจ ESLint, Prettier และ TypeScript รวมกัน |
-| `pnpm lint:fix`    | แก้ปัญหา ESLint ที่แก้อัตโนมัติได้          |
-| `pnpm format`      | จัดรูปแบบโค้ดด้วย Prettier                  |
-| `pnpm db:up`       | เปิด PostgreSQL และรอจนพร้อมใช้             |
-| `pnpm db:down`     | ปิด PostgreSQL (ข้อมูลยังอยู่)              |
-| `pnpm db:logs`     | ดู Log ของ PostgreSQL                       |
-| `pnpm db:generate` | สร้างไฟล์ Migration หลังแก้ Schema          |
-| `pnpm db:migrate`  | รัน Migration ที่ยังไม่เคยรัน               |
-| `pnpm db:seed`     | ใส่หมวดและยี่ห้อตั้งต้น รันซ้ำได้           |
-| `pnpm db:verify`   | ตรวจตาราง Index ข้อจำกัด และ Trigger        |
-| `pnpm db:studio`   | เปิดหน้าเว็บดูข้อมูลในฐานข้อมูล             |
+| คำสั่ง                     | ใช้ทำอะไร                                   |
+| -------------------------- | ------------------------------------------- |
+| `pnpm dev`                 | เปิดเว็บสำหรับพัฒนา                         |
+| `pnpm build`               | สร้างเว็บสำหรับใช้งานจริง                   |
+| `pnpm check`               | ตรวจ ESLint, Prettier และ TypeScript รวมกัน |
+| `pnpm lint:fix`            | แก้ปัญหา ESLint ที่แก้อัตโนมัติได้          |
+| `pnpm format`              | จัดรูปแบบโค้ดด้วย Prettier                  |
+| `pnpm db:up`               | เปิด PostgreSQL และรอจนพร้อมใช้             |
+| `pnpm db:down`             | ปิด PostgreSQL (ข้อมูลยังอยู่)              |
+| `pnpm db:logs`             | ดู Log ของ PostgreSQL                       |
+| `pnpm db:generate`         | สร้างไฟล์ Migration หลังแก้ Schema          |
+| `pnpm db:migrate`          | รัน Migration ที่ยังไม่เคยรัน               |
+| `pnpm db:seed`             | ใส่หมวดและยี่ห้อตั้งต้น รันซ้ำได้           |
+| `pnpm db:verify`           | ตรวจตาราง Index ข้อจำกัด และ Trigger        |
+| `pnpm admin:promote อีเมล` | ตั้งบัญชีที่สมัครแล้วเป็นแอดมิน             |
+| `pnpm db:studio`           | เปิดหน้าเว็บดูข้อมูลในฐานข้อมูล             |
 
 ## โครงสร้างหลัก
 

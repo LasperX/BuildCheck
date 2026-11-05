@@ -1,0 +1,15 @@
+import type { Metadata } from 'next';
+
+import { AuthCard } from '@/components/auth/auth-card';
+import { RegisterForm } from '@/components/auth/register-form';
+import { isGoogleEnabled } from '@/lib/auth';
+
+export const metadata: Metadata = { title: 'สมัครสมาชิก · BuildCheck' };
+
+export default function RegisterPage() {
+  return (
+    <AuthCard title="สมัครสมาชิก" description="สมัครฟรี บันทึกสเปกได้ไม่จำกัด">
+      <RegisterForm googleEnabled={isGoogleEnabled} />
+    </AuthCard>
+  );
+}
