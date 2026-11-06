@@ -21,7 +21,10 @@
     "db:verify": "tsx --env-file=.env src/db/verify.ts",
     "db:studio": "drizzle-kit studio",
     "admin:promote": "tsx --env-file=.env src/db/promote-admin.ts",
-    "db:seed:samples": "tsx --env-file=.env src/db/seed/samples.ts"
+    "db:seed:samples": "tsx --env-file=.env src/db/seed/samples.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1161.0",
