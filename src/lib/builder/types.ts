@@ -1,5 +1,7 @@
 import type { EnginePart, Issue, UsageType } from '@/lib/compat';
 
+import type { UsedPriceSet } from './used-types';
+
 // ชนิดข้อมูลที่หน้าจัดสเปกกับ API คุยกัน ใช้ได้ทั้งสองฝั่ง
 
 /** อะไหล่ที่มีข้อมูลสเปกครบสำหรับ Engine และข้อมูลแสดงผล */
@@ -12,6 +14,8 @@ export type BuilderPart = EnginePart & {
   chips: string[];
   /** จำนวนสเปกที่ใช้ชิ้นนี้ ใช้เรียงตามความนิยม */
   uses: number;
+  /** ราคากลางมือสอง 3 เกรด มีเฉพาะข้อมูลจาก API อะไหล่ในสเปก */
+  used?: UsedPriceSet;
 };
 
 /** ปัญหาแบบย่อที่ส่งไปกับรายการในหน้าต่างเลือก */

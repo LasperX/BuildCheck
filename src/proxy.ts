@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
 // ด่านแรกก่อนเข้าถึงหน้า (Next.js 16 เปลี่ยนชื่อ Middleware เป็น Proxy)
-// - /me/*    ต้องล็อกอิน
+// - /me/* และ /used/report ต้องล็อกอิน
 // - /admin/* ต้องเป็นแอดมิน
 // - หน้าล็อกอินและสมัคร ถ้าล็อกอินแล้วให้กลับหน้าแรก
 // นี่เป็นแค่ด่านหน้าเพื่อ UX: Server Action และหน้าเว็บตรวจสิทธิ์ซ้ำเองผ่าน lib/session.ts เสมอ (หัวข้อ 9.1)
@@ -35,6 +35,7 @@ export const config = {
   matcher: [
     '/me/:path*',
     '/admin/:path*',
+    '/used/report',
     '/login',
     '/register',
     '/forgot-password',

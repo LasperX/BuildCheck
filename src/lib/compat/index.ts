@@ -13,6 +13,14 @@ import { r17StorageSlots } from './rules/r17-storage-slots';
 import { r18NoDisplay } from './rules/r18-no-display';
 import { i01MissingCategories, i02NoCooler, i03OverBudget, i04SingleChannel } from './rules/info';
 import type { Rule } from './rules/helpers';
+import {
+  u01UsedGpu,
+  u02UsedPsu,
+  u03UsedStorage,
+  u04NoWarranty,
+  u05LegacyPlatform,
+  u06SuspiciousPrice,
+} from './rules/u01-u06-used';
 import { calculatePrice, calculateScore } from './score';
 import { resolveSettings } from './settings';
 import type {
@@ -31,6 +39,7 @@ export { DEFAULT_SETTINGS, resolveSettings } from './settings';
 export { calculatePower, recommendedPsuWatt, powerLevel } from './power';
 export { calculatePrice, calculateScore, unitPrice } from './score';
 export { REQUIRED_CATEGORIES } from './rules/info';
+export * from './used-price';
 
 const LEVEL_ORDER: Record<Level, number> = { error: 0, warning: 1, info: 2 };
 
@@ -85,6 +94,13 @@ export function checkBuild(input: BuildInput): CheckResult {
     i02NoCooler,
     i03OverBudget(price, input.budget),
     i04SingleChannel,
+    // กฎเฉพาะมือสอง หัวข้อ 4.6
+    u01UsedGpu,
+    u02UsedPsu(input.currentYear),
+    u03UsedStorage,
+    u04NoWarranty,
+    u05LegacyPlatform,
+    u06SuspiciousPrice,
   ];
 
   const issues = sortIssues(rules.flatMap((rule) => rule(ctx)));

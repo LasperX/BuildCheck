@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, CircleCheck, Info, Pencil, TriangleAlert } from 'lucide-react';
+import { ArrowRight, CircleCheck, Info, Pencil, Recycle, TriangleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -9,6 +9,7 @@ import type { z } from 'zod';
 
 import { FormAlert } from '@/components/auth/form-field';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,10 +20,11 @@ import {
   OPTION_LABELS,
 } from '@/lib/builder/budget-types';
 import { USAGE_LABELS } from '@/lib/builder/types';
-import type { BudgetRatios } from '@/lib/compat/budget';
+import { type BudgetRatios, DEFAULT_USED_CATEGORIES } from '@/lib/compat/budget';
+import { GRADE_LABELS } from '@/lib/builder/used-types';
 import type { UsageType } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
-import { CATEGORY_LABELS, type CategorySlug } from '@/lib/parts/spec-fields';
+import { CATEGORY_LABELS, CATEGORY_SLUGS, type CategorySlug } from '@/lib/parts/spec-fields';
 import { cn } from '@/lib/utils';
 import { budgetInputSchema } from '@/lib/validators/budget';
 import { generateBudgetBuilds } from '@/server/actions/budget';
@@ -51,7 +53,14 @@ export function BudgetPlanner({
     formState: { errors },
   } = useForm<FormInput>({
     resolver: zodResolver(budgetInputSchema),
-    defaultValues: { budget: 30000, usage: 'gaming', cpuBrand: '' },
+    defaultValues: {
+      budget: 30000,
+      usage: 'gaming',
+      cpuBrand: '',
+      allowUsed: false,
+      usedCategories: [...DEFAULT_USED_CATEGORIES],
+      usedGrade: 'B',
+    },
   });
 
   const onSubmit = (values: FormInput) =>
@@ -85,7 +94,7 @@ export function BudgetPlanner({
         partId: item.partId,
         categorySlug: item.categorySlug,
         quantity: item.quantity,
-        condition: 'new',
+        condition: item.condition,
         offeredPrice: null,
         warrantyMonthsLeft: null,
       })),
@@ -100,6 +109,7 @@ export function BudgetPlanner({
   );
   const shownUsage: UsageType = liveUsage ?? 'gaming';
   const shownBudget = Number.isFinite(liveBudget) && liveBudget > 0 ? liveBudget : 0;
+  const allowUsed = useWatch({ control, name: 'allowUsed' });
 
   return (
     <>
@@ -167,6 +177,75 @@ export function BudgetPlanner({
             {errors.budget.message}
           </p>
         )}
+
+        <div className="mt-4 border-t border-border pt-4">
+          <Controller
+            control={control}
+            name="allowUsed"
+            render={({ field }) => (
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium whitespace-nowrap">
+                  <Checkbox
+                    aria-describedby="allow-used-hint"
+                    checked={Boolean(field.value)}
+                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                  />
+                  <Recycle aria-hidden className="size-4 text-used-fg" />
+                  ยอมใช้มือสอง
+                </label>
+                <p id="allow-used-hint" className="mt-1 pl-6 text-xs text-muted-foreground">
+                  ใช้ราคากลางมือสองในหมวดที่เลือก เพื่อให้ได้สเปกแรงขึ้นในงบเท่าเดิม
+                </p>
+              </div>
+            )}
+          />
+          {allowUsed && (
+            <div className="mt-3 flex flex-col gap-3 rounded-lg border border-used-border bg-used-soft/50 p-3">
+              <Controller
+                control={control}
+                name="usedCategories"
+                render={({ field }) => {
+                  const value = field.value ?? [];
+                  return (
+                    <fieldset>
+                      <legend className="mb-2 text-sm font-medium">หมวดที่ยอมเป็นมือสอง</legend>
+                      <div className="flex flex-wrap gap-x-4 gap-y-2">
+                        {CATEGORY_SLUGS.map((cat) => (
+                          <label key={cat} className="flex items-center gap-1.5 text-sm">
+                            <Checkbox
+                              checked={value.includes(cat)}
+                              onCheckedChange={(checked) =>
+                                field.onChange(
+                                  checked === true
+                                    ? [...value, cat]
+                                    : value.filter((item) => item !== cat),
+                                )
+                              }
+                            />
+                            {CATEGORY_LABELS[cat]}
+                          </label>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        PSU ปิดไว้เป็นค่าเริ่มต้น เพราะ PSU มือสองที่เสียอาจพาอะไหล่อื่นเสียด้วย
+                      </p>
+                    </fieldset>
+                  );
+                }}
+              />
+              <div className="flex max-w-xs flex-col gap-1.5">
+                <Label htmlFor="usedGrade">คิดราคามือสองจากเกรด</Label>
+                <NativeSelect id="usedGrade" {...register('usedGrade')}>
+                  {(['A', 'B', 'C'] as const).map((grade) => (
+                    <option key={grade} value={grade}>
+                      เกรด {grade} · {GRADE_LABELS[grade].detail}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </div>
+            </div>
+          )}
+        </div>
       </form>
 
       <section id="budget-results" aria-live="polite" className="scroll-mt-20">
@@ -247,6 +326,12 @@ function OptionCard({
         {Math.round((option.total / budget) * 100)}% ของงบ · เหลือ{' '}
         {formatBaht(budget - option.total)}
       </p>
+      {option.saved > 0 && (
+        <p className="mt-1 flex items-center gap-1 text-xs text-used-fg">
+          <Recycle aria-hidden className="size-3.5" />
+          ประหยัดกว่าซื้อใหม่ทั้งชุด <b className="font-mono">{formatBaht(option.saved)}</b>
+        </p>
+      )}
       <dl className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
         <div className="rounded-lg bg-surface-2 p-2">
           <dt className="text-muted-foreground">คะแนน</dt>
@@ -272,10 +357,15 @@ function OptionCard({
               <span className="line-clamp-2">
                 {item.brandName} {item.model}
                 {item.quantity > 1 && <span className="font-mono"> × {item.quantity}</span>}
+                {item.condition !== 'new' && (
+                  <Badge variant="used" className="ml-1 align-middle">
+                    มือสอง {item.condition}
+                  </Badge>
+                )}
               </span>
             </span>
             <span className="shrink-0 font-mono tabular-nums">
-              {formatBaht(item.price * item.quantity)}
+              {formatBaht(item.unitPrice * item.quantity)}
             </span>
           </li>
         ))}
@@ -290,7 +380,7 @@ function OptionCard({
               <li key={`${note.code}-${index}`} className={cn('flex items-start gap-1', ui.text)}>
                 <Icon aria-hidden className="mt-0.5 size-3.5 shrink-0" />
                 <span>
-                  {note.code.startsWith('R') && (
+                  {!note.code.startsWith('I') && (
                     <span className="font-mono font-semibold">{note.code} </span>
                   )}
                   {note.title}

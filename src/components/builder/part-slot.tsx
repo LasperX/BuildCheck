@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { type BuildItem, MULTI_CATEGORIES } from '@/stores/builder-store';
 
 import { LEVEL_UI } from './levels';
+import { slotUnitPrice, UsedControls } from './used-controls';
 
 const REQUIRED: CategorySlug[] = ['cpu', 'motherboard', 'ram', 'storage', 'psu', 'case'];
 const EMPTY_HINT: Partial<Record<CategorySlug, string>> = {
@@ -29,6 +30,7 @@ export function PartSlot({
   onPick,
   onRemove,
   onQuantity,
+  onUpdate,
 }: {
   category: CategorySlug;
   items: BuildItem[];
@@ -38,6 +40,7 @@ export function PartSlot({
   onPick: (replacePartId?: number) => void;
   onRemove: (partId: number) => void;
   onQuantity: (partId: number, quantity: number) => void;
+  onUpdate: (partId: number, patch: Partial<Omit<BuildItem, 'partId' | 'categorySlug'>>) => void;
 }) {
   const label = CATEGORY_LABELS[category];
   const Icon = CATEGORY_ICONS[category];
@@ -118,8 +121,16 @@ export function PartSlot({
                     </div>
                   </div>
                   <div className="ml-auto flex items-center gap-1">
-                    <span className="mr-2 font-mono font-semibold tabular-nums">
-                      {part ? formatBaht(part.price * item.quantity) : '–'}
+                    <span className="mr-2 flex flex-col items-end font-mono tabular-nums">
+                      <span className="font-semibold">
+                        {part ? formatBaht(slotUnitPrice(item, part) * item.quantity) : '–'}
+                      </span>
+                      {part && item.condition !== 'new' && (
+                        <span className="text-xs text-muted-foreground line-through">
+                          <span className="sr-only">ราคาใหม่ </span>
+                          {formatBaht(part.price * item.quantity)}
+                        </span>
+                      )}
                     </span>
                     {multi && (
                       <span
@@ -172,6 +183,11 @@ export function PartSlot({
                       <Trash2 aria-hidden />
                     </Button>
                   </div>
+                  <UsedControls
+                    item={item}
+                    part={part}
+                    onUpdate={(patch) => onUpdate(item.partId, patch)}
+                  />
                 </li>
               );
             })}

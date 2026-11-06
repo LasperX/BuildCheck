@@ -5,8 +5,10 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { UsedTab } from '@/components/used/used-tab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatBaht } from '@/lib/parts/catalog';
+import type { PartUsedDetail } from '@/server/queries/used';
 
 // โหลด Recharts เฉพาะตอนเปิดแท็บประวัติราคา เพื่อให้หน้าโหลดครั้งแรกเร็วขึ้น
 const PriceHistoryChart = dynamic(
@@ -28,16 +30,19 @@ export function PartTabs({
   specRows,
   history,
   builds,
+  used,
 }: {
   specRows: { label: string; value: string }[];
   history: PricePoint[];
   builds: BuildSummary[];
+  used: { partId: number; detail: PartUsedDetail; loggedIn: boolean };
 }) {
   return (
     <Tabs defaultValue="spec" className="mt-6">
       <TabsList>
         <TabsTrigger value="spec">สเปกเต็ม</TabsTrigger>
         <TabsTrigger value="history">ประวัติราคา</TabsTrigger>
+        <TabsTrigger value="used">ราคามือสอง</TabsTrigger>
         <TabsTrigger value="builds">สเปกที่ใช้ชิ้นนี้</TabsTrigger>
       </TabsList>
 
@@ -71,6 +76,10 @@ export function PartTabs({
             <PriceHistoryChart points={history} />
           )}
         </div>
+      </TabsContent>
+
+      <TabsContent value="used" className="mt-4">
+        <UsedTab {...used} />
       </TabsContent>
 
       <TabsContent value="builds" className="mt-4">

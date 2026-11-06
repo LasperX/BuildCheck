@@ -323,6 +323,7 @@ export function BuilderView({
                 onPick={(replacePartId) => setPicker({ category, replacePartId })}
                 onRemove={(partId) => store().removePart(partId)}
                 onQuantity={(partId, quantity) => store().setQuantity(partId, quantity)}
+                onUpdate={(partId, patch) => store().updateItem(partId, patch)}
               />
             ))}
           </section>

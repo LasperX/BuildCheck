@@ -41,7 +41,11 @@ export function useBuilderParts(items: BuildItem[]) {
 export function toEngineItems(items: BuildItem[], parts: Map<number, BuilderPart>): EngineItem[] {
   return items.flatMap((item) => {
     const part = parts.get(item.partId);
-    return part ? [{ ...item, part }] : [];
+    if (!part) return [];
+    // มือสองแนบราคากลางของเกรดนั้นไปให้ Engine ใช้คำนวณราคารวมและกฎ U06
+    const usedPrice =
+      item.condition === 'new' ? null : (part.used?.[item.condition].median ?? null);
+    return [{ ...item, part, usedPrice }];
   });
 }
 

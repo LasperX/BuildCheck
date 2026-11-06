@@ -16,6 +16,7 @@ import {
   visibilitySchema,
 } from '@/lib/validators/builds';
 import { getEngineParts } from '@/server/queries/engine-parts';
+import { getUsedPriceSets } from '@/server/queries/used';
 import { getSystemConfig } from '@/server/queries/settings';
 
 // Server Actions ของสเปก (หัวข้อ 8.1 และ 8.3)
@@ -62,7 +63,8 @@ export async function saveBuild(raw: SaveBuildInput): Promise<SaveBuildResult> {
     : [];
   const previousPrice = new Map(previous.map((row) => [row.partId, row.priceAtAdd]));
 
-  const parts = await getEngineParts(input.items.map((item) => item.partId));
+  const ids = input.items.map((item) => item.partId);
+  const [parts, used] = await Promise.all([getEngineParts(ids), getUsedPriceSets(ids)]);
   const byId = new Map(parts.map((part) => [part.id, part]));
   const seen = new Set<string>();
   const engineItems: EngineItem[] = [];
@@ -78,7 +80,10 @@ export async function saveBuild(raw: SaveBuildInput): Promise<SaveBuildResult> {
       }
       seen.add(part.categorySlug);
     }
-    engineItems.push({ ...item, part });
+    // ราคากลางมือสองอ่านจากเซิร์ฟเวอร์เอง ไม่เชื่อค่าที่ส่งมาจากหน้าเว็บ
+    const usedPrice =
+      item.condition === 'new' ? null : (used[part.id]?.[item.condition].median ?? null);
+    engineItems.push({ ...item, part, usedPrice });
   }
 
   const { engine } = await getSystemConfig();

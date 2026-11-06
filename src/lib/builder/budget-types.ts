@@ -1,5 +1,5 @@
 import type { BudgetOptionKind } from '@/lib/compat/budget';
-import type { CompatStatus, Issue, UsageType } from '@/lib/compat/types';
+import type { CompatStatus, Issue, ItemCondition, UsageType } from '@/lib/compat/types';
 import type { CategorySlug } from '@/lib/parts/spec-fields';
 
 // ข้อมูลที่ส่งจาก Server Action จัดสเปกตามงบไปหน้าเว็บ ส่งเฉพาะที่ต้องแสดง ไม่ส่งสเปกเต็ม
@@ -16,6 +16,9 @@ export type BudgetOptionView = {
     partId: number;
     categorySlug: CategorySlug;
     quantity: number;
+    condition: ItemCondition;
+    /** ราคาต่อชิ้นตามสภาพ (มือสอง = ราคากลางของเกรดที่เลือก) */
+    unitPrice: number;
     brandName: string;
     model: string;
     slug: string;
@@ -24,6 +27,9 @@ export type BudgetOptionView = {
   }[];
   status: CompatStatus;
   total: number;
+  /** ราคาถ้าซื้อใหม่ทั้งชุด และยอดที่ประหยัดได้ */
+  totalNew: number;
+  saved: number;
   totalWatt: number;
   recommendedWatt: number;
   psuLoad: number | null;

@@ -133,6 +133,8 @@ export type EngineSettings = {
   motherboardDefaultWatt: number;
   /** น้ำหนักคะแนน CPU และการ์ดจอตามประเภทการใช้งาน หัวข้อ 4.4 */
   usageWeights: Record<UsageType, { cpu: number; gpu: number }>;
+  /** Socket ที่เลิกผลิตแล้ว ใช้ในกฎ U05 แอดมินกรอกในหน้าตั้งค่า (ค่าตั้งต้นว่าง) */
+  legacySockets: string[];
 };
 
 export type BuildInput = {
@@ -140,6 +142,8 @@ export type BuildInput = {
   budget?: number | null;
   usage?: UsageType;
   settings?: Partial<EngineSettings>;
+  /** ปีปัจจุบัน ใช้คำนวณอายุ PSU มือสองในกฎ U02 ไม่ส่งมาใช้ปีจากนาฬิกาเครื่อง */
+  currentYear?: number;
 };
 
 export type RuleCode =
@@ -164,7 +168,13 @@ export type RuleCode =
   | 'I01'
   | 'I02'
   | 'I03'
-  | 'I04';
+  | 'I04'
+  | 'U01'
+  | 'U02'
+  | 'U03'
+  | 'U04'
+  | 'U05'
+  | 'U06';
 
 /** อะไหล่ทดแทนที่แนะนำ หน้าจัดสเปกใช้เปิดหน้าต่างเลือกอะไหล่พร้อมตัวกรองนี้ */
 export type Suggestion = {

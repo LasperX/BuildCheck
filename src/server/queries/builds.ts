@@ -7,6 +7,7 @@ import { db } from '@/lib/db';
 import { CATEGORY_SLUGS } from '@/lib/parts/spec-fields';
 
 import { getEngineParts } from './engine-parts';
+import { getUsedPriceSets } from './used';
 
 // อ่านสเปกที่บันทึกไว้ ไม่ใส่แคช เพราะผลขึ้นกับว่าใครเปิด (สเปกส่วนตัวเห็นเฉพาะเจ้าของ)
 
@@ -51,15 +52,20 @@ export async function getBuildWithItems(id: string) {
     .where(eq(buildItems.buildId, id))
     .orderBy(asc(buildItems.id));
 
-  const parts = await getEngineParts(items.map((item) => item.partId));
-  const byId = new Map(parts.map((part) => [part.id, part]));
+  const ids = items.map((item) => item.partId);
+  const [parts, used] = await Promise.all([getEngineParts(ids), getUsedPriceSets(ids)]);
+  const byId = new Map(parts.map((part) => [part.id, { ...part, used: used[part.id] }]));
   return {
     build,
     // เรียงตามลำดับหมวด CPU → เมนบอร์ด → … ไม่ใช่ลำดับที่เพิ่ม
     items: items
       .flatMap((item) => {
         const part = byId.get(item.partId);
-        return part ? [{ ...item, part }] : [];
+        if (!part) return [];
+        // มือสองแนบราคากลางของเกรดนั้น Engine จะคำนวณราคาผสมและกฎ U06 ได้ตรงกับหน้าจัดสเปก
+        const usedPrice =
+          item.condition === 'new' ? null : (part.used?.[item.condition].median ?? null);
+        return [{ ...item, part, usedPrice }];
       })
       .sort(
         (a, b) =>

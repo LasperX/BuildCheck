@@ -11,6 +11,7 @@ import { clientIp, hitRateLimit } from '@/lib/rate-limit';
 import { budgetInputSchema } from '@/lib/validators/budget';
 import { getCategoryEngineParts } from '@/server/queries/engine-parts';
 import { getSystemConfig } from '@/server/queries/settings';
+import { getUsedPriceSets } from '@/server/queries/used';
 
 // generateBudgetBuilds ในหัวข้อ 8.3 ทุกคนเรียกได้ ไม่ต้องล็อกอิน
 // คำนวณบนเซิร์ฟเวอร์เพราะต้องใช้อะไหล่ทุกหมวด จำกัด 20 ครั้งต่อนาทีต่อ IP กันยิงถี่
@@ -24,7 +25,7 @@ export async function generateBudgetBuilds(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'ข้อมูลไม่ถูกต้อง' };
   }
-  const { budget, usage, cpuBrand } = parsed.data;
+  const { budget, usage, cpuBrand, allowUsed, usedCategories, usedGrade } = parsed.data;
 
   const limit = await hitRateLimit(`budget:${clientIp(await headers())}`, 60);
   if (limit.count > RATE_LIMIT) {
@@ -36,6 +37,18 @@ export async function generateBudgetBuilds(
     ...CATEGORY_SLUGS.map((category) => getCategoryEngineParts(category)),
   ]);
   const catalog = groups.flat();
+  const used =
+    allowUsed && usedCategories.length
+      ? await (async () => {
+          const sets = await getUsedPriceSets(
+            catalog.filter((part) => usedCategories.includes(part.categorySlug)).map((p) => p.id),
+          );
+          const prices = Object.fromEntries(
+            Object.entries(sets).map(([id, set]) => [id, set[usedGrade].median]),
+          );
+          return { categories: usedCategories, grade: usedGrade, prices };
+        })()
+      : null;
 
   const result = runBudget({
     budget,
@@ -44,6 +57,7 @@ export async function generateBudgetBuilds(
     catalog,
     ratios: config.budgetRatios[usage],
     settings: config.engine,
+    used,
   });
 
   if (!result.ok) {
@@ -67,6 +81,8 @@ export async function generateBudgetBuilds(
     brandFallback: result.brandFallback,
     options: result.options.map((option) => ({
       kind: option.kind,
+      totalNew: option.result.price.totalNew,
+      saved: option.result.price.saved,
       items: option.items.map((item) => {
         // อะไหล่ในแคตตาล็อกมาจาก getCategoryEngineParts จึงมีข้อมูลแสดงผลครบ
         const part = item.part as BuilderPart;
@@ -74,6 +90,8 @@ export async function generateBudgetBuilds(
           partId: part.id,
           categorySlug: part.categorySlug,
           quantity: item.quantity,
+          condition: item.condition,
+          unitPrice: item.condition === 'new' ? part.price : (item.usedPrice ?? part.price),
           brandName: part.brandName,
           model: part.model,
           slug: part.slug,

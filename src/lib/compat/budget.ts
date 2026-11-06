@@ -8,6 +8,10 @@
 //
 // "เพดานราคา" (caps) คือราคาสูงสุดที่ยอมให้หมวดนั้น การลดรุ่นทำโดยตั้งเพดานให้ต่ำกว่าชิ้นปัจจุบัน 1 บาท
 // แล้วประกอบใหม่ทั้งชุด วิธีนี้ทำให้ชิ้นอื่นที่ต้องเข้ากัน (เช่นเมนบอร์ดตาม Socket) ถูกเลือกใหม่ให้ถูกต้องเสมอ
+//
+// ตัวเลือก "ยอมใช้มือสอง" (หัวข้อ 3.11): ก่อนเริ่ม หมวดที่ยอมเป็นมือสองจะใช้ราคากลางมือสองแทนราคาใหม่
+// (เฉพาะชิ้นที่มือสองถูกกว่า) อัลกอริทึมจึงเห็นของมือสองเป็นของที่ถูกลงแล้วเลือกตามปกติ
+// เมื่อได้ชุดแล้วค่อยเปลี่ยนชิ้นเหล่านั้นกลับเป็นอะไหล่ตัวจริงที่ระบุสภาพ "มือสอง" เพื่อให้กฎ U01–U06 ตรวจได้
 
 import type { CategorySlug } from '@/lib/parts/spec-fields';
 
@@ -15,6 +19,7 @@ import { checkBuild } from './index';
 import { buildContext } from './context';
 import { calculatePower, recommendedPsuWatt } from './power';
 import { resolveSettings } from './settings';
+import type { UsedGrade } from './used-price';
 import type {
   CheckResult,
   EngineItem,
@@ -88,7 +93,51 @@ export type BudgetInput = {
   catalog: EnginePart[];
   ratios?: BudgetRatios;
   settings?: Partial<EngineSettings>;
+  /** ยอมใช้มือสอง: หมวดที่ยอม เกรดที่ใช้คิดราคา และราคากลางมือสองของแต่ละชิ้น (รหัสอะไหล่ → บาท) */
+  used?: {
+    categories: readonly CategorySlug[];
+    grade: UsedGrade;
+    prices: Readonly<Record<number, number>>;
+  } | null;
 };
+
+/** PSU ไม่ยอมเป็นมือสองเป็นค่าเริ่มต้น (หัวข้อ 3.11) เพราะ PSU เสียอาจพาอะไหล่อื่นเสียด้วย */
+export const DEFAULT_USED_CATEGORIES: readonly CategorySlug[] = [
+  'cpu',
+  'motherboard',
+  'ram',
+  'gpu',
+  'storage',
+  'case',
+  'cooler',
+];
+
+/**
+ * เตรียมแคตตาล็อกสำหรับโหมดยอมใช้มือสอง
+ * คืนแคตตาล็อกที่ราคาของชิ้นมือสองถูกแทนแล้ว และตัวแปลงรายการกลับเป็นอะไหล่ตัวจริง
+ */
+export function applyUsedPrices(
+  catalog: EnginePart[],
+  used: BudgetInput['used'],
+): { catalog: EnginePart[]; restore: (items: EngineItem[]) => EngineItem[] } {
+  if (!used || used.categories.length === 0) return { catalog, restore: (items) => items };
+  const originals = new Map<number, EnginePart>();
+  const priced = catalog.map((part) => {
+    const usedPrice = used.prices[part.id];
+    if (!used.categories.includes(part.categorySlug) || !usedPrice || usedPrice >= part.price) {
+      return part;
+    }
+    originals.set(part.id, part);
+    return { ...part, price: usedPrice } as EnginePart;
+  });
+  const restore = (items: EngineItem[]) =>
+    items.map((item) => {
+      const original = originals.get(item.part.id);
+      if (!original) return item;
+      return { ...item, part: original, condition: used.grade, usedPrice: item.part.price };
+    });
+  return { catalog: priced, restore };
+}
 
 export type BudgetOptionKind = 'economy' | 'balanced' | 'value';
 
@@ -503,7 +552,8 @@ function forceCategory(
 export function generateBudgetBuilds(input: BudgetInput): BudgetResult {
   const settings = resolveSettings(input.settings);
   const ratios = input.ratios ?? DEFAULT_BUDGET_RATIOS[input.usage];
-  const catalog = splitCatalog(input.catalog);
+  const used = applyUsedPrices(input.catalog, input.used);
+  const catalog = splitCatalog(used.catalog);
   const allocation = allocate(input.budget, ratios);
 
   const brand = input.cpuBrand?.trim() || null;
@@ -518,12 +568,15 @@ export function generateBudgetBuilds(input: BudgetInput): BudgetResult {
     cpuBrand: hasBrand ? brand : null,
   };
 
-  const make = (kind: BudgetOptionKind, target: number, items: EngineItem[]): BudgetOption => ({
-    kind,
-    target,
-    items,
-    result: checkBuild({ items, budget: input.budget, usage: input.usage, settings }),
-  });
+  const make = (kind: BudgetOptionKind, target: number, picked: EngineItem[]): BudgetOption => {
+    const items = used.restore(picked);
+    return {
+      kind,
+      target,
+      items,
+      result: checkBuild({ items, budget: input.budget, usage: input.usage, settings }),
+    };
+  };
 
   const balancedItems = buildForTarget(ctx, input.budget, true);
   if (!balancedItems) {

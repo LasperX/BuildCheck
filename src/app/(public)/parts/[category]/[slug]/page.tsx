@@ -12,7 +12,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatBaht } from '@/lib/parts/catalog';
 import { SPEC_FIELDS } from '@/lib/parts/spec-fields';
+import { getSession } from '@/lib/session';
 import { getPartDetail, getPopularBuildsUsingPart } from '@/server/queries/parts';
+import { getPartUsedDetail } from '@/server/queries/used';
 
 type Params = PageProps<'/parts/[category]/[slug]'>['params'];
 
@@ -45,7 +47,11 @@ async function PartContent({ params }: { params: Params }) {
   const part = await getPartDetail(category, decodeURIComponent(slug));
   if (!part) notFound();
 
-  const builds = await getPopularBuildsUsingPart(part.id);
+  const [builds, used, session] = await Promise.all([
+    getPopularBuildsUsingPart(part.id),
+    getPartUsedDetail(part.id),
+    getSession(),
+  ]);
   const specRows = SPEC_FIELDS[part.categorySlug].map((field) => ({
     label: field.label,
     value: formatSpecValue(part.spec[field.key], field.kind),
@@ -145,6 +151,7 @@ async function PartContent({ params }: { params: Params }) {
           date: entry.changedAt.toISOString(),
         }))}
         builds={builds}
+        used={{ partId: part.id, detail: used, loggedIn: Boolean(session) }}
       />
     </>
   );

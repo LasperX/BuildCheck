@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   allocate,
+  applyUsedPrices,
+  DEFAULT_USED_CATEGORIES,
   DEFAULT_BUDGET_RATIOS,
   generateBudgetBuilds,
   MIN_RAM_GB,
@@ -254,5 +256,80 @@ describe('generateBudgetBuilds', () => {
     const result = generateBudgetBuilds({ budget: 45000, usage: 'gaming', catalog: big });
     expect(result.ok).toBe(true);
     expect(performance.now() - start).toBeLessThan(2000);
+  });
+});
+
+describe('ยอมใช้มือสอง', () => {
+  const parts = catalog();
+  // ราคามือสองสมมติ = 60% ของราคาใหม่ ทุกชิ้น
+  const prices = Object.fromEntries(parts.map((part) => [part.id, Math.round(part.price * 0.6)]));
+
+  it('applyUsedPrices ไม่แตะหมวดที่ไม่ยอม และคืนชิ้นตัวจริงพร้อมสภาพมือสอง', () => {
+    const gpuPart = parts.find((part) => part.categorySlug === 'gpu');
+    const psuPart = parts.find((part) => part.categorySlug === 'psu');
+    if (!gpuPart || !psuPart) throw new Error('fixture');
+    const { catalog: priced, restore } = applyUsedPrices(parts, {
+      categories: ['gpu'],
+      grade: 'B',
+      prices,
+    });
+    expect(priced.find((p) => p.id === gpuPart.id)?.price).toBe(prices[gpuPart.id]);
+    expect(priced.find((p) => p.id === psuPart.id)?.price).toBe(psuPart.price);
+    const cheapGpu = priced.find((p) => p.id === gpuPart.id);
+    if (!cheapGpu) throw new Error('fixture');
+    const [restored] = restore([{ part: cheapGpu, quantity: 1, condition: 'new' }]);
+    expect(restored).toMatchObject({ condition: 'B', usedPrice: prices[gpuPart.id] });
+    expect(restored?.part.price).toBe(gpuPart.price);
+  });
+
+  it('ราคามือสองที่แพงกว่าของใหม่ไม่ถูกใช้', () => {
+    const first = parts[0];
+    if (!first) throw new Error('fixture');
+    const { catalog: priced } = applyUsedPrices(parts, {
+      categories: ['cpu'],
+      grade: 'A',
+      prices: { [first.id]: first.price + 1000 },
+    });
+    expect(priced[0]?.price).toBe(first.price);
+  });
+
+  it('PSU ไม่อยู่ในหมวดที่ยอมเป็นมือสองตามค่าเริ่มต้น', () => {
+    expect(DEFAULT_USED_CATEGORIES).not.toContain('psu');
+  });
+
+  it('งบเท่ากัน ยอมใช้มือสองได้สเปกแรงขึ้นหรือเท่าเดิม และมีชิ้นมือสองพร้อมกฎ U', () => {
+    const budget = 30000;
+    const plain = generateBudgetBuilds({ budget, usage: 'gaming', catalog: parts });
+    const withUsed = generateBudgetBuilds({
+      budget,
+      usage: 'gaming',
+      catalog: parts,
+      used: { categories: DEFAULT_USED_CATEGORIES, grade: 'B', prices },
+    });
+    if (!plain.ok || !withUsed.ok) throw new Error('ควรจัดได้');
+    const balanced = (r: typeof plain) => r.options.find((o) => o.kind === 'balanced');
+    expect(balanced(withUsed)?.result.score.score).toBeGreaterThanOrEqual(
+      balanced(plain)?.result.score.score ?? 0,
+    );
+    const items = balanced(withUsed)?.items ?? [];
+    expect(items.some((item) => item.condition === 'B')).toBe(true);
+    expect(items.find((item) => item.part.categorySlug === 'psu')?.condition).toBe('new');
+    // ไม่มีผิดพลาด และราคารวมแบบผสมไม่เกินงบ
+    expect(balanced(withUsed)?.result.status).not.toBe('error');
+    expect(balanced(withUsed)?.result.price.total).toBeLessThanOrEqual(budget);
+    expect(balanced(withUsed)?.result.price.saved).toBeGreaterThan(0);
+  });
+
+  it('งบต่ำเกินสำหรับของใหม่ แต่จัดได้ถ้ายอมมือสอง', () => {
+    const budget = 16000;
+    const plain = generateBudgetBuilds({ budget, usage: 'gaming', catalog: parts });
+    const withUsed = generateBudgetBuilds({
+      budget,
+      usage: 'gaming',
+      catalog: parts,
+      used: { categories: DEFAULT_USED_CATEGORIES, grade: 'C', prices },
+    });
+    expect(plain.ok).toBe(false);
+    expect(withUsed.ok).toBe(true);
   });
 });

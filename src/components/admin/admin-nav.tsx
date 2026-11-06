@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, FileUp, LayoutDashboard, Package } from 'lucide-react';
+import { ArrowLeft, FileUp, LayoutDashboard, Package, Recycle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -9,6 +9,7 @@ const ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/parts', label: 'จัดการอะไหล่', icon: Package, exact: true },
   { href: '/admin/parts/import', label: 'นำเข้า CSV', icon: FileUp, exact: true },
+  { href: '/admin/used-prices', label: 'ราคามือสอง', icon: Recycle, exact: true },
 ];
 
 export function AdminNav() {

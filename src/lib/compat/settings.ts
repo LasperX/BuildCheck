@@ -11,6 +11,8 @@ export const DEFAULT_SETTINGS: EngineSettings = {
     creator: { cpu: 0.5, gpu: 0.5 },
     streaming: { cpu: 0.45, gpu: 0.55 },
   },
+  // ไม่ใส่ค่าตั้งต้น เพราะรายชื่อ Socket ที่เลิกผลิตเป็นข้อมูลจริงที่ต้องตรวจสอบก่อน แอดมินกรอกเอง
+  legacySockets: [],
 };
 
 export function resolveSettings(partial: Partial<EngineSettings> | undefined): EngineSettings {

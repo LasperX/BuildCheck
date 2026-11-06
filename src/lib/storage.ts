@@ -32,7 +32,10 @@ export function detectImageType(bytes: Uint8Array): ImageType | null {
 
 export type UploadResult = { ok: true; url: string } | { ok: false; error: string };
 
-export async function uploadImage(file: File, folder: 'parts' | 'avatars'): Promise<UploadResult> {
+export async function uploadImage(
+  file: File,
+  folder: 'parts' | 'avatars' | 'used-proofs',
+): Promise<UploadResult> {
   if (file.size === 0) return { ok: false, error: 'ไม่พบไฟล์รูป' };
   if (file.size > MAX_IMAGE_BYTES) return { ok: false, error: 'รูปต้องมีขนาดไม่เกิน 2 MB' };
 
