@@ -55,6 +55,8 @@ type BuilderState = {
   loadBuild: (build: { id: string; meta: BuildMeta; items: BuildItem[] }) => void;
   /** เริ่มสเปกใหม่ทั้งหมด */
   reset: () => void;
+  /** เริ่มสเปกใหม่จากชุดที่กำหนด เช่นผลจัดสเปกตามงบ (ยังไม่ผูกกับสเปกที่บันทึกไว้) */
+  startFrom: (build: { meta: BuildMeta; items: BuildItem[] }) => void;
   addPart: (partId: number, categorySlug: CategorySlug) => void;
   replacePart: (partId: number, categorySlug: CategorySlug, oldPartId?: number) => void;
   removePart: (partId: number) => void;
@@ -96,6 +98,7 @@ export const useBuilderStore = create<BuilderState>()(
         setBuildId: (buildId) => set({ buildId }),
         loadBuild: ({ id, meta, items }) => set({ buildId: id, meta, items, past: [], future: [] }),
         reset: () => set({ buildId: null, meta: DEFAULT_META, items: [], past: [], future: [] }),
+        startFrom: ({ meta, items }) => set({ buildId: null, meta, items, past: [], future: [] }),
         addPart: (partId, categorySlug) =>
           commit((items) => {
             if (!MULTI_CATEGORIES.includes(categorySlug)) {

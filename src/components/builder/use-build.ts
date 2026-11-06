@@ -4,7 +4,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type BuilderPart, encodeBuildParam } from '@/lib/builder/types';
-import { checkBuild, type CheckResult, type EngineItem } from '@/lib/compat';
+import { checkBuild, type CheckResult, type EngineItem, type EngineSettings } from '@/lib/compat';
 import { saveBuild } from '@/server/actions/builds';
 import { type BuildItem, useBuilderHydrated, useBuilderStore } from '@/stores/builder-store';
 
@@ -45,7 +45,7 @@ export function toEngineItems(items: BuildItem[], parts: Map<number, BuilderPart
   });
 }
 
-export function useBuildCheck(): {
+export function useBuildCheck(settings?: EngineSettings): {
   result: CheckResult;
   parts: Map<number, BuilderPart>;
   loading: boolean;
@@ -60,8 +60,9 @@ export function useBuildCheck(): {
         items: toEngineItems(items, parts),
         budget: meta.budget,
         usage: meta.usageType,
+        settings,
       }),
-    [items, parts, meta.budget, meta.usageType],
+    [items, parts, meta.budget, meta.usageType, settings],
   );
   return { result, parts, loading: isLoading, error: isError };
 }

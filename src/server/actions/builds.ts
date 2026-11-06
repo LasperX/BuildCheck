@@ -16,6 +16,7 @@ import {
   visibilitySchema,
 } from '@/lib/validators/builds';
 import { getEngineParts } from '@/server/queries/engine-parts';
+import { getSystemConfig } from '@/server/queries/settings';
 
 // Server Actions ของสเปก (หัวข้อ 8.1 และ 8.3)
 // ทุกตัว: ตรวจสิทธิ์ → ตรวจค่าด้วย Zod → ตรวจว่าเป็นเจ้าของ → ทำงาน
@@ -80,10 +81,12 @@ export async function saveBuild(raw: SaveBuildInput): Promise<SaveBuildResult> {
     engineItems.push({ ...item, part });
   }
 
+  const { engine } = await getSystemConfig();
   const result = checkBuild({
     items: engineItems,
     budget: input.budget,
     usage: input.usageType,
+    settings: engine,
   });
   const values = {
     title: input.title,

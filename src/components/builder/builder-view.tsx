@@ -24,7 +24,7 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { USAGE_LABELS } from '@/lib/builder/types';
-import type { Issue, Suggestion, UsageType } from '@/lib/compat';
+import type { EngineSettings, Issue, Suggestion, UsageType } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
 import { CATEGORY_SLUGS, type CategorySlug } from '@/lib/parts/spec-fields';
 import { cn } from '@/lib/utils';
@@ -80,8 +80,11 @@ function SaveStatus({ state }: { state: SaveState }) {
 export function BuilderView({
   loggedIn,
   initialBuild,
+  settings,
 }: {
   loggedIn: boolean;
+  /** ค่าตั้งระบบจากแอดมิน ใช้ค่าเดียวกับเซิร์ฟเวอร์ ผลตรวจในเบราว์เซอร์จึงตรงกับตอนบันทึก */
+  settings: EngineSettings;
   initialBuild: InitialBuild | null;
 }) {
   const hydrated = useBuilderHydrated();
@@ -91,7 +94,7 @@ export function BuilderView({
   const canRedo = useBuilderStore((s) => s.future.length > 0);
   const store = useBuilderStore.getState;
 
-  const { result, parts, error } = useBuildCheck();
+  const { result, parts, error } = useBuildCheck(settings);
   const { state: saveState, saveNow } = useAutosave(loggedIn);
 
   const [picker, setPicker] = useState<PickerTarget | null>(null);

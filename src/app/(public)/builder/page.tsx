@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getSession } from '@/lib/session';
 import { buildIdSchema } from '@/lib/validators/builds';
 import { getBuildWithItems } from '@/server/queries/builds';
+import { getSystemConfig } from '@/server/queries/settings';
 
 export const metadata: Metadata = {
   title: 'จัดสเปก · BuildCheck',
@@ -14,7 +15,11 @@ export const metadata: Metadata = {
 
 /** อ่าน Session และสเปกที่ขอแก้ (?id=) แล้วส่งให้หน้าจัดสเปกฝั่งเบราว์เซอร์ */
 async function Builder({ searchParams }: { searchParams: PageProps<'/builder'>['searchParams'] }) {
-  const [session, params] = await Promise.all([getSession(), searchParams]);
+  const [session, params, config] = await Promise.all([
+    getSession(),
+    searchParams,
+    getSystemConfig(),
+  ]);
   const id = buildIdSchema.safeParse(params.id);
 
   let initialBuild: InitialBuild | null = null;
@@ -42,7 +47,9 @@ async function Builder({ searchParams }: { searchParams: PageProps<'/builder'>['
     }
   }
 
-  return <BuilderView loggedIn={Boolean(session)} initialBuild={initialBuild} />;
+  return (
+    <BuilderView loggedIn={Boolean(session)} initialBuild={initialBuild} settings={config.engine} />
+  );
 }
 
 export default function BuilderPage({ searchParams }: PageProps<'/builder'>) {

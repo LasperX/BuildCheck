@@ -21,6 +21,7 @@ import { getSession } from '@/lib/session';
 import { cn } from '@/lib/utils';
 import { buildIdSchema } from '@/lib/validators/builds';
 import { canViewBuild, getBuildWithItems } from '@/server/queries/builds';
+import { getSystemConfig } from '@/server/queries/settings';
 
 // หน้ารายละเอียดสเปก /builds/[id] ส่วนโหวต คอมเมนต์ และ Fork เพิ่มในเฟส 10
 
@@ -51,7 +52,13 @@ async function BuildContent({ params }: { params: Params }) {
   const { build, items } = found;
   const isOwner = session?.user.id === build.userId;
   // ตรวจซ้ำด้วยข้อมูลอะไหล่ล่าสุด เผื่อแอดมินแก้สเปกอะไหล่หลังบันทึก
-  const result = checkBuild({ items, budget: build.budget, usage: build.usageType });
+  const { engine } = await getSystemConfig();
+  const result = checkBuild({
+    items,
+    budget: build.budget,
+    usage: build.usageType,
+    settings: engine,
+  });
   const status = items.length ? STATUS_UI[result.status] : null;
   const StatusIcon = status?.icon;
   const url = shortUrl(build.id);

@@ -4,6 +4,7 @@ import { rankCandidates } from '@/lib/builder/candidates';
 import type { EngineItem } from '@/lib/compat';
 import { candidatesQuerySchema } from '@/lib/validators/builds';
 import { getCategoryEngineParts, getEngineParts } from '@/server/queries/engine-parts';
+import { getSystemConfig } from '@/server/queries/settings';
 
 // รายการอะไหล่ในหน้าต่างเลือก พร้อมป้ายเข้ากันได้/ไม่ได้ (getCompatibleParts ในหัวข้อ 8.3)
 // ตรวจบนเซิร์ฟเวอร์ เพราะต้องลองใส่ทุกชิ้นในหมวด ไม่ต้องส่งสเปกของทุกชิ้นไปที่เบราว์เซอร์
@@ -36,9 +37,10 @@ export async function GET(request: NextRequest) {
   }
   const query = parsed.data;
 
-  const [all, buildParts] = await Promise.all([
+  const [all, buildParts, config] = await Promise.all([
     getCategoryEngineParts(query.category),
     getEngineParts(query.build.map((item) => item.partId)),
+    getSystemConfig(),
   ]);
   const byId = new Map(buildParts.map((part) => [part.id, part]));
   const current: EngineItem[] = query.build.flatMap(({ partId, quantity }) => {
@@ -46,5 +48,5 @@ export async function GET(request: NextRequest) {
     return part ? [{ part, quantity, condition: 'new' as const }] : [];
   });
 
-  return NextResponse.json(rankCandidates(all, current, query));
+  return NextResponse.json(rankCandidates(all, current, query, config.engine));
 }
