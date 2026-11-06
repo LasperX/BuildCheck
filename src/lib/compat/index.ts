@@ -23,6 +23,7 @@ import type {
   EnginePart,
   Issue,
   Level,
+  RuleCode,
 } from './types';
 
 export * from './types';
@@ -117,12 +118,19 @@ const issueKey = (issue: Issue) => `${issue.code}|${issue.title}`;
 /**
  * ตัวกรองอัจฉริยะ (หัวข้อ 3.3): ลองใส่อะไหล่ตัวเลือกลงในสเปกปัจจุบัน แล้วดูว่าเกิดปัญหาใหม่ไหม
  * หมวดชิ้นเดียวจะแทนชิ้นเดิม ส่วนแรม/เก็บข้อมูลจะแทนชิ้นที่ระบุใน replacePartId หรือเพิ่มเข้าไป
- * นับเฉพาะปัญหาที่ "ไม่มีอยู่ก่อน" ใส่ชิ้นนี้ ปัญหาเดิมของสเปกไม่ทำให้ตัวเลือกถูกตัดออก
+ *
+ * มี 2 โหมด
+ *   ปกติ (เลือกอะไหล่ทั่วไป): เทียบกับสเปกที่ ยังไม่มีชิ้นนี้ ปัญหาทุกข้อที่ชิ้นนี้ทำให้เกิดนับหมด
+ *     เช่น เปลี่ยนการ์ดจอยาวเกินเคสเป็นอีกรุ่นที่ยาวเกินเหมือนกัน ก็ยังถูกตัด
+ *   แก้ปัญหา (fix = รหัสกฎ จากปุ่มแนะนำอะไหล่ทดแทน): ชิ้นนี้ต้องทำให้ปัญหานั้นหายไป
+ *     และต้องไม่สร้างปัญหาใหม่ที่สเปกปัจจุบันยังไม่มี ปัญหาอื่นที่มีอยู่แล้วไม่นับ
+ *     เพราะผู้ใช้กำลังแก้ทีละข้อ เช่นแก้ Socket ก่อน แล้วค่อยแก้ชนิดแรม
  */
 export function evaluateCandidate(
   input: BuildInput,
   candidate: EnginePart,
   replacePartId?: number,
+  fix?: RuleCode,
 ): CandidateResult {
   const single = SINGLE_ITEM_CATEGORIES.has(candidate.categorySlug);
   const kept = input.items.filter((item) => {
@@ -131,13 +139,16 @@ export function evaluateCandidate(
   });
   const next: EngineItem = { part: candidate, quantity: 1, condition: 'new' };
 
-  const before = new Set(checkBuild({ ...input, items: kept }).issues.map(issueKey));
-  const after = checkBuild({ ...input, items: [...kept, next] }).issues.filter(
-    (issue) => issue.level !== 'info' && !before.has(issueKey(issue)),
-  );
+  const baseline = fix ? input.items : kept;
+  const before = new Set(checkBuild({ ...input, items: baseline }).issues.map(issueKey));
+  const all = checkBuild({ ...input, items: [...kept, next] }).issues;
+  const fresh = all.filter((issue) => issue.level !== 'info' && !before.has(issueKey(issue)));
   // R18 (ไม่มีภาพออกจอ) แก้ได้ด้วยการเลือกการ์ดจอภายหลัง จึงไม่ตัด CPU ที่ไม่มีกราฟิกในตัวออกจากรายการ
   // แต่ยังแสดงเป็นข้อควรรู้ให้ผู้ใช้เห็น
-  const errors = after.filter((issue) => issue.level === 'error' && issue.code !== 'R18');
-  const warnings = after.filter((issue) => issue.level === 'warning' || issue.code === 'R18');
+  const errors = fresh.filter((issue) => issue.level === 'error' && issue.code !== 'R18');
+  const warnings = fresh.filter((issue) => issue.level === 'warning' || issue.code === 'R18');
+  // โหมดแก้ปัญหา: ปัญหาเดิมยังอยู่ = ชิ้นนี้ไม่ได้ช่วยแก้
+  const unresolved = fix ? all.find((issue) => issue.code === fix) : undefined;
+  if (unresolved) errors.unshift(unresolved);
   return { compatible: errors.length === 0, errors, warnings };
 }

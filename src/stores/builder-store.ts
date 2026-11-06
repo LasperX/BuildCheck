@@ -25,10 +25,36 @@ export const MULTI_CATEGORIES: readonly CategorySlug[] = ['ram', 'storage'];
 
 const HISTORY_LIMIT = 50;
 
+export type UsageType = 'gaming' | 'office' | 'creator' | 'streaming';
+
+/** ชื่อ คำอธิบาย งบ และประเภทการใช้งาน (หัวข้อ 3.3) */
+export type BuildMeta = {
+  title: string;
+  description: string;
+  usageType: UsageType;
+  budget: number | null;
+};
+
+export const DEFAULT_META: BuildMeta = {
+  title: 'สเปกของฉัน',
+  description: '',
+  usageType: 'gaming',
+  budget: null,
+};
+
 type BuilderState = {
+  /** รหัสสเปกที่บันทึกแล้วในบัญชี ยังไม่บันทึก = null */
+  buildId: string | null;
+  meta: BuildMeta;
   items: BuildItem[];
   past: BuildItem[][];
   future: BuildItem[][];
+  setMeta: (patch: Partial<BuildMeta>) => void;
+  setBuildId: (id: string | null) => void;
+  /** โหลดสเปกที่บันทึกไว้มาแก้ ล้างประวัติย้อนกลับ */
+  loadBuild: (build: { id: string; meta: BuildMeta; items: BuildItem[] }) => void;
+  /** เริ่มสเปกใหม่ทั้งหมด */
+  reset: () => void;
   addPart: (partId: number, categorySlug: CategorySlug) => void;
   replacePart: (partId: number, categorySlug: CategorySlug, oldPartId?: number) => void;
   removePart: (partId: number) => void;
@@ -61,9 +87,15 @@ export const useBuilderStore = create<BuilderState>()(
         }));
 
       return {
+        buildId: null,
+        meta: DEFAULT_META,
         items: [],
         past: [],
         future: [],
+        setMeta: (patch) => set((state) => ({ meta: { ...state.meta, ...patch } })),
+        setBuildId: (buildId) => set({ buildId }),
+        loadBuild: ({ id, meta, items }) => set({ buildId: id, meta, items, past: [], future: [] }),
+        reset: () => set({ buildId: null, meta: DEFAULT_META, items: [], past: [], future: [] }),
         addPart: (partId, categorySlug) =>
           commit((items) => {
             if (!MULTI_CATEGORIES.includes(categorySlug)) {
@@ -128,8 +160,15 @@ export const useBuilderStore = create<BuilderState>()(
     {
       name: 'buildcheck-builder',
       storage: createJSONStorage(() => localStorage),
-      version: 1,
-      partialize: (state) => ({ items: state.items }), // ไม่เก็บประวัติย้อนกลับลงเครื่อง
+      version: 2,
+      // เวอร์ชัน 1 เก็บแค่ items ค่าที่เพิ่มมาใช้ค่าตั้งต้น
+      migrate: (persisted, version) => {
+        const state = (persisted ?? {}) as Partial<BuilderState>;
+        if (version < 2) return { items: state.items ?? [], buildId: null, meta: DEFAULT_META };
+        return state;
+      },
+      // ไม่เก็บประวัติย้อนกลับลงเครื่อง
+      partialize: (state) => ({ items: state.items, buildId: state.buildId, meta: state.meta }),
       skipHydration: true, // โหลดหลัง Hydrate เพื่อไม่ให้หน้าเว็บจากเซิร์ฟเวอร์กับเบราว์เซอร์ไม่ตรงกัน
     },
   ),

@@ -1,0 +1,14 @@
+import { type NextRequest, NextResponse } from 'next/server';
+
+import { buildParamSchema } from '@/lib/validators/builds';
+import { getEngineParts } from '@/server/queries/engine-parts';
+
+// สเปกเต็มของอะไหล่ในสเปกที่กำลังจัด หน้าจัดสเปกเอาไปให้ Engine ตรวจในเบราว์เซอร์
+// รับ ?build=12x1,15x2 แบบเดียวกับ API รายการตัวเลือก ข้อมูลสาธารณะ ไม่ต้องล็อกอิน
+export async function GET(request: NextRequest) {
+  const parsed = buildParamSchema.safeParse(request.nextUrl.searchParams.get('build') ?? '');
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'รูปแบบสเปกไม่ถูกต้อง' }, { status: 400 });
+  }
+  return NextResponse.json(await getEngineParts(parsed.data.map((item) => item.partId)));
+}

@@ -11,7 +11,10 @@ const eslintConfig = defineConfig([
     rules: {
       // มาตรฐานโปรเจค: ห้ามใช้ any
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
   globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts', 'design/**', 'coverage/**']),
