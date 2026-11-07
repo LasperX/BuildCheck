@@ -54,8 +54,14 @@ async function Builder({ searchParams }: { searchParams: PageProps<'/builder'>['
 
 export default function BuilderPage({ searchParams }: PageProps<'/builder'>) {
   return (
-    <>
-      <h1 className="sr-only">จัดสเปกคอมพิวเตอร์</h1>
+    <main>
+      {/* หัวข้อเรนเดอร์จากเซิร์ฟเวอร์ทันที เป็นสิ่งแรกที่ผู้ใช้เห็นขณะหน้าจัดสเปกโหลดสเปกจากเครื่อง (ช่วยค่า LCP) */}
+      <div className="container mx-auto px-4 pt-5">
+        <h1 className="text-xl font-semibold">จัดสเปกคอมพิวเตอร์</h1>
+        <p className="text-sm text-muted-foreground">
+          เลือกอะไหล่ทีละหมวด ระบบตรวจความเข้ากันได้ กำลังไฟ และราคาให้ทันที
+        </p>
+      </div>
       <Suspense
         fallback={
           <div className="container mx-auto flex flex-col gap-3 px-4 py-6">
@@ -66,6 +72,6 @@ export default function BuilderPage({ searchParams }: PageProps<'/builder'>) {
       >
         <Builder searchParams={searchParams} />
       </Suspense>
-    </>
+    </main>
   );
 }

@@ -1,5 +1,8 @@
 'use client';
 
+// ต้องอยู่บนสุด ให้ตั้งค่า Zod ก่อนฟอร์มใดตรวจข้อมูล
+import '@/lib/zod-config';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 

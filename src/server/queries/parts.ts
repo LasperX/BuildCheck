@@ -347,3 +347,30 @@ export async function getCategoryCounts() {
     .groupBy(categories.id)
     .orderBy(categories.sortOrder);
 }
+
+/** อะไหล่ที่เพิ่มเข้าระบบล่าสุด สำหรับหน้าแรก (หัวข้อ 5.1 "อะไหล่มาใหม่") */
+export async function getNewestParts(limit = 8) {
+  'use cache';
+  cacheTag('parts');
+  cacheLife('minutes');
+
+  const rows = await db
+    .select({
+      id: parts.id,
+      slug: parts.slug,
+      model: parts.model,
+      price: parts.price,
+      imageUrl: parts.imageUrl,
+      brandName: brands.name,
+      categorySlug: categories.slug,
+    })
+    .from(parts)
+    .innerJoin(categories, eq(parts.categoryId, categories.id))
+    .innerJoin(brands, eq(parts.brandId, brands.id))
+    .where(eq(parts.isActive, true))
+    .orderBy(desc(parts.createdAt), desc(parts.id))
+    .limit(limit);
+  return rows.flatMap((row) =>
+    isCategorySlug(row.categorySlug) ? [{ ...row, categorySlug: row.categorySlug }] : [],
+  );
+}

@@ -4,8 +4,9 @@ import { Suspense } from 'react';
 import { AccountMenu } from '@/components/account/account-menu';
 import { BuildFab } from '@/components/site/build-fab';
 import { BottomTabBar, DesktopNav, HeaderSearch } from '@/components/site/main-nav';
+import { ThemeToggle } from '@/components/site/theme';
 
-/** แถบเมนูบนตามหัวข้อ 5.3 ส่วนแจ้งเตือนเพิ่มในเฟส 11 และสวิตช์โหมดมืดในเฟส 13 */
+/** แถบเมนูบนตามหัวข้อ 5.3: โลโก้ เมนูหลัก ช่องค้นหา สวิตช์โหมดมืด แจ้งเตือน และเมนูบัญชี */
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-surface">
@@ -18,6 +19,7 @@ export function SiteHeader() {
         </Suspense>
         <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-3">
           <HeaderSearch />
+          <ThemeToggle />
           <Suspense fallback={<div className="size-8 rounded-full bg-surface-2" />}>
             <AccountMenu />
           </Suspense>

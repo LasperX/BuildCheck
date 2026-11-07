@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, IBM_Plex_Sans_Thai } from 'next/font/google';
 
 import { Providers } from '@/components/providers';
 import { StoreHydrator } from '@/components/site/store-hydrator';
+import { themeScript } from '@/lib/theme';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 import './globals.css';
@@ -29,7 +30,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="th" className={`${plexSans.variable} ${plexMono.variable} h-full`}>
+    // suppressHydrationWarning: สคริปต์โหมดมืดเปลี่ยน class ของ <html> ก่อน React โหลด จึงต่างจากที่เซิร์ฟเวอร์ส่งมาโดยตั้งใจ
+    <html
+      lang="th"
+      className={`${plexSans.variable} ${plexMono.variable} h-full`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* สคริปต์คงที่ที่เขียนเอง ไม่มีข้อมูลจากผู้ใช้ */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-full flex-col">
         <Providers>
           <TooltipProvider>{children}</TooltipProvider>

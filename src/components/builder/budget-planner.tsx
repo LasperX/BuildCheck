@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, CircleCheck, Info, Pencil, Recycle, TriangleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import type { z } from 'zod';
 
@@ -50,6 +50,7 @@ export function BudgetPlanner({
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormInput>({
     resolver: zodResolver(budgetInputSchema),
@@ -74,6 +75,22 @@ export function BudgetPlanner({
         document.getElementById('budget-results')?.scrollIntoView({ behavior: 'smooth' }),
       );
     });
+
+  // มาจากช่องใส่งบด่วนในหน้าแรก (/budget?budget=30000&usage=gaming) → ใส่ค่าแล้วจัดให้ทันที
+  const autoRun = useRef(false);
+  useEffect(() => {
+    if (autoRun.current) return;
+    autoRun.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const quick = params.get('budget');
+    if (!quick) return;
+    setValue('budget', quick.replace(/\D/g, ''));
+    const usage = params.get('usage');
+    if (usage && usage in USAGE_LABELS) setValue('usage', usage as UsageType);
+    void handleSubmit(onSubmit)();
+    // ทำครั้งเดียวตอนเปิดหน้า
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openInBuilder = (option: BudgetOptionView, budget: number, usage: UsageType) => {
     const store = useBuilderStore.getState();

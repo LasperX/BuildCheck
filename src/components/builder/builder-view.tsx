@@ -159,7 +159,7 @@ export function BuilderView({
 
   if (!hydrated) {
     return (
-      <div className="container mx-auto grid gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="container mx-auto grid gap-6 px-4 pt-4 pb-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex flex-col gap-3">
           <Skeleton className="h-12" />
           {CATEGORY_SLUGS.map((slug) => (
@@ -172,7 +172,7 @@ export function BuilderView({
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-36 lg:pb-10">
+    <div className="container mx-auto px-4 pt-4 pb-36 lg:pb-10">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
           <div className="flex flex-wrap items-start gap-3">
@@ -312,7 +312,10 @@ export function BuilderView({
             </p>
           )}
 
-          <section aria-label="ช่องอะไหล่" className="mt-4 flex flex-col gap-3">
+          <section aria-labelledby="slots-title" className="mt-4 flex flex-col gap-3">
+            <h2 id="slots-title" className="sr-only">
+              ช่องอะไหล่ 8 หมวด
+            </h2>
             {CATEGORY_SLUGS.map((category) => (
               <PartSlot
                 key={category}

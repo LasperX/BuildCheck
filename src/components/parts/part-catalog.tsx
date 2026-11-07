@@ -216,6 +216,8 @@ export function PartCatalog({
         </p>
 
         <div className="mt-2">
+          {/* หัวข้อสำหรับโปรแกรมอ่านหน้าจอ ให้ลำดับหัวข้อไม่ข้ามจาก h1 ไป h3 ของการ์ด */}
+          <h2 className="sr-only">รายการอะไหล่</h2>
           {isError ? (
             <FormAlert variant="err" icon={<CircleX />}>
               โหลดรายการอะไหล่ไม่สำเร็จ กรุณาลองใหม่
