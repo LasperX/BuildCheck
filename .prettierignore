@@ -7,3 +7,5 @@ design
 docs
 src/db/migrations
 coverage
+playwright-report
+test-results

@@ -43,3 +43,7 @@ next-env.d.ts
 
 # รูปที่อัปโหลดตอนพัฒนา
 /public/uploads/
+
+# Playwright
+/playwright-report/
+/test-results/
