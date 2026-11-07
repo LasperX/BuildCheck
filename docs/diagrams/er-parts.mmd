@@ -1,0 +1,133 @@
+erDiagram
+  brands {
+    serial id PK
+    varchar name
+    text logo_url
+  }
+  categories {
+    serial id PK
+    varchar slug
+    varchar name_th
+    varchar name_en
+    varchar icon
+    integer sort_order
+    boolean required
+    boolean allow_multiple
+  }
+  part_price_history {
+    serial id PK
+    integer part_id FK
+    numeric price
+    text changed_by FK
+    timestamp_with_time_zone changed_at
+  }
+  parts {
+    serial id PK
+    integer category_id FK
+    integer brand_id FK
+    varchar model
+    varchar slug
+    numeric price
+    integer power_watt
+    text image_url
+    smallint release_year
+    boolean is_active
+    text spec_source_url
+    boolean spec_verified
+    tsvector search_vector
+    timestamp_with_time_zone created_at
+    timestamp_with_time_zone updated_at
+  }
+  case_specs {
+    integer part_id PK,FK
+    varchar[]_array supported_form_factors
+    smallint max_gpu_length_mm
+    smallint max_cooler_height_mm
+    smallint[]_array radiator_support_mm
+    varchar[]_array psu_form_factors
+    smallint included_fans
+    case_side_panel side_panel
+  }
+  cooler_specs {
+    integer part_id PK,FK
+    cooler_type type
+    varchar[]_array supported_sockets
+    smallint height_mm
+    smallint radiator_mm
+    integer max_tdp_watt
+  }
+  cpu_specs {
+    integer part_id PK,FK
+    varchar socket
+    varchar generation
+    smallint cores
+    smallint threads
+    numeric base_clock_ghz
+    numeric boost_clock_ghz
+    integer tdp_watt
+    boolean has_igpu
+    boolean includes_cooler
+    varchar[]_array memory_types
+    smallint perf_score
+  }
+  gpu_specs {
+    integer part_id PK,FK
+    varchar chipset
+    smallint vram_gb
+    smallint length_mm
+    numeric slot_width
+    integer tbp_watt
+    jsonb power_connectors
+    smallint perf_score
+  }
+  motherboard_specs {
+    integer part_id PK,FK
+    varchar socket
+    varchar chipset
+    motherboard_form_factor form_factor
+    memory_type memory_type
+    smallint memory_slots
+    smallint max_memory_gb
+    integer max_memory_speed
+    smallint m2_slots
+    smallint sata_ports
+    varchar[]_array supported_generations
+    varchar[]_array bios_update_generations
+    boolean wifi
+  }
+  psu_specs {
+    integer part_id PK,FK
+    integer wattage
+    psu_efficiency efficiency
+    psu_form_factor form_factor
+    psu_modular modular
+    jsonb pcie_connectors
+  }
+  ram_specs {
+    integer part_id PK,FK
+    memory_type type
+    smallint capacity_per_stick_gb
+    smallint sticks_in_kit
+    integer speed_mts
+    smallint cas_latency
+    boolean rgb
+  }
+  storage_specs {
+    integer part_id PK,FK
+    storage_type type
+    storage_interface interface
+    integer capacity_gb
+    integer read_mbps
+    integer write_mbps
+  }
+  parts ||--o{ part_price_history : "part_id"
+  categories ||--o{ parts : "category_id"
+  brands ||--o{ parts : "brand_id"
+  parts ||--o| case_specs : "part_id"
+  parts ||--o| cooler_specs : "part_id"
+  parts ||--o| cpu_specs : "part_id"
+  parts ||--o| gpu_specs : "part_id"
+  parts ||--o| motherboard_specs : "part_id"
+  parts ||--o| psu_specs : "part_id"
+  parts ||--o| ram_specs : "part_id"
+  parts ||--o| storage_specs : "part_id"

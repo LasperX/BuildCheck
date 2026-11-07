@@ -1,0 +1,39 @@
+%% ผังเว็บไซต์ (หัวข้อ 5.1, 5.2, 5.4) สีบอกสิทธิ์: น้ำเงิน = ทุกคน · เขียว = สมาชิก · ส้ม = แอดมิน
+flowchart TB
+  home["หน้าแรก /"]
+  home --> builder["จัดสเปก /builder"]
+  home --> budget["จัดตามงบ /budget"]
+  home --> parts["คลังอะไหล่ /parts"]
+  parts --> partCat["หมวด /parts/[หมวด]"] --> partDetail["รายละเอียด /parts/[หมวด]/[slug]"]
+  home --> used["ตลาดมือสอง /used"]
+  used --> usedReport["รายงานราคา /used/report"]
+  home --> builds["ชุมชน /builds"] --> buildDetail["รายละเอียดสเปก /builds/[id]"]
+  buildDetail --> profile["โปรไฟล์ /u/[username]"]
+  home --> compare["เทียบสเปก /compare"]
+  home --> guide["คู่มือ /guide"]
+  home --> about["เกี่ยวกับ /about"]
+  home --> privacy["นโยบาย /privacy"]
+  home --> auth["สมัคร / เข้าสู่ระบบ / ลืมรหัส"]
+
+  home --> me["บัญชีของฉัน /me"]
+  me --> meBuilds["สเปกของฉัน /me/builds"]
+  me --> meFav["รายการโปรด /me/favorites"]
+  me --> meNoti["การแจ้งเตือน /me/notifications"]
+  me --> meAlerts["เตือนราคา /me/price-alerts"]
+  me --> meSettings["ตั้งค่าบัญชี /me/settings"]
+
+  home --> adminHome["Dashboard /admin"]
+  adminHome --> aParts["จัดการอะไหล่ /admin/parts"] --> aPartForm["เพิ่ม/แก้ /admin/parts/new, [id]"]
+  aParts --> aImport["นำเข้า CSV /admin/parts/import"]
+  adminHome --> aUsed["ราคามือสอง /admin/used-prices"]
+  adminHome --> aUsers["ผู้ใช้ /admin/users"]
+  adminHome --> aReports["รายงาน /admin/reports"]
+  adminHome --> aSettings["ตั้งค่าระบบ /admin/settings"]
+  adminHome --> aLogs["บันทึกการทำงาน /admin/logs"]
+
+  classDef all fill:#e8eefc,stroke:#2753d6,color:#0f1a3d
+  classDef member fill:#e6f6ee,stroke:#0f7a4a,color:#0b3d26
+  classDef admin fill:#fdf0e6,stroke:#b5530e,color:#4a2206
+  class home,builder,budget,parts,partCat,partDetail,used,builds,buildDetail,profile,compare,guide,about,privacy,auth all
+  class usedReport,me,meBuilds,meFav,meNoti,meAlerts,meSettings member
+  class adminHome,aParts,aPartForm,aImport,aUsed,aUsers,aReports,aSettings,aLogs admin

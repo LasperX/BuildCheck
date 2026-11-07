@@ -1,0 +1,161 @@
+erDiagram
+  accounts {
+    text id PK
+    text user_id FK
+  }
+  sessions {
+    text id PK
+    text user_id FK
+  }
+  users {
+    text id PK
+  }
+  verifications {
+    text id PK
+  }
+  brands {
+    serial id PK
+  }
+  categories {
+    serial id PK
+  }
+  part_price_history {
+    serial id PK
+    integer part_id FK
+    text changed_by FK
+  }
+  parts {
+    serial id PK
+    integer category_id FK
+    integer brand_id FK
+  }
+  case_specs {
+    integer part_id PK,FK
+  }
+  cooler_specs {
+    integer part_id PK,FK
+  }
+  cpu_specs {
+    integer part_id PK,FK
+  }
+  gpu_specs {
+    integer part_id PK,FK
+  }
+  motherboard_specs {
+    integer part_id PK,FK
+  }
+  psu_specs {
+    integer part_id PK,FK
+  }
+  ram_specs {
+    integer part_id PK,FK
+  }
+  storage_specs {
+    integer part_id PK,FK
+  }
+  build_items {
+    serial id PK
+    text build_id FK
+    integer part_id FK
+  }
+  build_votes {
+    text build_id PK,FK
+    text user_id PK,FK
+  }
+  builds {
+    text id PK
+    text user_id FK
+    text forked_from_id FK
+  }
+  comments {
+    serial id PK
+    text build_id FK
+    text user_id FK
+    integer parent_id FK
+  }
+  favorites {
+    text user_id PK,FK
+    text build_id PK,FK
+  }
+  admin_logs {
+    bigserial id PK
+    text admin_id FK
+  }
+  notifications {
+    serial id PK
+    text user_id FK
+    text actor_id FK
+    text build_id FK
+  }
+  rate_limits {
+    varchar key PK
+  }
+  reports {
+    serial id PK
+    text reporter_id FK
+    text resolved_by FK
+  }
+  settings {
+    varchar key PK
+    text updated_by FK
+  }
+  part_used_prices {
+    serial id PK
+    integer part_id FK
+    text updated_by FK
+  }
+  part_used_stats {
+    integer part_id PK,FK
+    used_grade grade PK
+  }
+  price_alerts {
+    serial id PK
+    text user_id FK
+    integer part_id FK
+  }
+  used_price_reports {
+    serial id PK
+    integer part_id FK
+    text user_id FK
+    text reviewed_by FK
+  }
+  users ||--o{ accounts : "user_id"
+  users ||--o{ sessions : "user_id"
+  parts ||--o{ part_price_history : "part_id"
+  users |o--o{ part_price_history : "changed_by"
+  categories ||--o{ parts : "category_id"
+  brands ||--o{ parts : "brand_id"
+  parts ||--o| case_specs : "part_id"
+  parts ||--o| cooler_specs : "part_id"
+  parts ||--o| cpu_specs : "part_id"
+  parts ||--o| gpu_specs : "part_id"
+  parts ||--o| motherboard_specs : "part_id"
+  parts ||--o| psu_specs : "part_id"
+  parts ||--o| ram_specs : "part_id"
+  parts ||--o| storage_specs : "part_id"
+  builds ||--o{ build_items : "build_id"
+  parts ||--o{ build_items : "part_id"
+  builds ||--o{ build_votes : "build_id"
+  users ||--o{ build_votes : "user_id"
+  users ||--o{ builds : "user_id"
+  builds |o--o{ builds : "forked_from_id"
+  builds ||--o{ comments : "build_id"
+  users ||--o{ comments : "user_id"
+  comments |o--o{ comments : "parent_id"
+  users ||--o{ favorites : "user_id"
+  builds ||--o{ favorites : "build_id"
+  users |o--o{ admin_logs : "admin_id"
+  users ||--o{ notifications : "user_id"
+  users |o--o{ notifications : "actor_id"
+  builds |o--o{ notifications : "build_id"
+  users |o--o{ reports : "reporter_id"
+  users |o--o{ reports : "resolved_by"
+  users |o--o{ settings : "updated_by"
+  parts ||--o{ part_used_prices : "part_id"
+  users |o--o{ part_used_prices : "updated_by"
+  parts ||--o{ part_used_stats : "part_id"
+  users ||--o{ price_alerts : "user_id"
+  parts ||--o{ price_alerts : "part_id"
+  parts ||--o{ used_price_reports : "part_id"
+  users |o--o{ used_price_reports : "user_id"
+  users |o--o{ used_price_reports : "reviewed_by"

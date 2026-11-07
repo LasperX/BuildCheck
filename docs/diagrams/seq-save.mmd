@@ -1,0 +1,19 @@
+%% ลำดับการทำงานเมื่อเลือกอะไหล่และบันทึกอัตโนมัติ (หัวข้อ 8.1)
+sequenceDiagram
+  actor U as ผู้ใช้
+  participant P as หน้าต่างเลือกอะไหล่
+  participant Z as Zustand
+  participant E as Engine (เบราว์เซอร์)
+  participant A as Server Action saveBuild
+  participant D as PostgreSQL
+  U->>P: กดเลือกอะไหล่
+  P->>Z: addPart / replacePart
+  Z->>E: checkBuild(สเปกใหม่)
+  E-->>U: ผลตรวจ วัตต์ ราคา ขึ้นทันที
+  Note over Z,A: หยุดแก้ 2 วินาที (debounce) และล็อกอินอยู่
+  Z->>A: saveBuild(รหัสอะไหล่ จำนวน สภาพ)
+  A->>A: ตรวจสิทธิ์ + Zod + จำกัด 60 ครั้ง/นาที
+  A->>D: อ่านสเปกและราคาจริงของอะไหล่
+  A->>A: checkBuild ซ้ำด้วยข้อมูลจากฐานข้อมูล
+  A->>D: บันทึก builds + build_items (Transaction)
+  A-->>U: บันทึกแล้ว

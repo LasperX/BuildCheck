@@ -1,0 +1,34 @@
+%% สถาปัตยกรรมระบบ (หัวข้อ 7, 8.1)
+flowchart LR
+  subgraph Browser["เบราว์เซอร์"]
+    ui["หน้าเว็บ React<br/>(Next.js App Router)"]
+    store["Zustand<br/>สเปกที่กำลังจัด<br/>(localStorage)"]
+    engineC["Compatibility Engine<br/>(ฟังก์ชันล้วน)"]
+    ui <--> store --> engineC --> ui
+  end
+  subgraph Vercel["Vercel (Next.js 16)"]
+    rsc["Server Components<br/>+ แคช use cache"]
+    actions["Server Actions<br/>ตรวจสิทธิ์ + Zod"]
+    engineS["Compatibility Engine<br/>(โค้ดชุดเดียวกัน ตรวจซ้ำ)"]
+    api["Route Handlers<br/>/api/auth · /api/notifications/stream (SSE)<br/>/api/og · /api/cron/used-stats"]
+    auth["Better Auth"]
+    actions --> engineS
+  end
+  db[("PostgreSQL 18<br/>Neon / Docker<br/>30 ตาราง (Drizzle)")]
+  mail["Resend<br/>อีเมล"]
+  s3["ที่เก็บรูป S3"]
+  google["Google OAuth"]
+  cron["Vercel Cron<br/>ทุกคืน 02:00"]
+
+  ui -- "หน้าเว็บ / RSC" --> rsc
+  ui -- "บันทึก โหวต คอมเมนต์" --> actions
+  ui -- "EventSource" --> api
+  rsc --> db
+  actions --> db
+  api --> db
+  auth --> db
+  api --> auth
+  auth --> mail
+  auth --> google
+  actions --> s3
+  cron --> api

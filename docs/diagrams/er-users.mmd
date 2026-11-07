@@ -1,0 +1,54 @@
+erDiagram
+  accounts {
+    text id PK
+    text user_id FK
+    varchar provider_id
+    text account_id
+    text password_hash
+    text access_token
+    text refresh_token
+    text id_token
+    timestamp_with_time_zone access_token_expires_at
+    timestamp_with_time_zone refresh_token_expires_at
+    text scope
+    timestamp_with_time_zone created_at
+    timestamp_with_time_zone updated_at
+  }
+  sessions {
+    text id PK
+    text user_id FK
+    text token
+    timestamp_with_time_zone expires_at
+    text ip_address
+    text user_agent
+    text impersonated_by
+    timestamp_with_time_zone created_at
+    timestamp_with_time_zone updated_at
+  }
+  users {
+    text id PK
+    varchar email
+    boolean email_verified
+    varchar username
+    varchar display_username
+    varchar display_name
+    text image
+    varchar bio
+    user_role role
+    boolean banned
+    text ban_reason
+    timestamp_with_time_zone ban_expires
+    jsonb muted_notifications
+    timestamp_with_time_zone created_at
+    timestamp_with_time_zone updated_at
+  }
+  verifications {
+    text id PK
+    text identifier
+    text value
+    timestamp_with_time_zone expires_at
+    timestamp_with_time_zone created_at
+    timestamp_with_time_zone updated_at
+  }
+  users ||--o{ accounts : "user_id"
+  users ||--o{ sessions : "user_id"

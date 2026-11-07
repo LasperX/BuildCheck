@@ -1,0 +1,17 @@
+%% แจ้งเตือนแบบสดด้วย SSE (หัวข้อ 3.8) ตามโค้ดใน src/app/api/notifications/stream/route.ts
+sequenceDiagram
+  actor B as สมาชิก B
+  participant A1 as Server Action addComment
+  participant D as ตาราง notifications
+  participant S as /api/notifications/stream
+  actor O as เจ้าของสเปก (เปิดเว็บอยู่)
+  O->>S: EventSource เชื่อมต่อ
+  S->>D: นับที่ยังไม่อ่าน + รายการล่าสุด
+  S-->>O: event: snapshot
+  B->>A1: คอมเมนต์
+  A1->>D: INSERT comment + notification (ไม่แจ้งตัวเอง ข้ามประเภทที่ปิด)
+  loop ทุก 3 วินาที
+    S->>D: แถวที่ id > ตัวล่าสุด
+  end
+  S-->>O: event: notification (id = รหัสแถว)
+  Note over S,O: ครบ 50 วินาทีปิดเอง เบราว์เซอร์ต่อใหม่พร้อม Last-Event-ID

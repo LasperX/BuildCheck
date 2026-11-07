@@ -1,0 +1,52 @@
+erDiagram
+  users {
+    text id PK
+  }
+  admin_logs {
+    bigserial id PK
+    text admin_id FK
+    varchar action
+    varchar target_type
+    varchar target_id
+    jsonb changes
+    timestamp_with_time_zone created_at
+  }
+  notifications {
+    serial id PK
+    text user_id FK
+    notification_type type
+    text actor_id FK
+    text build_id FK
+    varchar message
+    timestamp_with_time_zone read_at
+    timestamp_with_time_zone created_at
+  }
+  rate_limits {
+    varchar key PK
+    integer count
+    timestamp_with_time_zone window_start
+  }
+  reports {
+    serial id PK
+    text reporter_id FK
+    report_target_type target_type
+    text target_id
+    report_reason reason
+    text detail
+    report_status status
+    text resolved_by FK
+    timestamp_with_time_zone created_at
+    timestamp_with_time_zone resolved_at
+  }
+  settings {
+    varchar key PK
+    jsonb value
+    text updated_by FK
+    timestamp_with_time_zone updated_at
+  }
+  users |o--o{ admin_logs : "admin_id"
+  users ||--o{ notifications : "user_id"
+  users |o--o{ notifications : "actor_id"
+  users |o--o{ reports : "reporter_id"
+  users |o--o{ reports : "resolved_by"
+  users |o--o{ settings : "updated_by"

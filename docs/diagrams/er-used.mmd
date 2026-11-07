@@ -1,0 +1,63 @@
+erDiagram
+  users {
+    text id PK
+  }
+  parts {
+    serial id PK
+    integer category_id FK
+    integer brand_id FK
+  }
+  part_used_prices {
+    serial id PK
+    integer part_id FK
+    used_grade grade
+    numeric min_price
+    numeric max_price
+    date surveyed_at
+    text source_note
+    text updated_by FK
+  }
+  part_used_stats {
+    integer part_id PK,FK
+    used_grade grade PK
+    numeric median_price
+    numeric p25_price
+    numeric p75_price
+    smallint report_count
+    used_price_source source
+    used_price_confidence confidence
+    timestamp_with_time_zone computed_at
+  }
+  price_alerts {
+    serial id PK
+    text user_id FK
+    integer part_id FK
+    used_grade grade
+    numeric target_price
+    timestamp_with_time_zone triggered_at
+    timestamp_with_time_zone created_at
+  }
+  used_price_reports {
+    serial id PK
+    integer part_id FK
+    text user_id FK
+    numeric price
+    used_grade grade
+    used_report_type report_type
+    used_report_channel channel
+    varchar province
+    smallint warranty_months_left
+    date seen_at
+    text proof_image_url
+    used_report_status status
+    text reviewed_by FK
+    timestamp_with_time_zone created_at
+  }
+  parts ||--o{ part_used_prices : "part_id"
+  users |o--o{ part_used_prices : "updated_by"
+  parts ||--o{ part_used_stats : "part_id"
+  users ||--o{ price_alerts : "user_id"
+  parts ||--o{ price_alerts : "part_id"
+  parts ||--o{ used_price_reports : "part_id"
+  users |o--o{ used_price_reports : "user_id"
+  users |o--o{ used_price_reports : "reviewed_by"

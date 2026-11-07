@@ -1,0 +1,70 @@
+erDiagram
+  users {
+    text id PK
+  }
+  parts {
+    serial id PK
+    integer category_id FK
+    integer brand_id FK
+  }
+  build_items {
+    serial id PK
+    text build_id FK
+    integer part_id FK
+    smallint quantity
+    numeric price_at_add
+    build_item_condition condition
+    numeric offered_price
+    smallint warranty_months_left
+  }
+  build_votes {
+    text build_id PK,FK
+    text user_id PK,FK
+    smallint value
+    timestamp_with_time_zone created_at
+  }
+  builds {
+    text id PK
+    text user_id FK
+    text forked_from_id FK
+    varchar title
+    text description
+    usage_type usage_type
+    numeric budget
+    build_visibility visibility
+    numeric total_price
+    numeric total_new_price
+    integer total_watt
+    smallint perf_score
+    compat_status compat_status
+    integer vote_score
+    integer view_count
+    timestamp_with_time_zone created_at
+    timestamp_with_time_zone updated_at
+  }
+  comments {
+    serial id PK
+    text build_id FK
+    text user_id FK
+    integer parent_id FK
+    varchar body
+    boolean is_hidden
+    timestamp_with_time_zone created_at
+    timestamp_with_time_zone updated_at
+  }
+  favorites {
+    text user_id PK,FK
+    text build_id PK,FK
+    timestamp_with_time_zone created_at
+  }
+  builds ||--o{ build_items : "build_id"
+  parts ||--o{ build_items : "part_id"
+  builds ||--o{ build_votes : "build_id"
+  users ||--o{ build_votes : "user_id"
+  users ||--o{ builds : "user_id"
+  builds |o--o{ builds : "forked_from_id"
+  builds ||--o{ comments : "build_id"
+  users ||--o{ comments : "user_id"
+  comments |o--o{ comments : "parent_id"
+  users ||--o{ favorites : "user_id"
+  builds ||--o{ favorites : "build_id"
