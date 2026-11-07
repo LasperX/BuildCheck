@@ -49,6 +49,9 @@ type BuilderState = {
   items: BuildItem[];
   past: BuildItem[][];
   future: BuildItem[][];
+  /** กรองอัจฉริยะ: ซ่อนรุ่นที่ใส่ไม่ได้ในหน้าต่างเลือก ค่าเริ่มต้นปิด ให้ผู้ใช้เห็นทุกรุ่นและเรียนรู้จากคำเตือน */
+  smartFilter: boolean;
+  setSmartFilter: (on: boolean) => void;
   setMeta: (patch: Partial<BuildMeta>) => void;
   setBuildId: (id: string | null) => void;
   /** โหลดสเปกที่บันทึกไว้มาแก้ ล้างประวัติย้อนกลับ */
@@ -94,6 +97,8 @@ export const useBuilderStore = create<BuilderState>()(
         items: [],
         past: [],
         future: [],
+        smartFilter: false,
+        setSmartFilter: (smartFilter) => set({ smartFilter }),
         setMeta: (patch) => set((state) => ({ meta: { ...state.meta, ...patch } })),
         setBuildId: (buildId) => set({ buildId }),
         loadBuild: ({ id, meta, items }) => set({ buildId: id, meta, items, past: [], future: [] }),
@@ -171,7 +176,13 @@ export const useBuilderStore = create<BuilderState>()(
         return state;
       },
       // ไม่เก็บประวัติย้อนกลับลงเครื่อง
-      partialize: (state) => ({ items: state.items, buildId: state.buildId, meta: state.meta }),
+      // smartFilter เป็นค่าที่ผู้ใช้ตั้งเอง จึงจำไว้ และไม่ถูกล้างเมื่อเริ่มสเปกใหม่
+      partialize: (state) => ({
+        items: state.items,
+        buildId: state.buildId,
+        meta: state.meta,
+        smartFilter: state.smartFilter,
+      }),
       skipHydration: true, // โหลดหลัง Hydrate เพื่อไม่ให้หน้าเว็บจากเซิร์ฟเวอร์กับเบราว์เซอร์ไม่ตรงกัน
     },
   ),

@@ -24,7 +24,7 @@ import type { RuleCode, UsageType } from '@/lib/compat';
 import { formatBaht, type PartFacets } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS, type CategorySlug } from '@/lib/parts/spec-fields';
 import { cn } from '@/lib/utils';
-import type { BuildItem } from '@/stores/builder-store';
+import { type BuildItem, useBuilderStore } from '@/stores/builder-store';
 
 import { LEVEL_UI } from './levels';
 
@@ -110,9 +110,12 @@ function PickerBody({
   const Icon = CATEGORY_ICONS[category];
 
   const [q, setQ] = useState('');
-  // ปิดกรองอัจฉริยะเป็นค่าเริ่มต้น ให้ผู้ใช้เห็นทุกรุ่นและเรียนรู้จากป้ายเหตุผลว่าทำไมใส่ไม่ได้
-  // ยกเว้นเปิดจากปุ่มแก้ปัญหา (fix) ที่ต้องกรองให้เหลือเฉพาะรุ่นที่แก้ปัญหานั้นได้
-  const [smart, setSmart] = useState(Boolean(target.fix));
+  // กรองอัจฉริยะใช้ค่าเดียวกับสวิตช์บนหน้าจัดสเปก (ค่าเริ่มต้นปิด) กดในหน้าต่างนี้ก็เปลี่ยนค่านั้นด้วย
+  // ยกเว้นเปิดจากปุ่มแก้ปัญหา (fix) ที่เปิดไว้เสมอ เพื่อให้เหลือเฉพาะรุ่นที่แก้ปัญหานั้นได้ และไม่ไปเปลี่ยนค่าหลัก
+  const savedSmart = useBuilderStore((s) => s.smartFilter);
+  const [fixSmart, setFixSmart] = useState(true);
+  const smart = target.fix ? fixSmart : savedSmart;
+  const setSmart = target.fix ? setFixSmart : useBuilderStore.getState().setSmartFilter;
   const [sort, setSort] = useState<(typeof SORTS)[number]['value']>(
     target.near !== undefined ? 'near' : 'popular',
   );
