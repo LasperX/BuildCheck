@@ -1,7 +1,7 @@
 'use server';
 
 import { eq } from 'drizzle-orm';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 import { users } from '@/db/schema';
 import { db } from '@/lib/db';
@@ -28,6 +28,9 @@ export async function updateProfile(input: unknown): Promise<ActionResult> {
     .where(eq(users.id, authz.user.id));
 
   revalidatePath('/me/settings');
+  // ชื่อ รูป และคำแนะนำตัวแสดงในโปรไฟล์สาธารณะและการ์ดสเปกที่แคชไว้
+  updateTag('profiles');
+  updateTag('builds');
   return { ok: true };
 }
 
@@ -44,5 +47,8 @@ export async function updateAvatar(formData: FormData): Promise<ActionResult> {
 
   await db.update(users).set({ image: uploaded.url }).where(eq(users.id, authz.user.id));
   revalidatePath('/me/settings');
+  // ชื่อ รูป และคำแนะนำตัวแสดงในโปรไฟล์สาธารณะและการ์ดสเปกที่แคชไว้
+  updateTag('profiles');
+  updateTag('builds');
   return { ok: true };
 }

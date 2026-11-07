@@ -1,4 +1,4 @@
-import { Copy, ImageDown, Pencil } from 'lucide-react';
+import { Copy, GitFork, ImageDown, Pencil } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -7,6 +7,14 @@ import { Suspense } from 'react';
 import { IssueList } from '@/components/builder/issue-list';
 import { STATUS_UI } from '@/components/builder/levels';
 import { PowerGauge } from '@/components/builder/power-gauge';
+import {
+  CompareButton,
+  FavoriteButton,
+  ForkButton,
+  ReportButton,
+  VoteButtons,
+} from '@/components/community/build-actions';
+import { CommentSection } from '@/components/community/comment-section';
 import { VisibilitySelect } from '@/components/builder/visibility-select';
 import { PartImage } from '@/components/parts/part-icon';
 import { Badge } from '@/components/ui/badge';
@@ -14,16 +22,17 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { qrSvg, shortUrl } from '@/lib/builder/share';
 import { USAGE_LABELS, VISIBILITY_LABELS } from '@/lib/builder/types';
-import { checkBuild } from '@/lib/compat';
+import { checkBuild, unitPrice } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS } from '@/lib/parts/spec-fields';
 import { getSession } from '@/lib/session';
 import { cn } from '@/lib/utils';
 import { buildIdSchema } from '@/lib/validators/builds';
 import { canViewBuild, getBuildWithItems } from '@/server/queries/builds';
+import { getBuildSocial } from '@/server/queries/community';
 import { getSystemConfig } from '@/server/queries/settings';
 
-// หน้ารายละเอียดสเปก /builds/[id] ส่วนโหวต คอมเมนต์ และ Fork เพิ่มในเฟส 10
+// หน้ารายละเอียดสเปก /builds/[id] (หัวข้อ 5.1) รายการอะไหล่ ผลตรวจ แชร์ โหวต คอมเมนต์ และ Fork
 
 type Params = PageProps<'/builds/[id]'>['params'];
 
@@ -50,7 +59,11 @@ async function BuildContent({ params }: { params: Params }) {
   if (!found || !canViewBuild(found.build, session?.user)) notFound();
 
   const { build, items } = found;
-  const isOwner = session?.user.id === build.userId;
+  const viewer = session?.user ?? null;
+  const isOwner = viewer?.id === build.userId;
+  const social = await getBuildSocial(build.id, build.forkedFromId, viewer?.id ?? null);
+  // สเปกส่วนตัวเห็นได้แค่เจ้าของ จึงไม่มีส่วนชุมชน
+  const community = build.visibility !== 'private';
   // ตรวจซ้ำด้วยข้อมูลอะไหล่ล่าสุด เผื่อแอดมินแก้สเปกอะไหล่หลังบันทึก
   const { engine } = await getSystemConfig();
   const result = checkBuild({
@@ -84,6 +97,19 @@ async function BuildContent({ params }: { params: Params }) {
               </span>
               <span>· แก้ไขล่าสุด {build.updatedAt.toLocaleDateString('th-TH')}</span>
             </p>
+            {social.forkedFrom && (
+              <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+                <GitFork aria-hidden className="size-4" />
+                Fork มาจาก{' '}
+                <Link
+                  href={`/builds/${social.forkedFrom.id}`}
+                  className="text-link hover:underline"
+                >
+                  {social.forkedFrom.title}
+                </Link>{' '}
+                ของ {social.forkedFrom.ownerName}
+              </p>
+            )}
             {build.description && <p className="mt-3 whitespace-pre-line">{build.description}</p>}
           </div>
           {isOwner && (
@@ -95,6 +121,45 @@ async function BuildContent({ params }: { params: Params }) {
             </Button>
           )}
         </div>
+
+        <div className="mt-4 flex flex-wrap items-start gap-2">
+          {community && (
+            <VoteButtons
+              buildId={build.id}
+              score={build.voteScore}
+              myVote={social.myVote}
+              loggedIn={Boolean(viewer)}
+              isOwner={isOwner}
+            />
+          )}
+          {community && (
+            <FavoriteButton
+              buildId={build.id}
+              favorited={social.favorited}
+              count={social.favoriteCount}
+              loggedIn={Boolean(viewer)}
+            />
+          )}
+          {isOwner ? (
+            <ForkButton buildId={build.id} loggedIn label="คัดลอกเป็นสเปกใหม่" />
+          ) : (
+            <ForkButton buildId={build.id} loggedIn={Boolean(viewer)} />
+          )}
+          <CompareButton buildId={build.id} />
+          {community && !isOwner && (
+            <ReportButton
+              targetType="build"
+              targetId={build.id}
+              loggedIn={Boolean(viewer)}
+              returnTo={`/builds/${build.id}`}
+            />
+          )}
+        </div>
+        {social.forkCount > 0 && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            มีคน Fork สเปกนี้ไปแล้ว <span className="font-mono">{social.forkCount}</span> ครั้ง
+          </p>
+        )}
 
         {status && StatusIcon && (
           <div className={cn('mt-4 flex items-start gap-3 rounded-xl border p-4', status.soft)}>
@@ -133,6 +198,11 @@ async function BuildContent({ params }: { params: Params }) {
                     >
                       {item.part.brandName} {item.part.model}
                     </Link>
+                    {item.condition !== 'new' && (
+                      <Badge variant="used" className="ml-1 align-middle">
+                        มือสอง {item.condition}
+                      </Badge>
+                    )}
                     {item.quantity > 1 && (
                       <span className="ml-1 font-mono text-sm text-muted-foreground">
                         × {item.quantity}
@@ -140,7 +210,7 @@ async function BuildContent({ params }: { params: Params }) {
                     )}
                   </div>
                   <span className="font-mono font-semibold tabular-nums">
-                    {formatBaht(item.part.price * item.quantity)}
+                    {formatBaht(unitPrice(item) * item.quantity)}
                   </span>
                 </li>
               ))}
@@ -154,6 +224,15 @@ async function BuildContent({ params }: { params: Params }) {
           </h2>
           <IssueList issues={result.issues} empty={items.length === 0} />
         </section>
+
+        {community && (
+          <CommentSection
+            buildId={build.id}
+            ownerId={build.userId}
+            comments={social.comments}
+            viewer={viewer ? { id: viewer.id, verified: viewer.emailVerified } : null}
+          />
+        )}
       </div>
 
       <aside className="flex flex-col gap-4 self-start lg:sticky lg:top-20">
@@ -162,6 +241,12 @@ async function BuildContent({ params }: { params: Params }) {
           <p className="font-mono text-3xl font-semibold">{formatBaht(result.price.total)}</p>
           {build.budget !== null && (
             <p className="text-xs text-muted-foreground">งบ {formatBaht(build.budget)}</p>
+          )}
+          {result.price.saved > 0 && (
+            <p className="mt-1 text-xs text-used-fg">
+              ราคาแบบผสมมือสอง ประหยัดกว่าซื้อใหม่{' '}
+              <b className="font-mono">{formatBaht(result.price.saved)}</b>
+            </p>
           )}
           <div className="mt-4">
             <PowerGauge power={result.power} />

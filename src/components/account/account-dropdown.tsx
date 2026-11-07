@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutDashboard, LogOut, Settings, BellRing, Megaphone } from 'lucide-react';
+import { LayoutDashboard, LogOut, Settings, BellRing, Cpu, Heart, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -47,6 +47,18 @@ export function AccountDropdown({
           <Link href="/me/settings">
             <Settings />
             ตั้งค่าบัญชี
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/me/builds">
+            <Cpu />
+            สเปกของฉัน
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/me/favorites">
+            <Heart />
+            รายการโปรด
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
