@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 // เตรียมสภาพแวดล้อมให้ Server Actions ทำงานนอก Next.js
 //   - next/headers: คืน Header ของ "ผู้ใช้ปัจจุบัน" ที่เทสต์ตั้งไว้ (คุกกี้ Session จริงจาก Better Auth)
 //   - next/cache: ล้างแคชไม่มีผลในเทสต์ จึงเป็นฟังก์ชันว่าง
-//   - next/server after(): รันงานเบื้องหลังทันที
+//   - next/server after(): รันงานเบื้องหลังทันที · connection(): คืนค่าทันที
 // การตรวจสิทธิ์ใช้โค้ดจริงทั้งหมด (lib/session → Better Auth → ตาราง sessions) ไม่ได้ mock
 
 try {
@@ -38,6 +38,8 @@ vi.mock('next/cache', () => ({
 
 vi.mock('next/server', async (importOriginal) => ({
   ...(await importOriginal<typeof import('next/server')>()),
+  // connection() บอก Next.js ว่าต้องรอคำขอจริง ในเทสต์มีคำขอเสมอ จึงคืนค่าทันที
+  connection: async () => undefined,
   after: (task: unknown) => {
     // งานเบื้องหลังของ Better Auth (ส่งอีเมล) ไม่ต้องรอ และไม่ให้ Error ทำให้เทสต์ล้ม
     Promise.resolve(typeof task === 'function' ? (task as () => unknown)() : task).catch(() => {});

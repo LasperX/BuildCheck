@@ -25,7 +25,26 @@ export async function generateMetadata({
   };
 }
 
-export default async function CategoryPage({ params }: PageProps<'/parts/[category]'>) {
+// อ่าน params ภายใน <Suspense> เพื่อให้กดเปลี่ยนหมวดแล้วเห็นโครงหน้าทันที ระหว่างรอข้อมูลหมวดใหม่
+export default function CategoryPage({ params }: PageProps<'/parts/[category]'>) {
+  return (
+    <Suspense fallback={<CategorySkeleton />}>
+      <CategoryContent params={params} />
+    </Suspense>
+  );
+}
+
+function CategorySkeleton() {
+  return (
+    <main className="mx-auto w-full max-w-[1328px] px-4 py-4 md:px-6">
+      <Skeleton className="h-4 w-40" />
+      <Skeleton className="mt-2 mb-4 h-8 w-56" />
+      <Skeleton className="h-96 rounded-lg" />
+    </main>
+  );
+}
+
+async function CategoryContent({ params }: Pick<PageProps<'/parts/[category]'>, 'params'>) {
   const { category } = await params;
   if (!isCategorySlug(category)) notFound();
   const facets = await getPartFacets(category);
