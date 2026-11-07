@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { AccountDropdown } from '@/components/account/account-dropdown';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 import { Button } from '@/components/ui/button';
 import { getSession } from '@/lib/session';
 
@@ -22,10 +23,13 @@ export async function AccountMenu() {
   }
 
   return (
-    <AccountDropdown
-      displayName={session.user.name}
-      image={session.user.image ?? null}
-      isAdmin={session.user.role === 'admin'}
-    />
+    <div className="flex items-center gap-2">
+      <NotificationBell />
+      <AccountDropdown
+        displayName={session.user.name}
+        image={session.user.image ?? null}
+        isAdmin={session.user.role === 'admin'}
+      />
+    </div>
   );
 }

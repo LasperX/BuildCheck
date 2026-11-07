@@ -10,6 +10,7 @@ import { type CsvParseResult, parsePartsCsv } from '@/lib/parts/csv';
 import { type CategorySlug, isCategorySlug } from '@/lib/parts/spec-fields';
 import { type ActionResult, authorizeAdmin } from '@/lib/session';
 import { uploadImage } from '@/lib/storage';
+import { notifyPriceChange } from '@/server/notify';
 import { partInputSchema, priceUpdateSchema } from '@/lib/validators/parts';
 
 // ทุกฟังก์ชันในไฟล์นี้เรียกจากเบราว์เซอร์ได้ตรงๆ จึงต้องขึ้นต้นด้วย authorizeAdmin() เสมอ
@@ -41,6 +42,14 @@ export async function upsertPart(input: unknown): Promise<ActionResult & { id?: 
   try {
     const result = await db.transaction(async (tx) => {
       const written = await writePart(tx, parsed.data, authz.user.id);
+      // ราคาเปลี่ยน → แจ้งเจ้าของสเปกที่มีชิ้นนี้ (หัวข้อ 3.8)
+      if (written.priceChanged && !written.created) {
+        await notifyPriceChange(
+          tx,
+          { id: written.id, model: parsed.data.model, newPrice: parsed.data.price },
+          authz.user.id,
+        );
+      }
       await tx.insert(adminLogs).values({
         adminId: authz.user.id,
         action: written.created ? 'part.create' : 'part.update',
@@ -72,11 +81,15 @@ export async function updatePartPrice(input: unknown): Promise<ActionResult> {
   const { id, price } = parsed.data;
 
   const changed = await db.transaction(async (tx) => {
-    const [part] = await tx.select({ price: parts.price }).from(parts).where(eq(parts.id, id));
+    const [part] = await tx
+      .select({ price: parts.price, model: parts.model })
+      .from(parts)
+      .where(eq(parts.id, id));
     if (!part) return null;
     if (part.price === price) return false;
     await tx.update(parts).set({ price }).where(eq(parts.id, id));
     await tx.insert(partPriceHistory).values({ partId: id, price, changedBy: authz.user.id });
+    await notifyPriceChange(tx, { id, model: part.model, newPrice: price }, authz.user.id);
     await tx.insert(adminLogs).values({
       adminId: authz.user.id,
       action: 'part.price',
@@ -197,7 +210,15 @@ export async function importPartsCsv(
   try {
     await db.transaction(async (tx) => {
       for (const row of parsed.rows) {
-        if (row.ok) await writePart(tx, row.input, authz.user.id);
+        if (!row.ok) continue;
+        const written = await writePart(tx, row.input, authz.user.id);
+        if (written.priceChanged && !written.created) {
+          await notifyPriceChange(
+            tx,
+            { id: written.id, model: row.input.model, newPrice: row.input.price },
+            authz.user.id,
+          );
+        }
       }
       await tx.insert(adminLogs).values({
         adminId: authz.user.id,

@@ -1,4 +1,13 @@
-import { boolean, index, pgEnum, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  index,
+  jsonb,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 // หัวข้อ 6.1 กลุ่มผู้ใช้ (4 ตาราง)
 // คอลัมน์ที่มีหมายเหตุ "Better Auth" ไม่อยู่ในเอกสารสเปก แต่ไลบรารีต้องใช้ ตรวจจากแพ็กเกจ better-auth 1.7.18
@@ -20,6 +29,8 @@ export const users = pgTable('users', {
   banned: boolean('banned').notNull().default(false),
   banReason: text('ban_reason'),
   banExpires: timestamp('ban_expires', { withTimezone: true }), // Better Auth
+  // ประเภทการแจ้งเตือนที่ปิดไว้ (หัวข้อ 3.8) เช่น ['vote'] ว่าง = เปิดทุกประเภท (เพิ่มในเฟส 11)
+  mutedNotifications: jsonb('muted_notifications').$type<string[]>().notNull().default([]),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .notNull()

@@ -5,7 +5,6 @@ import { updateTag } from 'next/cache';
 
 import {
   adminLogs,
-  notifications,
   partUsedPrices,
   parts,
   priceAlerts,
@@ -13,6 +12,7 @@ import {
   usedPriceReports,
 } from '@/db/schema';
 import { db } from '@/lib/db';
+import { notify } from '@/server/notify';
 import { clientIp, hitRateLimit } from '@/lib/rate-limit';
 import {
   type ActionResult,
@@ -133,7 +133,7 @@ export async function reviewUsedReport(raw: unknown): Promise<ActionResult> {
         .select({ model: parts.model })
         .from(parts)
         .where(eq(parts.id, row.partId));
-      await tx.insert(notifications).values({
+      await notify(tx, {
         userId: row.userId,
         actorId: auth.user.id,
         type: 'report_reviewed',

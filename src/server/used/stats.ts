@@ -4,7 +4,6 @@ import { and, desc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm';
 
 import {
   categories,
-  notifications,
   partUsedPrices,
   partUsedStats,
   parts,
@@ -20,6 +19,7 @@ import {
   type UsedSurvey,
 } from '@/lib/compat/used-price';
 import { db } from '@/lib/db';
+import { notify } from '@/server/notify';
 import { formatBaht } from '@/lib/parts/catalog';
 import { isCategorySlug } from '@/lib/parts/spec-fields';
 
@@ -196,15 +196,12 @@ async function triggerPriceAlerts(partIds: number[]): Promise<number> {
           due.map((alert) => alert.id),
         ),
       );
-    await tx.insert(notifications).values(
+    await notify(
+      tx,
       due.map((alert) => ({
         userId: alert.userId,
         type: 'price_alert' as const,
-        message:
-          `ราคากลางมือสอง ${alert.model} เกรด ${alert.grade} ลดเหลือ ${formatBaht(alert.median)} ถึงราคาที่ตั้งไว้แล้ว`.slice(
-            0,
-            255,
-          ),
+        message: `ราคากลางมือสอง ${alert.model} เกรด ${alert.grade} ลดเหลือ ${formatBaht(alert.median)} ถึงราคาที่ตั้งไว้แล้ว`,
       })),
     );
   });

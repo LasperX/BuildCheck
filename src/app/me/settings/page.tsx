@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
 import { SettingsPanels } from '@/components/account/settings-panels';
+import { NotificationPrefs } from '@/components/notifications/notification-prefs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { accounts, users } from '@/db/schema';
 import { db } from '@/lib/db';
@@ -22,6 +23,7 @@ async function SettingsContent() {
       displayName: users.displayName,
       bio: users.bio,
       image: users.image,
+      muted: users.mutedNotifications,
     })
     .from(users)
     .where(eq(users.id, sessionUser.id));
@@ -31,11 +33,15 @@ async function SettingsContent() {
     .where(eq(accounts.userId, sessionUser.id));
 
   if (!user) return null;
+  const { muted, ...profile } = user;
   return (
-    <SettingsPanels
-      user={{ ...user, bio: user.bio ?? '', username: user.username ?? '' }}
-      hasPassword={logins.some((login) => login.providerId === 'credential')}
-    />
+    <div className="flex flex-col gap-4">
+      <SettingsPanels
+        user={{ ...profile, bio: profile.bio ?? '', username: profile.username ?? '' }}
+        hasPassword={logins.some((login) => login.providerId === 'credential')}
+      />
+      <NotificationPrefs muted={muted} />
+    </div>
   );
 }
 
