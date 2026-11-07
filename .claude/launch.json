@@ -4,15 +4,30 @@
     {
       "name": "web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
+      "runtimeArgs": [
+        "dev"
+      ],
       "port": 3100,
       "autoPort": false
     },
     {
       "name": "prototype",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["design/serve.mjs"],
+      "runtimeArgs": [
+        "design/serve.mjs"
+      ],
       "port": 4173
+    },
+    {
+      "name": "web-prod",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "start",
+        "-p",
+        "3100"
+      ],
+      "port": 3100,
+      "autoPort": false
     }
   ]
 }
