@@ -209,6 +209,8 @@ export type PowerResult = {
   /** สัดส่วนการใช้ไฟของ PSU 0.74 = 74% */
   load: number | null;
   level: PowerLevel;
+  /** ค่าเผื่อกำลังไฟที่ใช้คำนวณ (จากค่าตั้งระบบ) ใช้แสดงข้อความบนเกจ */
+  headroom: number;
   /** ใช้แสดงรายละเอียดว่าวัตต์มาจากไหน */
   breakdown: { label: string; watt: number }[];
 };

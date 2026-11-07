@@ -4,7 +4,7 @@ import type { PowerResult } from '@/lib/compat';
 import { cn } from '@/lib/utils';
 
 // เกจกำลังไฟครึ่งวงกลม (หัวข้อ 4.3 และมติ Q2)
-// เขียว: โหลดไม่เกิน 76.9% · เหลือง: 76.9–100% · แดง: เกิน 100%
+// เขียว: เผื่อไฟได้ตามค่าตั้งระบบ (ค่าตั้งต้น 30% = โหลดไม่เกิน 76.9%) · เหลือง: เผื่อไม่ถึงแต่ไม่เกิน 100% · แดง: เกิน 100%
 
 const STROKE = {
   none: 'var(--color-border-strong)',
@@ -19,6 +19,8 @@ const ARC = Math.PI * R; // ความยาวเส้นครึ่งว�
 export function PowerGauge({ power }: { power: PowerResult }) {
   const percent = power.load === null ? null : Math.round(power.load * 100);
   const fill = Math.min(power.load ?? 0, 1);
+  // ข้อความตามค่าเผื่อที่แอดมินตั้ง ไม่เขียนตายตัว
+  const headroom = Math.round(power.headroom * 100);
 
   const status = {
     none: {
@@ -29,10 +31,10 @@ export function PowerGauge({ power }: { power: PowerResult }) {
           : 'ยังไม่มีอะไหล่ที่ใช้ไฟ',
       cls: 'text-muted-foreground',
     },
-    ok: { icon: CircleCheck, text: 'กำลังไฟเพียงพอ เผื่อไว้ถึง 30%', cls: 'text-ok-fg' },
+    ok: { icon: CircleCheck, text: `กำลังไฟเพียงพอ เผื่อไว้ถึง ${headroom}%`, cls: 'text-ok-fg' },
     warning: {
       icon: TriangleAlert,
-      text: `เผื่อไม่ถึง 30% แนะนำ ${power.recommendedWatt} W`,
+      text: `เผื่อไม่ถึง ${headroom}% แนะนำ ${power.recommendedWatt} W`,
       cls: 'text-warn-fg',
     },
     error: {

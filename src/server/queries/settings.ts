@@ -11,12 +11,12 @@ import { DEFAULT_USED_SETTINGS, type UsedSettings } from '@/lib/compat/used-pric
 import type { EngineSettings, UsageType } from '@/lib/compat/types';
 import { db } from '@/lib/db';
 
-// ค่าตั้งระบบจากตาราง settings (แอดมินแก้ในหน้าตั้งค่าเฟส 12)
+// ค่าตั้งระบบจากตาราง settings (แอดมินแก้ที่ /admin/settings และ /admin/used-prices)
 // ยังไม่มีแถวหรือค่าผิดรูปแบบ → ใช้ค่าตั้งต้นในโค้ด ระบบจึงทำงานได้เสมอ
 
 const USAGES: UsageType[] = ['gaming', 'office', 'creator', 'streaming'];
 
-const ratioSchema = z
+export const ratioSchema = z
   .object({
     cpu: z.number().min(0).max(1),
     gpu: z.number().min(0).max(1),
@@ -30,7 +30,19 @@ const ratioSchema = z
   // สัดส่วนต้องรวมได้ 100% (ยอมคลาดจากการปัดเศษ 0.5%)
   .refine((r) => Math.abs(Object.values(r).reduce((a, b) => a + b, 0) - 1) < 0.005);
 
-const weightSchema = z.object({ cpu: z.number().min(0).max(1), gpu: z.number().min(0).max(1) });
+// น้ำหนัก CPU + การ์ดจอ ต้องรวมได้ 1 (หัวข้อ 4.4)
+export const weightSchema = z
+  .object({ cpu: z.number().min(0).max(1), gpu: z.number().min(0).max(1) })
+  .refine((w) => Math.abs(w.cpu + w.gpu - 1) < 0.005);
+
+export const usageWeightsSchema = z.object({
+  gaming: weightSchema,
+  office: weightSchema,
+  creator: weightSchema,
+  streaming: weightSchema,
+});
+export const psuHeadroomSchema = z.number().min(0).max(1);
+export const motherboardWattSchema = z.number().int().min(0).max(300);
 
 const rate = z.number().gt(0).max(1);
 export const depreciationSchema = z.object({
@@ -87,24 +99,15 @@ export async function getSystemConfig(): Promise<SystemConfig> {
 
   return {
     engine: {
-      psuHeadroom: read(
-        SETTING_KEYS.psuHeadroom,
-        z.number().min(0).max(1),
-        DEFAULT_SETTINGS.psuHeadroom,
-      ),
+      psuHeadroom: read(SETTING_KEYS.psuHeadroom, psuHeadroomSchema, DEFAULT_SETTINGS.psuHeadroom),
       motherboardDefaultWatt: read(
         SETTING_KEYS.motherboardDefaultWatt,
-        z.number().int().min(0).max(300),
+        motherboardWattSchema,
         DEFAULT_SETTINGS.motherboardDefaultWatt,
       ),
       usageWeights: read(
         SETTING_KEYS.usageWeights,
-        z.object({
-          gaming: weightSchema,
-          office: weightSchema,
-          creator: weightSchema,
-          streaming: weightSchema,
-        }),
+        usageWeightsSchema,
         DEFAULT_SETTINGS.usageWeights,
       ),
       legacySockets: read(

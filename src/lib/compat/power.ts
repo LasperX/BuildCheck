@@ -86,6 +86,7 @@ export function calculatePower(ctx: BuildContext): PowerResult {
     psuWatt,
     load,
     level: powerLevel(load, ctx.settings.psuHeadroom),
+    headroom: ctx.settings.psuHeadroom,
     breakdown,
   };
 }
