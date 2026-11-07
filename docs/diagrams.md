@@ -48,7 +48,7 @@ flowchart LR
 
 ```mermaid
 %% ผังเว็บไซต์ (หัวข้อ 5.1, 5.2, 5.4) สีบอกสิทธิ์: น้ำเงิน = ทุกคน · เขียว = สมาชิก · ส้ม = แอดมิน
-flowchart TB
+flowchart LR
   home["หน้าแรก /"]
   home --> builder["จัดสเปก /builder"]
   home --> budget["จัดตามงบ /budget"]
