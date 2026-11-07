@@ -38,11 +38,11 @@ test('สมัคร จัดสเปก แก้ปัญหา แชร�
     0,
   );
 
-  // 2. จงใจเปลี่ยนเมนบอร์ดเป็นคนละ Socket (ปิดกรองอัจฉริยะเพื่อให้เลือกได้)
+  // 2. จงใจเปลี่ยนเมนบอร์ดเป็นคนละ Socket (กรองอัจฉริยะปิดเป็นค่าเริ่มต้น จึงเลือกได้เลย)
   const wrongBoard = boardName.includes('เมนบอร์ด 1') ? 'ตัวอย่างเมนบอร์ด 2' : 'ตัวอย่างเมนบอร์ด 1';
   await board.getByRole('button', { name: /^เปลี่ยนรุ่น/ }).click();
   const picker = page.getByRole('dialog');
-  await picker.getByRole('switch').click();
+  await expect(picker.getByRole('switch')).not.toBeChecked();
   await picker.getByRole('button', { name: new RegExp(`^เลือก .*${wrongBoard}`) }).click();
   const issues = page.locator('#issues');
   await expect(issues.getByText('R01', { exact: true })).toBeVisible();

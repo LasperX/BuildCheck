@@ -110,7 +110,9 @@ function PickerBody({
   const Icon = CATEGORY_ICONS[category];
 
   const [q, setQ] = useState('');
-  const [smart, setSmart] = useState(true);
+  // ปิดกรองอัจฉริยะเป็นค่าเริ่มต้น ให้ผู้ใช้เห็นทุกรุ่นและเรียนรู้จากป้ายเหตุผลว่าทำไมใส่ไม่ได้
+  // ยกเว้นเปิดจากปุ่มแก้ปัญหา (fix) ที่ต้องกรองให้เหลือเฉพาะรุ่นที่แก้ปัญหานั้นได้
+  const [smart, setSmart] = useState(Boolean(target.fix));
   const [sort, setSort] = useState<(typeof SORTS)[number]['value']>(
     target.near !== undefined ? 'near' : 'popular',
   );
