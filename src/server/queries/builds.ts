@@ -4,6 +4,7 @@ import { asc, eq } from 'drizzle-orm';
 
 import { buildItems, builds, users } from '@/db/schema';
 import { db } from '@/lib/db';
+import { effectiveCondition } from '@/lib/compat';
 import { CATEGORY_SLUGS } from '@/lib/parts/spec-fields';
 
 import { getEngineParts } from './engine-parts';
@@ -63,9 +64,10 @@ export async function getBuildWithItems(id: string) {
         const part = byId.get(item.partId);
         if (!part) return [];
         // มือสองแนบราคากลางของเกรดนั้น Engine จะคำนวณราคาผสมและกฎ U06 ได้ตรงกับหน้าจัดสเปก
-        const usedPrice =
-          item.condition === 'new' ? null : (part.used?.[item.condition].median ?? null);
-        return [{ ...item, part, usedPrice }];
+        // ชิ้นที่มีแต่มือสองแสดงเป็นมือสองเสมอ แม้สเปกเก่าจะบันทึกเป็นมือหนึ่งไว้
+        const condition = effectiveCondition(part, item.condition);
+        const usedPrice = condition === 'new' ? null : (part.used?.[condition].median ?? null);
+        return [{ ...item, condition, part, usedPrice }];
       })
       .sort(
         (a, b) =>

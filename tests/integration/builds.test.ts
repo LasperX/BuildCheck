@@ -157,3 +157,28 @@ describe('deleteBuild และ shareBuild', () => {
     expect((await deleteBuild("x' OR 1=1 --")).ok).toBe(false);
   });
 });
+
+describe('รุ่นที่มีแต่มือสอง', () => {
+  it('ส่งมาเป็นมือหนึ่ง เซิร์ฟเวอร์บันทึกเป็นมือสองเกรด B (ไม่เชื่อค่าจากหน้าเว็บ)', async () => {
+    await db.update(parts).set({ availability: 'used_only' }).where(eq(parts.id, cpuId));
+    try {
+      actAs(owner);
+      const result = await saveBuild({
+        ...meta,
+        items: [
+          { partId: cpuId, quantity: 1, condition: 'new' },
+          { partId: boardId, quantity: 1, condition: 'new' },
+        ],
+      });
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      const items = await itemsOf(result.id);
+      expect(items.find((item) => item.partId === cpuId)?.condition).toBe('B');
+      // ชิ้นที่ยังขายมือหนึ่ง ไม่ถูกเปลี่ยน
+      expect(items.find((item) => item.partId === boardId)?.condition).toBe('new');
+      await deleteBuild(result.id);
+    } finally {
+      await db.update(parts).set({ availability: 'new' }).where(eq(parts.id, cpuId));
+    }
+  });
+});

@@ -6,6 +6,7 @@ import {
   index,
   integer,
   numeric,
+  pgEnum,
   pgTable,
   serial,
   smallint,
@@ -17,6 +18,10 @@ import {
 import { users } from './users';
 
 // หัวข้อ 6.2 กลุ่มอะไหล่ (4 ตาราง)
+
+// สถานะการขาย: new = ยังมีขายมือหนึ่ง, used_only = เลิกขายมือหนึ่งแล้ว หาได้แต่มือสอง
+// used_only ใช้ช่อง price เป็น "ราคาตอนเปิดตัว" สำหรับคำนวณค่าเสื่อมเท่านั้น ไม่ใช่ราคาที่ซื้อได้
+export const partAvailability = pgEnum('part_availability', ['new', 'used_only']);
 
 // PostgreSQL มีชนิด tsvector แต่ Drizzle ไม่มีให้ในตัว จึงประกาศเอง
 const tsvector = customType<{ data: string }>({
@@ -59,6 +64,7 @@ export const parts = pgTable(
     imageUrl: text('image_url'),
     releaseYear: smallint('release_year'),
     isActive: boolean('is_active').notNull().default(true),
+    availability: partAvailability('availability').notNull().default('new'),
     // เพิ่มตามมติ Q5: แหล่งอ้างอิงสเปก และสถานะที่ตรวจแล้ว (false = "รอตรวจสอบ")
     specSourceUrl: text('spec_source_url'),
     specVerified: boolean('spec_verified').notNull().default(false),

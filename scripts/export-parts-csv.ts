@@ -64,6 +64,7 @@ async function main() {
           image,
           part.specSourceUrl ?? '',
           part.specVerified ? VERIFIED_LABEL : UNVERIFIED_LABEL,
+          part.availability,
           ...SPEC_FIELDS[category].map((field) => toCell(field, spec[field.key])),
         ];
       });

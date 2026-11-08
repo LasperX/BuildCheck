@@ -36,6 +36,13 @@
       "when": 1794020486098,
       "tag": "0004_notification_prefs",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794135242282,
+      "tag": "0005_part_availability",
+      "breakpoints": true
     }
   ]
 }

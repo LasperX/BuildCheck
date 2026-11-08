@@ -227,6 +227,7 @@ async function existingPartsIn(category: CategorySlug) {
       model: parts.model,
       isActive: parts.isActive,
       imageUrl: parts.imageUrl,
+      availability: parts.availability,
     })
     .from(parts)
     .innerJoin(categories, eq(parts.categoryId, categories.id))
@@ -274,13 +275,17 @@ export async function importPartsCsv(
         if (!row.ok) continue;
         const current = row.existingId ? existingById.get(row.existingId) : undefined;
         // อัปเดตชิ้นเดิม: CSV ไม่มีคอลัมน์ซ่อน/แสดง จึงคงสถานะเดิมไว้
-        // และถ้าช่องรูปในไฟล์ว่าง ให้คงรูปเดิม ไม่ลบรูปที่อัปโหลดไว้
+        // ถ้าช่องรูปในไฟล์ว่าง ให้คงรูปเดิม ไม่ลบรูปที่อัปโหลดไว้
+        // ไฟล์เก่าที่ไม่มีคอลัมน์ availability ให้คงสถานะการขายเดิม ไม่เปลี่ยนชิ้นที่มีแต่มือสองกลับเป็นมือหนึ่ง
         const input = current
           ? {
               ...row.input,
               id: current.id,
               isActive: current.isActive,
               imageUrl: row.input.imageUrl ?? current.imageUrl,
+              availability: parsed.hasAvailabilityColumn
+                ? row.input.availability
+                : current.availability,
             }
           : row.input;
         const written = await writePart(tx, input, authz.user.id);

@@ -52,6 +52,9 @@ type BuilderState = {
   /** กรองอัจฉริยะ: ซ่อนรุ่นที่ใส่ไม่ได้ในหน้าต่างเลือก ค่าเริ่มต้นปิด ให้ผู้ใช้เห็นทุกรุ่นและเรียนรู้จากคำเตือน */
   smartFilter: boolean;
   setSmartFilter: (on: boolean) => void;
+  /** สภาพของชิ้นที่เพิ่มต่อจากนี้ (มือหนึ่ง / มือสองเกรด A B C) เก็บในเครื่อง ไม่ผูกกับสเปก */
+  defaultCondition: ItemCondition;
+  setDefaultCondition: (condition: ItemCondition) => void;
   setMeta: (patch: Partial<BuildMeta>) => void;
   setBuildId: (id: string | null) => void;
   /** โหลดสเปกที่บันทึกไว้มาแก้ ล้างประวัติย้อนกลับ */
@@ -60,8 +63,17 @@ type BuilderState = {
   reset: () => void;
   /** เริ่มสเปกใหม่จากชุดที่กำหนด เช่นผลจัดสเปกตามงบ (ยังไม่ผูกกับสเปกที่บันทึกไว้) */
   startFrom: (build: { meta: BuildMeta; items: BuildItem[] }) => void;
-  addPart: (partId: number, categorySlug: CategorySlug) => void;
-  replacePart: (partId: number, categorySlug: CategorySlug, oldPartId?: number) => void;
+  addPart: (partId: number, categorySlug: CategorySlug, condition?: ItemCondition) => void;
+  replacePart: (
+    partId: number,
+    categorySlug: CategorySlug,
+    oldPartId?: number,
+    condition?: ItemCondition,
+  ) => void;
+  /** เปลี่ยนสภาพหลายชิ้นพร้อมกัน (ปุ่มเปลี่ยนทั้งชุด) ย้อนกลับได้ในครั้งเดียว */
+  setConditions: (updates: Record<number, ItemCondition>) => void;
+  /** แก้สภาพที่เป็นไปไม่ได้ (ชิ้นที่มีแต่มือสองแต่ตั้งเป็นมือหนึ่ง) ไม่เก็บในประวัติย้อนกลับ */
+  normalizeConditions: (updates: Record<number, ItemCondition>) => void;
   removePart: (partId: number) => void;
   setQuantity: (partId: number, quantity: number) => void;
   updateItem: (partId: number, patch: Partial<Omit<BuildItem, 'partId' | 'categorySlug'>>) => void;
@@ -71,11 +83,15 @@ type BuilderState = {
   redo: () => void;
 };
 
-const newItem = (partId: number, categorySlug: CategorySlug): BuildItem => ({
+const newItem = (
+  partId: number,
+  categorySlug: CategorySlug,
+  condition: ItemCondition = 'new',
+): BuildItem => ({
   partId,
   categorySlug,
   quantity: 1,
-  condition: 'new',
+  condition,
   offeredPrice: null,
   warrantyMonthsLeft: null,
 });
@@ -99,18 +115,20 @@ export const useBuilderStore = create<BuilderState>()(
         future: [],
         smartFilter: false,
         setSmartFilter: (smartFilter) => set({ smartFilter }),
+        defaultCondition: 'new',
+        setDefaultCondition: (defaultCondition) => set({ defaultCondition }),
         setMeta: (patch) => set((state) => ({ meta: { ...state.meta, ...patch } })),
         setBuildId: (buildId) => set({ buildId }),
         loadBuild: ({ id, meta, items }) => set({ buildId: id, meta, items, past: [], future: [] }),
         reset: () => set({ buildId: null, meta: DEFAULT_META, items: [], past: [], future: [] }),
         startFrom: ({ meta, items }) => set({ buildId: null, meta, items, past: [], future: [] }),
-        addPart: (partId, categorySlug) =>
+        addPart: (partId, categorySlug, condition = 'new') =>
           commit((items) => {
             if (!MULTI_CATEGORIES.includes(categorySlug)) {
               // หมวดที่มีได้ชิ้นเดียว เลือกใหม่จะแทนของเดิม
               return [
                 ...items.filter((item) => item.categorySlug !== categorySlug),
-                newItem(partId, categorySlug),
+                newItem(partId, categorySlug, condition),
               ];
             }
             const found = items.find((item) => item.partId === partId);
@@ -119,15 +137,16 @@ export const useBuilderStore = create<BuilderState>()(
                 item.partId === partId ? { ...item, quantity: item.quantity + 1 } : item,
               );
             }
-            return [...items, newItem(partId, categorySlug)];
+            return [...items, newItem(partId, categorySlug, condition)];
           }),
-        replacePart: (partId, categorySlug, oldPartId) =>
+        replacePart: (partId, categorySlug, oldPartId, condition) =>
           commit((items) => {
             const old = items.find((item) => item.partId === oldPartId);
             const kept = items.filter((item) => item.partId !== oldPartId);
             return [
               ...kept,
-              { ...newItem(partId, categorySlug), condition: old?.condition ?? 'new' },
+              // ไม่ระบุสภาพมา = ใช้สภาพของชิ้นเดิม (เปลี่ยนรุ่นแต่ยังอยากได้มือสองเหมือนเดิม)
+              newItem(partId, categorySlug, condition ?? old?.condition ?? 'new'),
             ];
           }),
         removePart: (partId) => commit((items) => items.filter((item) => item.partId !== partId)),
@@ -142,6 +161,18 @@ export const useBuilderStore = create<BuilderState>()(
             items.map((item) => (item.partId === partId ? { ...item, ...patch } : item)),
           ),
         setItems: (items) => commit(() => items),
+        setConditions: (updates) =>
+          commit((items) =>
+            items.map((item) =>
+              updates[item.partId] ? { ...item, condition: updates[item.partId]! } : item,
+            ),
+          ),
+        normalizeConditions: (updates) =>
+          set((state) => ({
+            items: state.items.map((item) =>
+              updates[item.partId] ? { ...item, condition: updates[item.partId]! } : item,
+            ),
+          })),
         clear: () => commit(() => []),
         undo: () =>
           set((state) => {
@@ -182,6 +213,7 @@ export const useBuilderStore = create<BuilderState>()(
         buildId: state.buildId,
         meta: state.meta,
         smartFilter: state.smartFilter,
+        defaultCondition: state.defaultCondition,
       }),
       skipHydration: true, // โหลดหลัง Hydrate เพื่อไม่ให้หน้าเว็บจากเซิร์ฟเวอร์กับเบราว์เซอร์ไม่ตรงกัน
     },

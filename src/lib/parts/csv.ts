@@ -15,7 +15,20 @@ export const BASE_COLUMNS = [
   'image_url',
   'spec_source_url',
   'verified',
+  'availability',
 ] as const;
+
+// คอลัมน์ที่ไม่บังคับ: ไฟล์เก่าที่สร้างก่อนมีคอลัมน์นี้ยังนำเข้าได้ (ถือว่ายังมีขายมือหนึ่ง)
+const OPTIONAL_COLUMNS: readonly string[] = ['availability'];
+
+// คอลัมน์ availability: ว่าง / new / มีขายมือหนึ่ง = ยังมีขายมือหนึ่ง · used_only / มีแต่มือสอง = เลิกขายมือหนึ่งแล้ว
+const AVAILABILITY_VALUES: Record<string, 'new' | 'used_only'> = {
+  '': 'new',
+  new: 'new',
+  มีขายมือหนึ่ง: 'new',
+  used_only: 'used_only',
+  มีแต่มือสอง: 'used_only',
+};
 
 // คอลัมน์ verified: ข้อมูลที่ยังไม่ได้ตรวจกับแหล่งจริงให้ใส่ "รอตรวจสอบ"
 export const VERIFIED_LABEL = 'ตรวจแล้ว';
@@ -48,6 +61,8 @@ export type CsvParseResult =
       /** จำนวนแถวที่จะเพิ่มใหม่ / อัปเดตชิ้นเดิม (ตั้งตอนพรีวิว/นำเข้า) */
       createCount?: number;
       updateCount?: number;
+      /** ไฟล์มีคอลัมน์ availability ไหม ถ้าไม่มี ตอนอัปเดตชิ้นเดิมให้คงสถานะการขายเดิมไว้ */
+      hasAvailabilityColumn?: boolean;
     };
 
 /** กุญแจจับคู่อะไหล่: ยี่ห้อเดียวกัน + ชื่อรุ่นเดียวกัน (ไม่สนตัวพิมพ์เล็กใหญ่และช่องว่างซ้ำ) */
@@ -84,6 +99,7 @@ export function matchExistingParts(
   const valid = rows.filter((row) => row.ok);
   const updateCount = valid.filter((row) => row.ok && row.existingId !== undefined).length;
   return {
+    ...parsed,
     ok: true,
     rows,
     validCount: valid.length,
@@ -110,7 +126,9 @@ export function parsePartsCsv(
   });
 
   const fieldsFound = parsed.meta.fields ?? [];
-  const missing = csvHeaderFor(category).filter((column) => !fieldsFound.includes(column));
+  const missing = csvHeaderFor(category).filter(
+    (column) => !OPTIONAL_COLUMNS.includes(column) && !fieldsFound.includes(column),
+  );
   if (missing.length) {
     return { ok: false, error: `ไฟล์ไม่มีคอลัมน์: ${missing.join(', ')}` };
   }
@@ -138,6 +156,12 @@ export function parsePartsCsv(
       SPEC_FIELDS[category].map((field) => [field.key, raw[field.csv] ?? '']),
     );
     const verifiedText = raw.verified?.trim() ?? '';
+    const availability = AVAILABILITY_VALUES[raw.availability?.trim().toLowerCase() ?? ''];
+    if (!availability) {
+      errors.push(
+        'คอลัมน์ availability ต้องเป็น new หรือ used_only (หรือ มีขายมือหนึ่ง / มีแต่มือสอง)',
+      );
+    }
     const result = partInputSchema.safeParse({
       categorySlug: category,
       brandId: brandId ?? 0,
@@ -149,6 +173,7 @@ export function parsePartsCsv(
       specSourceUrl: raw.spec_source_url,
       specVerified: verifiedText === VERIFIED_LABEL,
       isActive: true,
+      availability: availability ?? 'new',
       spec,
     });
 
@@ -166,5 +191,11 @@ export function parsePartsCsv(
   });
 
   const validCount = rows.filter((r) => r.ok).length;
-  return { ok: true, rows, validCount, errorCount: rows.length - validCount };
+  return {
+    ok: true,
+    rows,
+    validCount,
+    errorCount: rows.length - validCount,
+    hasAvailabilityColumn: fieldsFound.includes('availability'),
+  };
 }

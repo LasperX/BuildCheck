@@ -112,6 +112,10 @@ export function CsvImport() {
             · ยี่ห้อต้องมีในระบบก่อน
           </p>
           <p className="text-xs text-muted-foreground">
+            คอลัมน์ availability (ไม่บังคับ) ใส่ &quot;new&quot; หรือ &quot;used_only&quot;
+            สำหรับรุ่นที่เลิกขายมือหนึ่งแล้ว รุ่น used_only ให้ใส่ราคาตอนเปิดตัวในช่อง price
+          </p>
+          <p className="text-xs text-muted-foreground">
             นำเข้าไฟล์เดิมซ้ำได้ ถ้ายี่ห้อและรุ่นตรงกับชิ้นที่มีอยู่แล้ว
             ระบบจะอัปเดตราคาและสเปกของชิ้นนั้น (คงสถานะซ่อน/แสดงและรูปเดิมไว้) ไม่สร้างซ้ำ
           </p>

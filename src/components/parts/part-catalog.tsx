@@ -22,6 +22,7 @@ import {
   SORT_OPTIONS,
 } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS, type CategorySlug } from '@/lib/parts/spec-fields';
+import { cn } from '@/lib/utils';
 
 // เก็บตัวกรองทั้งหมดไว้ใน URL จึงแชร์ลิงก์ได้ กดย้อนกลับได้ และเปิดหน้าใหม่แล้วค่าไม่หาย
 
@@ -136,6 +137,30 @@ export function PartCatalog({
                   onBlur={(event) => update({ max: event.target.value.trim() || null })}
                 />
               </div>
+            </FilterGroup>
+
+            <FilterGroup title="สถานะการขาย">
+              {(
+                [
+                  ['', 'ทั้งหมด'],
+                  ['new', 'มีขายมือหนึ่ง'],
+                  ['used_only', 'มีแต่มือสอง'],
+                ] as const
+              ).map(([value, label]) => (
+                <label
+                  key={value}
+                  className="flex min-h-7 cursor-pointer items-center gap-2 text-sm"
+                >
+                  <input
+                    type="radio"
+                    name="availability"
+                    checked={(params.get('availability') ?? '') === value}
+                    onChange={() => update({ availability: value || null })}
+                    className="size-4 shrink-0 accent-[var(--brand)]"
+                  />
+                  {label}
+                </label>
+              ))}
             </FilterGroup>
 
             {facets.spec
@@ -331,6 +356,31 @@ function ViewButton({
 
 const partHref = (part: PartListItem) => `/parts/${part.categorySlug}/${part.slug}`;
 
+function UsedOnlyBadge({ availability }: { availability: PartListItem['availability'] }) {
+  if (availability !== 'used_only') return null;
+  return (
+    <Badge variant="used" className="h-5 px-1.5 text-2xs">
+      มีแต่มือสอง
+    </Badge>
+  );
+}
+
+/** รุ่นที่มีแต่มือสอง: ราคาในระบบคือราคาตอนเปิดตัว ไม่ใช่ราคาที่ซื้อได้ จึงบอกให้ชัด */
+function PriceLabel({ part, className }: { part: PartListItem; className?: string }) {
+  if (part.availability === 'used_only') {
+    return (
+      <span className={cn('text-xs text-muted-foreground', className)}>
+        ราคาเปิดตัว <span className="font-mono">{formatBaht(part.price)}</span>
+      </span>
+    );
+  }
+  return (
+    <span className={cn('font-mono text-sm font-semibold', className)}>
+      {formatBaht(part.price)}
+    </span>
+  );
+}
+
 function VerifiedHint({ verified }: { verified: boolean }) {
   if (verified) return null;
   return (
@@ -364,12 +414,18 @@ function PartCard({ part }: { part: PartListItem }) {
             </span>
           ))}
         </span>
-        <span className="mt-2">
+        <span className="mt-2 flex flex-wrap gap-1">
+          <UsedOnlyBadge availability={part.availability} />
           <VerifiedHint verified={part.specVerified} />
         </span>
-        <span className="mt-2 font-mono text-sm font-semibold">{formatBaht(part.price)}</span>
+        <PriceLabel part={part} className="mt-2" />
       </Link>
-      <AddToBuildButton partId={part.id} categorySlug={part.categorySlug} className="mt-3 w-full" />
+      <AddToBuildButton
+        partId={part.id}
+        categorySlug={part.categorySlug}
+        availability={part.availability}
+        className="mt-3 w-full"
+      />
     </article>
   );
 }
@@ -395,16 +451,21 @@ function PartTable({ items }: { items: PartListItem[] }) {
                   {part.model}
                 </Link>
                 <div className="text-xs text-muted-foreground">{part.brandName}</div>
+                <UsedOnlyBadge availability={part.availability} />
               </td>
               <td className="p-3 whitespace-nowrap">{CATEGORY_LABELS[part.categorySlug]}</td>
               <td className="p-3 font-mono text-xs text-muted-foreground">
                 {part.chips.join(' · ')}
               </td>
-              <td className="p-3 text-right font-mono font-semibold whitespace-nowrap">
-                {formatBaht(part.price)}
+              <td className="p-3 text-right whitespace-nowrap">
+                <PriceLabel part={part} />
               </td>
               <td className="p-3 text-right">
-                <AddToBuildButton partId={part.id} categorySlug={part.categorySlug} />
+                <AddToBuildButton
+                  partId={part.id}
+                  categorySlug={part.categorySlug}
+                  availability={part.availability}
+                />
               </td>
             </tr>
           ))}

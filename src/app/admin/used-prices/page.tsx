@@ -17,7 +17,11 @@ import { formatBaht } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS } from '@/lib/parts/spec-fields';
 import { requireAdmin } from '@/lib/session';
 import { getSystemConfig } from '@/server/queries/settings';
-import { getPendingReports, getRecentSurveys } from '@/server/queries/used';
+import {
+  getPendingReports,
+  getRecentSurveys,
+  getUsedOnlyMissingSurvey,
+} from '@/server/queries/used';
 import { todayInThailand } from '@/server/used/stats';
 
 export const metadata: Metadata = { title: 'จัดการราคามือสอง · BuildCheck' };
@@ -34,12 +38,13 @@ const formatDate = (date: string) =>
 
 async function UsedAdminContent() {
   await requireAdmin();
-  const [pending, surveys, config] = await Promise.all([
+  const today = todayInThailand();
+  const [pending, surveys, config, missing] = await Promise.all([
     getPendingReports(),
     getRecentSurveys(),
     getSystemConfig(),
+    getUsedOnlyMissingSurvey(today),
   ]);
-  const today = todayInThailand();
 
   return (
     <div className="flex flex-col gap-6">
@@ -161,6 +166,35 @@ async function UsedAdminContent() {
           </div>
         )}
       </section>
+
+      {missing.length > 0 ? (
+        <section
+          aria-labelledby="missing-title"
+          className="rounded-xl border border-warn-border bg-warn-soft p-4"
+        >
+          <h2 id="missing-title" className="mb-1 text-lg font-semibold">
+            รุ่นที่มีแต่มือสอง แต่ยังไม่มีราคาสำรวจ ({missing.length})
+          </h2>
+          <p className="mb-3 text-xs text-muted-foreground">
+            รุ่นพวกนี้ซื้อมือหนึ่งไม่ได้แล้ว ถ้ายังไม่มีรายงานหรือราคาสำรวจ
+            ระบบจะประมาณจากราคาตอนเปิดตัว ซึ่งอาจคลาดจากตลาดจริงมาก
+            ควรบันทึกราคาสำรวจในฟอร์มด้านล่าง
+          </p>
+          <ul className="flex flex-wrap gap-2 text-sm">
+            {missing.map((part) => (
+              <li key={part.partId} className="rounded-md border border-border bg-card px-2.5 py-1">
+                <span className="text-xs text-muted-foreground">
+                  {CATEGORY_LABELS[part.categorySlug]} ·{' '}
+                </span>
+                {part.brandName} {part.model}
+                {part.releaseYear ? (
+                  <span className="text-xs text-muted-foreground"> ({part.releaseYear})</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-2">
         <section

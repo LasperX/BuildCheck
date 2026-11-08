@@ -1,3 +1,4 @@
+import { effectiveCondition } from '../availability';
 import { type BuildContext, partName } from '../context';
 import { assessOffer } from '../used-price';
 import type { EngineItem, Issue } from '../types';
@@ -8,7 +9,7 @@ import { includesNorm, type Rule } from './helpers';
 // ไม่มีกฎข้อไหนเป็นระดับผิดพลาด เพราะของมือสองยังใช้งานได้ ระบบแค่เตือนให้ตรวจก่อนซื้อ
 
 const isUsed = (item: EngineItem | undefined): item is EngineItem =>
-  Boolean(item) && item?.condition !== 'new';
+  item !== undefined && effectiveCondition(item.part, item.condition) !== 'new';
 
 /** PSU มือสองที่อายุเกินเท่านี้ (ปี) เตือนหนักขึ้น */
 export const OLD_PSU_YEARS = 5;

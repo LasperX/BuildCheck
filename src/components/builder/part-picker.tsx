@@ -20,7 +20,8 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { type CandidateItem, type CandidatesResponse, encodeBuildParam } from '@/lib/builder/types';
-import type { RuleCode, UsageType } from '@/lib/compat';
+import { isUsedOnly, type RuleCode, type UsageType } from '@/lib/compat';
+import { conditionForNewPart } from '@/lib/builder/conditions';
 import { formatBaht, type PartFacets } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS, type CategorySlug } from '@/lib/parts/spec-fields';
 import { cn } from '@/lib/utils';
@@ -431,6 +432,7 @@ function CandidateRow({
       <div className="min-w-0 flex-1">
         <p className="font-medium">{name}</p>
         <div className="mt-1 flex flex-wrap gap-1">
+          {isUsedOnly(part) ? <Badge variant="used">มีแต่มือสอง</Badge> : null}
           {part.chips.map((chip) => (
             <Badge key={chip} variant="neutral" className="font-mono">
               {chip}
@@ -458,7 +460,7 @@ function CandidateRow({
         </p>
       </div>
       <div className="ml-auto flex items-center gap-3">
-        <span className="font-mono font-semibold tabular-nums">{formatBaht(part.price)}</span>
+        <CandidatePrice part={part} />
         <Button
           type="button"
           size="sm"
@@ -470,5 +472,32 @@ function CandidateRow({
         </Button>
       </div>
     </li>
+  );
+}
+
+/**
+ * ราคาในหน้าต่างเลือก: แสดงตามสภาพที่ชิ้นนี้จะได้ถ้ากดเลือก (ค่าตั้งต้น "ชิ้นที่เพิ่มต่อจากนี้")
+ * มือสอง → ราคากลางมือสองเป็นราคาหลัก และราคาใหม่ตัวเล็กไว้เทียบ
+ * รุ่นที่มีแต่มือสอง → ไม่แสดงราคาตอนเปิดตัวเป็นราคาซื้อ
+ */
+function CandidatePrice({ part }: { part: CandidateItem }) {
+  const defaultCondition = useBuilderStore((s) => s.defaultCondition);
+  const condition = conditionForNewPart(part, defaultCondition);
+  if (condition === 'new') {
+    return <span className="font-mono font-semibold tabular-nums">{formatBaht(part.price)}</span>;
+  }
+  const median = part.used?.[condition]?.median;
+  return (
+    <span className="flex flex-col items-end leading-tight">
+      <span className="font-mono font-semibold tabular-nums">
+        {median ? formatBaht(median) : '—'}
+      </span>
+      <span className="text-[11px] text-used">มือสอง {condition}</span>
+      {isUsedOnly(part) ? null : (
+        <span className="text-[11px] text-muted-foreground">
+          ใหม่ <span className="font-mono">{formatBaht(part.price)}</span>
+        </span>
+      )}
+    </span>
   );
 }

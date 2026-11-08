@@ -16,7 +16,9 @@ const BRAND = 'MSI'; // ยี่ห้อจาก db:seed
 
 let admin: TestAccount;
 
-const row = (model: string, price: number, opts: { length?: number; verified?: string } = {}) =>
+type RowOptions = { length?: number; verified?: string; availability?: string };
+
+const row = (model: string, price: number, opts: RowOptions = {}) =>
   [
     BRAND,
     model,
@@ -26,6 +28,7 @@ const row = (model: string, price: number, opts: { length?: number; verified?: s
     '',
     'https://example.test/spec',
     opts.verified ?? 'รอตรวจสอบ',
+    opts.availability ?? '',
     'ITEST Chip',
     '8',
     String(opts.length ?? 250),
@@ -35,12 +38,29 @@ const row = (model: string, price: number, opts: { length?: number; verified?: s
     '40',
   ].join(',');
 
-const csvFile = (...rows: string[]) => {
-  const text = [csvHeaderFor('gpu').join(','), ...rows].join('\n');
+const csvText = (header: string[], rows: string[]) => {
+  const text = [header.join(','), ...rows].join('\n');
   const data = new FormData();
   data.set('category', 'gpu');
   data.set('file', new File([text], 'gpu.csv', { type: 'text/csv' }));
   return data;
+};
+
+const csvFile = (...rows: string[]) => csvText(csvHeaderFor('gpu'), rows);
+
+/** จำลองไฟล์เก่าที่สร้างก่อนมีคอลัมน์ availability */
+const oldCsvFile = (...rows: string[]) => {
+  const header = csvHeaderFor('gpu');
+  const at = header.indexOf('availability');
+  const drop = (line: string) =>
+    line
+      .split(',')
+      .filter((_, i) => i !== at)
+      .join(',');
+  return csvText(
+    header.filter((column) => column !== 'availability'),
+    rows.map(drop),
+  );
 };
 
 const testParts = () =>
@@ -151,5 +171,52 @@ describe('นำเข้า CSV ซ้ำ', () => {
     expect(logs.map((log) => log.changes)).toContainEqual({
       after: { rows: 3, created: 1, updated: 2 },
     });
+  });
+});
+
+describe('สถานะการขาย (availability) ใน CSV', () => {
+  const availabilityOf = async (model: string) => {
+    const [part] = await db
+      .select({ availability: parts.availability })
+      .from(parts)
+      .where(ilike(parts.model, model));
+    return part?.availability;
+  };
+
+  it('นำเข้ารุ่นที่มีแต่มือสอง ทั้งแบบ used_only และคำไทย', async () => {
+    actAs(admin);
+    const done = await importPartsCsv(
+      csvFile(
+        row(`${MODEL_PREFIX} Old1`, 8000, { availability: 'used_only' }),
+        row(`${MODEL_PREFIX} Old2`, 7000, { availability: 'มีแต่มือสอง' }),
+      ),
+    );
+    expect(done).toMatchObject({ ok: true, created: 2 });
+    expect(await availabilityOf(`${MODEL_PREFIX} Old1`)).toBe('used_only');
+    expect(await availabilityOf(`${MODEL_PREFIX} Old2`)).toBe('used_only');
+  });
+
+  it('ไฟล์เก่าที่ไม่มีคอลัมน์ availability นำเข้าได้ และไม่เปลี่ยนรุ่นที่มีแต่มือสองกลับเป็นมือหนึ่ง', async () => {
+    actAs(admin);
+    const done = await importPartsCsv(
+      oldCsvFile(row(`${MODEL_PREFIX} Old1`, 7500), row(`${MODEL_PREFIX} New1`, 9000)),
+    );
+    expect(done).toMatchObject({ ok: true, created: 1, updated: 1 });
+    expect(await availabilityOf(`${MODEL_PREFIX} Old1`)).toBe('used_only');
+    expect(await availabilityOf(`${MODEL_PREFIX} New1`)).toBe('new');
+  });
+
+  it('ไฟล์ที่มีคอลัมน์ availability เปลี่ยนสถานะได้', async () => {
+    actAs(admin);
+    await importPartsCsv(csvFile(row(`${MODEL_PREFIX} Old2`, 7000, { availability: 'new' })));
+    expect(await availabilityOf(`${MODEL_PREFIX} Old2`)).toBe('new');
+  });
+
+  it('ค่าที่ไม่รู้จักถูกปฏิเสธ', async () => {
+    actAs(admin);
+    const preview = await previewPartsCsv(
+      csvFile(row(`${MODEL_PREFIX} Bad`, 1000, { availability: 'second-hand' })),
+    );
+    expect(preview.ok && preview.errorCount).toBe(1);
   });
 });

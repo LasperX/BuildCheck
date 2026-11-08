@@ -5,6 +5,7 @@ import type { EngineItem } from '@/lib/compat';
 import { candidatesQuerySchema } from '@/lib/validators/builds';
 import { getCategoryEngineParts, getEngineParts } from '@/server/queries/engine-parts';
 import { getSystemConfig } from '@/server/queries/settings';
+import { getUsedPriceSets } from '@/server/queries/used';
 
 // รายการอะไหล่ในหน้าต่างเลือก พร้อมป้ายเข้ากันได้/ไม่ได้ (getCompatibleParts ในหัวข้อ 8.3)
 // ตรวจบนเซิร์ฟเวอร์ เพราะต้องลองใส่ทุกชิ้นในหมวด ไม่ต้องส่งสเปกของทุกชิ้นไปที่เบราว์เซอร์
@@ -48,5 +49,11 @@ export async function GET(request: NextRequest) {
     return part ? [{ part, quantity, condition: 'new' as const }] : [];
   });
 
-  return NextResponse.json(rankCandidates(all, current, query, config.engine));
+  const ranked = rankCandidates(all, current, query, config.engine);
+  // แนบราคากลางมือสองของชิ้นในหน้านี้ ให้หน้าต่างเลือกแสดงราคามือสองได้ (เฉพาะหน้าที่แสดง ไม่ใช่ทั้งหมวด)
+  const used = await getUsedPriceSets(ranked.items.map((item) => item.id));
+  return NextResponse.json({
+    ...ranked,
+    items: ranked.items.map((item) => ({ ...item, used: used[item.id] })),
+  });
 }

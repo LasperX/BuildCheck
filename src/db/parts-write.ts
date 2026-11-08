@@ -138,6 +138,7 @@ export async function writePart(
     specSourceUrl: input.specSourceUrl,
     specVerified: input.specVerified,
     isActive: input.isActive,
+    availability: input.availability,
   };
   const slugBase = slugify(`${brand.name} ${input.model}`);
 

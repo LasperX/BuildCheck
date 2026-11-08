@@ -81,11 +81,12 @@ const specColumn = (category: CategorySlug, key: string): AnyPgColumn | undefine
 };
 
 export async function getParts(query: PartsQuery): Promise<PartsResponse> {
-  const { category, q, brand, min, max, sort, page, spec } = query;
+  const { category, q, brand, min, max, sort, page, spec, availability } = query;
 
   const conditions: (SQL | undefined)[] = [eq(parts.isActive, true), searchCondition(q)];
   if (category) conditions.push(eq(categories.slug, category));
   if (brand.length) conditions.push(inArray(parts.brandId, brand));
+  if (availability) conditions.push(eq(parts.availability, availability));
   if (min !== undefined) conditions.push(gte(parts.price, min));
   if (max !== undefined) conditions.push(lte(parts.price, max));
 
@@ -122,6 +123,7 @@ export async function getParts(query: PartsQuery): Promise<PartsResponse> {
       price: parts.price,
       imageUrl: parts.imageUrl,
       specVerified: parts.specVerified,
+      availability: parts.availability,
       brandName: brands.name,
       categorySlug: categories.slug,
     })
@@ -237,6 +239,7 @@ export type PartDetail = {
   releaseYear: number | null;
   powerWatt: number | null;
   specVerified: boolean;
+  availability: 'new' | 'used_only';
   specSourceUrl: string | null;
   updatedAt: Date;
   brandName: string;
@@ -271,6 +274,7 @@ export async function getPartDetail(
       releaseYear: parts.releaseYear,
       powerWatt: parts.powerWatt,
       specVerified: parts.specVerified,
+      availability: parts.availability,
       specSourceUrl: parts.specSourceUrl,
       updatedAt: parts.updatedAt,
       brandName: brands.name,

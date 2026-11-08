@@ -115,14 +115,31 @@ async function PartContent({ params }: { params: Params }) {
         </div>
         <Card className="xl:col-span-1 md:col-span-2">
           <CardContent className="flex flex-col gap-3">
-            <div>
-              <p className="text-sm text-muted-foreground">ราคาอ้างอิงล่าสุด</p>
-              <p className="text-4xl font-semibold">{formatBaht(part.price)}</p>
-              <p className="text-xs text-subtle">อัปเดตโดยแอดมิน · ราคาอ้างอิง ไม่ใช่ราคาขาย</p>
-            </div>
+            {part.availability === 'used_only' ? (
+              // รุ่นที่เลิกขายมือหนึ่งแล้ว: ราคาในระบบคือราคาตอนเปิดตัว ไม่ใช่ราคาที่ซื้อได้
+              <div>
+                <Badge variant="used">มีแต่มือสอง</Badge>
+                <p className="mt-2 text-sm text-muted-foreground">ราคากลางมือสอง เกรด B</p>
+                <p className="text-4xl font-semibold">
+                  {used.prices?.B ? formatBaht(used.prices.B.median) : 'ยังไม่มีข้อมูล'}
+                </p>
+                <p className="text-xs text-subtle">
+                  เลิกขายมือหนึ่งแล้ว · ราคาตอนเปิดตัว{' '}
+                  <span className="font-mono">{formatBaht(part.price)}</span> (ใช้คิดค่าเสื่อม
+                  ไม่ใช่ราคาที่ซื้อได้)
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-muted-foreground">ราคาอ้างอิงล่าสุด</p>
+                <p className="text-4xl font-semibold">{formatBaht(part.price)}</p>
+                <p className="text-xs text-subtle">อัปเดตโดยแอดมิน · ราคาอ้างอิง ไม่ใช่ราคาขาย</p>
+              </div>
+            )}
             <AddToBuildButton
               partId={part.id}
               categorySlug={part.categorySlug}
+              availability={part.availability}
               size="lg"
               className="w-full"
             />

@@ -22,6 +22,8 @@ export const partsQuerySchema = z.object({
   max: z.coerce.number().min(0).optional(),
   sort: z.enum(['popular', 'newest', 'price_asc', 'price_desc']).default('popular'),
   page: z.coerce.number().int().min(1).max(10000).default(1),
+  // สถานะการขาย: new = มีขายมือหนึ่ง, used_only = มีแต่มือสอง (ไม่ระบุ = ทั้งหมด)
+  availability: z.enum(['new', 'used_only']).optional(),
   // ตัวกรองสเปกเฉพาะหมวด เช่น { socket: ["AM5"] } ตรวจชื่อกับ SPEC_FILTERS ฝั่งเซิร์ฟเวอร์
   spec: z.record(z.string(), z.array(z.string().max(40)).max(50)).default({}),
 });
@@ -74,6 +76,7 @@ export type PartListItem = {
   price: number;
   imageUrl: string | null;
   specVerified: boolean;
+  availability: 'new' | 'used_only';
   chips: string[];
 };
 

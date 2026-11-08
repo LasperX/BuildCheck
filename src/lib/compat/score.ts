@@ -1,3 +1,4 @@
+import { effectiveCondition, isUsedOnly } from './availability';
 import type { BuildContext } from './context';
 import type { EngineItem, PriceResult, ScoreResult, UsageType } from './types';
 
@@ -30,7 +31,7 @@ export function calculateScore(
  * ถ้ายังไม่มีราคามือสองเลย ใช้ราคาอ้างอิงไปก่อน เพื่อไม่ให้ราคารวมต่ำเกินจริง
  */
 export function unitPrice(item: EngineItem): number {
-  if (item.condition === 'new') return item.part.price;
+  if (effectiveCondition(item.part, item.condition) === 'new') return item.part.price;
   return item.offeredPrice ?? item.usedPrice ?? item.part.price;
 }
 
@@ -39,7 +40,8 @@ export function calculatePrice(ctx: BuildContext, budget?: number | null): Price
   let totalNew = 0;
   for (const item of ctx.items) {
     total += unitPrice(item) * item.quantity;
-    totalNew += item.part.price * item.quantity;
+    // ชิ้นที่มีแต่มือสอง ซื้อมือหนึ่งไม่ได้ จึงไม่นับเป็น "ประหยัดกว่าซื้อใหม่" (ราคาในช่อง price คือราคาตอนเปิดตัว)
+    totalNew += (isUsedOnly(item.part) ? unitPrice(item) : item.part.price) * item.quantity;
   }
   total = Math.round(total * 100) / 100;
   totalNew = Math.round(totalNew * 100) / 100;

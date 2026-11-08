@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     max: text('max'),
     sort: text('sort'),
     page: text('page'),
+    availability: text('availability'),
     spec,
   });
   if (!parsed.success) {

@@ -14,7 +14,14 @@ import {
   VERDICT_LABELS,
 } from '@/lib/builder/used-types';
 import type { BuilderPart } from '@/lib/builder/types';
-import { assessOffer, type OfferVerdict, USED_GRADES, type UsedGrade } from '@/lib/compat';
+import {
+  assessOffer,
+  effectiveCondition,
+  isUsedOnly,
+  type OfferVerdict,
+  USED_GRADES,
+  type UsedGrade,
+} from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
 import { cn } from '@/lib/utils';
 import type { BuildItem } from '@/stores/builder-store';
@@ -73,7 +80,8 @@ export function UsedControls({
   onUpdate: (patch: Patch) => void;
 }) {
   const id = useId();
-  const condition = item.condition;
+  const usedOnly = part ? isUsedOnly(part) : false;
+  const condition = part ? effectiveCondition(part, item.condition) : item.condition;
   const used = condition !== 'new';
   const grade: UsedGrade = condition === 'new' ? 'B' : condition;
   const stat = part?.used?.[grade];
@@ -100,21 +108,26 @@ export function UsedControls({
           className="flex rounded-lg border border-border p-0.5 text-xs"
         >
           {(['new', ...USED_GRADES] as const).map((value) => {
-            const active = item.condition === value;
+            const active = condition === value;
+            // รุ่นที่มีแต่มือสอง ซื้อมือหนึ่งไม่ได้แล้ว จึงกดเลือกมือหนึ่งไม่ได้
+            const blocked = value === 'new' && usedOnly;
             return (
               <button
                 key={value}
                 type="button"
                 role="radio"
                 aria-checked={active}
+                disabled={blocked}
                 title={
-                  value === 'new'
-                    ? 'มือหนึ่ง'
-                    : `มือสอง เกรด ${value}: ${GRADE_LABELS[value].detail}`
+                  blocked
+                    ? 'รุ่นนี้เลิกขายมือหนึ่งแล้ว มีแต่มือสอง'
+                    : value === 'new'
+                      ? 'มือหนึ่ง'
+                      : `มือสอง เกรด ${value}: ${GRADE_LABELS[value].detail}`
                 }
-                onClick={() => !active && onUpdate({ condition: value })}
+                onClick={() => !active && !blocked && onUpdate({ condition: value })}
                 className={cn(
-                  'rounded-md px-2 py-1 font-medium transition-colors',
+                  'rounded-md px-2 py-1 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40',
                   active
                     ? value === 'new'
                       ? 'bg-primary text-primary-foreground'
@@ -130,6 +143,7 @@ export function UsedControls({
         {used && (
           <span className="text-xs text-muted-foreground">{GRADE_LABELS[grade].detail}</span>
         )}
+        {usedOnly && <span className="text-xs font-medium text-used">รุ่นนี้มีแต่มือสอง</span>}
       </div>
 
       {used && (
@@ -213,6 +227,7 @@ export function UsedControls({
 
 /** ราคาต่อชิ้นที่แสดงในช่อง: มือสองใช้ราคาที่เจอจริง ถ้าไม่ได้กรอกใช้ราคากลาง */
 export function slotUnitPrice(item: BuildItem, part: BuilderPart): number {
-  if (item.condition === 'new') return part.price;
-  return item.offeredPrice ?? part.used?.[item.condition].median ?? part.price;
+  const condition = effectiveCondition(part, item.condition);
+  if (condition === 'new') return part.price;
+  return item.offeredPrice ?? part.used?.[condition].median ?? part.price;
 }

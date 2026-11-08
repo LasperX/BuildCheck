@@ -213,6 +213,7 @@ async function PartsContent({
                     <div className="text-xs text-muted-foreground">
                       {row.brandName}
                       {row.isActive ? '' : ' · ซ่อนอยู่'}
+                      {row.availability === 'used_only' ? ' · มีแต่มือสอง' : ''}
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">{row.categoryName}</TableCell>

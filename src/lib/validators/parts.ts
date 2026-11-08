@@ -269,6 +269,8 @@ const baseFields = {
   ) as z.ZodType<string | null, unknown>,
   specVerified: bool,
   isActive: bool,
+  // สถานะการขาย: used_only = มีแต่มือสอง ราคาในช่อง price คือราคาตอนเปิดตัว (ใช้คิดค่าเสื่อม)
+  availability: z.enum(['new', 'used_only'], { error: 'สถานะการขายไม่ถูกต้อง' }).default('new'),
 };
 
 // discriminatedUnion: เลือกกฎสเปกตามค่า categorySlug และ TypeScript รู้ชนิดของ spec ในแต่ละหมวด
@@ -297,6 +299,7 @@ export type PartFormValues = {
   specSourceUrl: string;
   specVerified: boolean;
   isActive: boolean;
+  availability: 'new' | 'used_only';
   spec: Record<string, string | boolean>;
 };
 

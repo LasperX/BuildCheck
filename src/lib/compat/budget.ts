@@ -15,6 +15,7 @@
 
 import type { CategorySlug } from '@/lib/parts/spec-fields';
 
+import { isUsedOnly } from './availability';
 import { checkBuild } from './index';
 import { buildContext } from './context';
 import { calculatePower, recommendedPsuWatt } from './power';
@@ -120,13 +121,20 @@ export function applyUsedPrices(
   catalog: EnginePart[],
   used: BudgetInput['used'],
 ): { catalog: EnginePart[]; restore: (items: EngineItem[]) => EngineItem[] } {
-  if (!used || used.categories.length === 0) return { catalog, restore: (items) => items };
+  // ชิ้นที่มีแต่มือสอง: ราคาในช่อง price คือราคาตอนเปิดตัว ซื้อในราคานั้นไม่ได้
+  // จึงใช้ได้เฉพาะเมื่อผู้ใช้ยอมมือสองในหมวดนั้น และมีราคากลางมือสอง ไม่เช่นนั้นตัดออกจากแคตตาล็อก
+  const usable = (part: EnginePart) =>
+    !isUsedOnly(part) ||
+    Boolean(used?.categories.includes(part.categorySlug) && used.prices[part.id]);
+  if (!used || used.categories.length === 0) {
+    return { catalog: catalog.filter(usable), restore: (items) => items };
+  }
   const originals = new Map<number, EnginePart>();
-  const priced = catalog.map((part) => {
+  const priced = catalog.filter(usable).map((part) => {
     const usedPrice = used.prices[part.id];
-    if (!used.categories.includes(part.categorySlug) || !usedPrice || usedPrice >= part.price) {
-      return part;
-    }
+    if (!used.categories.includes(part.categorySlug) || !usedPrice) return part;
+    // ชิ้นที่ยังขายมือหนึ่ง ใช้ราคามือสองเมื่อถูกกว่าเท่านั้น ส่วนชิ้นที่มีแต่มือสองใช้ราคามือสองเสมอ
+    if (!isUsedOnly(part) && usedPrice >= part.price) return part;
     originals.set(part.id, part);
     return { ...part, price: usedPrice } as EnginePart;
   });

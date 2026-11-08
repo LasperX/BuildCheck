@@ -24,6 +24,7 @@ import type {
   EnginePart,
   GpuSpec,
   MotherboardSpec,
+  PartAvailability,
   PsuSpec,
   RamSpec,
   StorageSpec,
@@ -56,6 +57,7 @@ type BaseRow = {
   releaseYear: number | null;
   imageUrl: string | null;
   isActive: boolean;
+  availability: PartAvailability;
   specVerified: boolean;
   brandId: number;
   brandName: string;
@@ -71,6 +73,7 @@ const baseColumns = {
   releaseYear: parts.releaseYear,
   imageUrl: parts.imageUrl,
   isActive: parts.isActive,
+  availability: parts.availability,
   specVerified: parts.specVerified,
   brandId: parts.brandId,
   brandName: brands.name,
@@ -123,6 +126,7 @@ async function assemble(rows: BaseRow[]): Promise<BuilderPart[]> {
       price: row.price,
       powerWatt: row.powerWatt,
       releaseYear: row.releaseYear,
+      availability: row.availability,
       categorySlug: row.categorySlug,
       spec,
     } as EnginePart;

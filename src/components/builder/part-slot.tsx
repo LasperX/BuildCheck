@@ -5,7 +5,7 @@ import { CATEGORY_ICONS, PartImage } from '@/components/parts/part-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { BuilderPart } from '@/lib/builder/types';
-import type { Issue } from '@/lib/compat';
+import { type Issue, isUsedOnly } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS, type CategorySlug } from '@/lib/parts/spec-fields';
 import { MAX_QUANTITY } from '@/lib/validators/builds';
@@ -120,6 +120,7 @@ export function PartSlot({
                           </Badge>
                         ))}
                         {part && !part.isActive && <Badge variant="warn">เลิกขายแล้ว</Badge>}
+                        {part && isUsedOnly(part) && <Badge variant="used">มีแต่มือสอง</Badge>}
                       </div>
                     </div>
                     <div className="ml-auto flex items-center gap-1">
@@ -127,7 +128,8 @@ export function PartSlot({
                         <span className="font-semibold">
                           {part ? formatBaht(slotUnitPrice(item, part) * item.quantity) : '–'}
                         </span>
-                        {part && item.condition !== 'new' && (
+                        {/* รุ่นที่มีแต่มือสองไม่แสดงราคาใหม่ขีดฆ่า เพราะซื้อใหม่ไม่ได้ (ราคาในระบบคือราคาตอนเปิดตัว) */}
+                        {part && item.condition !== 'new' && !isUsedOnly(part) && (
                           <span className="text-xs text-muted-foreground line-through">
                             <span className="sr-only">ราคาใหม่ </span>
                             {formatBaht(part.price * item.quantity)}

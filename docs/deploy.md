@@ -72,3 +72,19 @@ pg_dump "postgresql://...neon.tech/neondb?sslmode=require" > buildcheck-backup.s
 ## แผนสำรองวันสอบ (หัวข้อ 10.4)
 
 รันในเครื่องได้เสมอด้วยฐานข้อมูล Docker: `pnpm db:up` → `pnpm build` → `pnpm start -p 3100` แล้วเปิด <http://localhost:3100>
+
+## อัปเดตโครงสร้างฐานข้อมูล (เมื่อมี Migration ใหม่)
+
+ทุกครั้งที่มีไฟล์ใหม่ใน `src/db/migrations` ให้รัน Migration กับ Neon **ก่อน** push โค้ดขึ้น GitHub (Vercel จะ Deploy ทันทีที่ push) ใช้ Connection string แบบไม่ pooling:
+
+```bash
+$env:DATABASE_URL="postgresql://...neon.tech/neondb?sslmode=verify-full"
+```
+```bash
+pnpm.cmd db:migrate
+```
+```bash
+Remove-Item Env:DATABASE_URL
+```
+
+Migration ที่เพิ่มคอลัมน์ใหม่ในโปรเจคนี้มีค่าเริ่มต้นเสมอ โค้ดเวอร์ชันเดิมบนเว็บจริงจึงยังทำงานได้ระหว่างรอ Deploy

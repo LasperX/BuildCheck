@@ -51,6 +51,7 @@ export async function listAdminParts(filters: {
         slug: parts.slug,
         price: parts.price,
         isActive: parts.isActive,
+        availability: parts.availability,
         specVerified: parts.specVerified,
         categorySlug: categories.slug,
         categoryName: categories.nameTh,
@@ -157,6 +158,7 @@ export async function getPartForEdit(id: number) {
     specSourceUrl: part.specSourceUrl ?? '',
     specVerified: part.specVerified,
     isActive: part.isActive,
+    availability: part.availability,
     spec: specToForm(category, (part[category] ?? {}) as Record<string, unknown>),
   };
   return { values, history, category };

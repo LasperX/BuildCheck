@@ -9,6 +9,9 @@ export type Level = 'error' | 'warning' | 'info';
 export type CompatStatus = 'ok' | 'warning' | 'error';
 export type ItemCondition = 'new' | 'A' | 'B' | 'C';
 
+/** สถานะการขายของอะไหล่: new = ยังมีขายมือหนึ่ง, used_only = เลิกขายมือหนึ่งแล้ว หาได้แต่มือสอง */
+export type PartAvailability = 'new' | 'used_only';
+
 export type CpuSpec = {
   socket: string;
   generation: string;
@@ -98,6 +101,8 @@ type PartBase = {
   price: number;
   powerWatt: number | null;
   releaseYear: number | null;
+  /** ไม่ระบุ = new (ข้อมูลเก่าและเทสต์ที่สร้างก่อนมีช่องนี้) */
+  availability?: PartAvailability;
 };
 
 // discriminated union: ดูค่า categorySlug แล้ว TypeScript รู้ทันทีว่า spec มีช่องอะไร

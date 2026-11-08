@@ -4,7 +4,13 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type BuilderPart, encodeBuildParam } from '@/lib/builder/types';
-import { checkBuild, type CheckResult, type EngineItem, type EngineSettings } from '@/lib/compat';
+import {
+  checkBuild,
+  type CheckResult,
+  effectiveCondition,
+  type EngineItem,
+  type EngineSettings,
+} from '@/lib/compat';
 import { saveBuild } from '@/server/actions/builds';
 import { type BuildItem, useBuilderHydrated, useBuilderStore } from '@/stores/builder-store';
 
@@ -43,8 +49,9 @@ export function toEngineItems(items: BuildItem[], parts: Map<number, BuilderPart
     const part = parts.get(item.partId);
     if (!part) return [];
     // มือสองแนบราคากลางของเกรดนั้นไปให้ Engine ใช้คำนวณราคารวมและกฎ U06
-    const usedPrice =
-      item.condition === 'new' ? null : (part.used?.[item.condition].median ?? null);
+    // ชิ้นที่มีแต่มือสองใช้สภาพจริง (effectiveCondition) แม้รายการจะบันทึกเป็นมือหนึ่งไว้
+    const condition = effectiveCondition(part, item.condition);
+    const usedPrice = condition === 'new' ? null : (part.used?.[condition].median ?? null);
     return [{ ...item, part, usedPrice }];
   });
 }

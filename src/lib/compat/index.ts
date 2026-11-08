@@ -40,6 +40,7 @@ export { calculatePower, recommendedPsuWatt, powerLevel } from './power';
 export { calculatePrice, calculateScore, unitPrice } from './score';
 export { REQUIRED_CATEGORIES } from './rules/info';
 export * from './used-price';
+export * from './availability';
 
 const LEVEL_ORDER: Record<Level, number> = { error: 0, warning: 1, info: 2 };
 

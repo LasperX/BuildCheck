@@ -53,11 +53,13 @@ export function PartForm({
       specSourceUrl: '',
       specVerified: false,
       isActive: true,
+      availability: 'new',
       spec: Object.fromEntries(fields.map((f) => [f.key, f.kind === 'bool' ? false : ''])),
     },
   });
 
   const imageUrl = useWatch({ control, name: 'imageUrl' });
+  const usedOnly = useWatch({ control, name: 'availability' }) === 'used_only';
 
   async function onSubmit(values: PartFormValues) {
     setFormError(null);
@@ -121,7 +123,26 @@ export function PartForm({
           <FormField id="model" label="ชื่อรุ่น" error={errors.model?.message}>
             <Input id="model" aria-invalid={Boolean(errors.model)} {...register('model')} />
           </FormField>
-          <FormField id="price" label="ราคาอ้างอิง (บาท)" error={errors.price?.message}>
+          <FormField
+            id="availability"
+            label="สถานะการขาย"
+            hint="รุ่นที่เลิกขายมือหนึ่งแล้ว ผู้ใช้จะได้เป็นมือสองเสมอ และระบบจัดตามงบใช้เฉพาะตอนผู้ใช้ยอมมือสอง"
+          >
+            <NativeSelect id="availability" {...register('availability')}>
+              <option value="new">มีขายมือหนึ่ง</option>
+              <option value="used_only">มีแต่มือสอง (เลิกขายมือหนึ่งแล้ว)</option>
+            </NativeSelect>
+          </FormField>
+          <FormField
+            id="price"
+            label={usedOnly ? 'ราคาตอนเปิดตัว (บาท)' : 'ราคาอ้างอิง (บาท)'}
+            error={errors.price?.message}
+            hint={
+              usedOnly
+                ? 'ใช้คำนวณราคามือสองแบบประมาณการเท่านั้น ไม่แสดงเป็นราคาที่ซื้อได้'
+                : undefined
+            }
+          >
             <Input
               id="price"
               inputMode="decimal"

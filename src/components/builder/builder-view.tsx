@@ -24,6 +24,7 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
+import { conditionForNewPart, impossibleConditionFixes } from '@/lib/builder/conditions';
 import { USAGE_LABELS } from '@/lib/builder/types';
 import type { EngineSettings, Issue, Suggestion, UsageType } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
@@ -38,6 +39,7 @@ import {
 
 import { IssueList } from './issue-list';
 import { PartPicker, type PickerTarget } from './part-picker';
+import { ConditionBar } from './condition-bar';
 import { PartSlot } from './part-slot';
 import { ShareDialog } from './share-dialog';
 import { SummaryPanel } from './summary-panel';
@@ -110,6 +112,12 @@ export function BuilderView({
     loaded.current = true;
     if (store().buildId !== initialBuild.id) store().loadBuild(initialBuild);
   }, [hydrated, initialBuild, store]);
+
+  // ชิ้นที่แอดมินเปลี่ยนเป็น "มีแต่มือสอง" หลังผู้ใช้เพิ่มไว้เป็นมือหนึ่ง: แก้ให้เป็นมือสองเกรด B ให้ตรงกับราคาที่คิดจริง
+  useEffect(() => {
+    const fixes = impossibleConditionFixes(items, parts);
+    if (Object.keys(fixes).length) store().normalizeConditions(fixes);
+  }, [items, parts, store]);
 
   // คีย์ลัด Ctrl+Z / Ctrl+Shift+Z (หรือ Ctrl+Y) เมื่อไม่ได้พิมพ์อยู่ในช่องกรอก
   useEffect(() => {
@@ -334,6 +342,7 @@ export function BuilderView({
                 </span>
               </span>
             </label>
+            <ConditionBar items={items} parts={parts} />
             {CATEGORY_SLUGS.map((category) => (
               <PartSlot
                 key={category}
@@ -430,9 +439,19 @@ export function BuilderView({
         onClose={() => setPicker(null)}
         onSelect={(part, target) => {
           if (target.replacePartId) {
-            store().replacePart(part.id, part.categorySlug, target.replacePartId);
+            // เปลี่ยนรุ่น: คงสภาพของชิ้นเดิม เว้นแต่รุ่นใหม่มีแต่มือสอง แต่ชิ้นเดิมเป็นมือหนึ่ง
+            const old = items.find((item) => item.partId === target.replacePartId);
+            const fix = impossibleConditionFixes(
+              [{ partId: part.id, condition: old?.condition ?? 'new' }],
+              new Map([[part.id, part]]),
+            )[part.id];
+            store().replacePart(part.id, part.categorySlug, target.replacePartId, fix);
           } else {
-            store().addPart(part.id, part.categorySlug);
+            store().addPart(
+              part.id,
+              part.categorySlug,
+              conditionForNewPart(part, store().defaultCondition),
+            );
           }
           setPicker(null);
         }}

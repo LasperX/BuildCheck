@@ -22,6 +22,7 @@ import {
   weeklyTrend,
   weightedPercentile,
   reportWeight,
+  SURVEY_MAX_AGE_DAYS,
 } from '@/lib/compat/used-price';
 import { db } from '@/lib/db';
 import { type CategorySlug, isCategorySlug } from '@/lib/parts/spec-fields';
@@ -399,4 +400,41 @@ export async function getRecentSurveys(): Promise<SurveyRow[]> {
     .orderBy(desc(partUsedPrices.surveyedAt), desc(partUsedPrices.id))
     .limit(50);
   return rows.flatMap(asMarketPart);
+}
+
+export type UsedOnlyMissingSurvey = {
+  partId: number;
+  model: string;
+  brandName: string;
+  categorySlug: CategorySlug;
+  releaseYear: number | null;
+};
+
+/**
+ * รุ่นที่มีแต่มือสองแต่ยังไม่มีราคาสำรวจที่ใช้ได้ (ภายใน 90 วัน)
+ * รุ่นพวกนี้ไม่มีราคามือหนึ่งให้เทียบ ราคาประมาณจากราคาตอนเปิดตัวอาจคลาดจากตลาดมาก แอดมินจึงควรสำรวจก่อน
+ */
+export async function getUsedOnlyMissingSurvey(today: string): Promise<UsedOnlyMissingSurvey[]> {
+  const since = new Date(`${today}T00:00:00Z`);
+  since.setUTCDate(since.getUTCDate() - SURVEY_MAX_AGE_DAYS);
+  const recent = await db
+    .selectDistinct({ partId: partUsedPrices.partId })
+    .from(partUsedPrices)
+    .where(gte(partUsedPrices.surveyedAt, since.toISOString().slice(0, 10)));
+  const surveyed = new Set(recent.map((row) => row.partId));
+
+  const rows = await db
+    .select({
+      partId: parts.id,
+      model: parts.model,
+      brandName: brands.name,
+      categorySlug: categories.slug,
+      releaseYear: parts.releaseYear,
+    })
+    .from(parts)
+    .innerJoin(brands, eq(brands.id, parts.brandId))
+    .innerJoin(categories, eq(categories.id, parts.categoryId))
+    .where(and(eq(parts.availability, 'used_only'), eq(parts.isActive, true)))
+    .orderBy(categories.sortOrder, parts.model);
+  return rows.filter((row) => !surveyed.has(row.partId)).flatMap(asMarketPart);
 }

@@ -5,7 +5,7 @@ import { updateTag } from 'next/cache';
 
 import { buildItems, builds } from '@/db/schema';
 import { newBuildId, qrSvg, shortUrl } from '@/lib/builder/share';
-import { type CompatStatus, checkBuild, type EngineItem } from '@/lib/compat';
+import { type CompatStatus, checkBuild, effectiveCondition, type EngineItem } from '@/lib/compat';
 import { db } from '@/lib/db';
 import { hitRateLimit } from '@/lib/rate-limit';
 import { type ActionResult, authorizeMember } from '@/lib/session';
@@ -80,10 +80,11 @@ export async function saveBuild(raw: SaveBuildInput): Promise<SaveBuildResult> {
       }
       seen.add(part.categorySlug);
     }
+    // ชิ้นที่มีแต่มือสองบันทึกเป็นมือหนึ่งไม่ได้ เปลี่ยนเป็นมือสองฝั่งเซิร์ฟเวอร์ ไม่เชื่อค่าจากหน้าเว็บ
+    const condition = effectiveCondition(part, item.condition);
     // ราคากลางมือสองอ่านจากเซิร์ฟเวอร์เอง ไม่เชื่อค่าที่ส่งมาจากหน้าเว็บ
-    const usedPrice =
-      item.condition === 'new' ? null : (used[part.id]?.[item.condition].median ?? null);
-    engineItems.push({ ...item, part, usedPrice });
+    const usedPrice = condition === 'new' ? null : (used[part.id]?.[condition].median ?? null);
+    engineItems.push({ ...item, condition, part, usedPrice });
   }
 
   const { engine } = await getSystemConfig();
