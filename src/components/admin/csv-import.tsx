@@ -1,6 +1,6 @@
 'use client';
 
-import { CircleCheck, CircleX, Clock, Download } from 'lucide-react';
+import { CircleCheck, CircleX, Clock, Download, Plus, RefreshCw } from 'lucide-react';
 import { useState, useTransition } from 'react';
 
 import { FormAlert, FormField } from '@/components/auth/form-field';
@@ -50,7 +50,10 @@ export function CsvImport() {
     start(async () => {
       const done = await importPartsCsv(formData());
       if (done.ok) {
-        setResult({ variant: 'ok', text: `นำเข้าแล้ว ${done.imported} รายการ` });
+        setResult({
+          variant: 'ok',
+          text: `นำเข้าแล้ว ${done.imported} รายการ · เพิ่มใหม่ ${done.created} · อัปเดตชิ้นเดิม ${done.updated}`,
+        });
         setPreview(null);
         setFile(null);
       } else {
@@ -108,6 +111,10 @@ export function CsvImport() {
             คอลัมน์ verified ใส่ &quot;รอตรวจสอบ&quot; หรือ &quot;ตรวจแล้ว&quot; · หลายค่าคั่นด้วย |
             · ยี่ห้อต้องมีในระบบก่อน
           </p>
+          <p className="text-xs text-muted-foreground">
+            นำเข้าไฟล์เดิมซ้ำได้ ถ้ายี่ห้อและรุ่นตรงกับชิ้นที่มีอยู่แล้ว
+            ระบบจะอัปเดตราคาและสเปกของชิ้นนั้น (คงสถานะซ่อน/แสดงและรูปเดิมไว้) ไม่สร้างซ้ำ
+          </p>
         </CardContent>
       </Card>
 
@@ -137,6 +144,18 @@ export function CsvImport() {
               <CircleCheck />
               ผ่าน {preview.validCount} แถว
             </Badge>
+            {preview.createCount ? (
+              <Badge variant="brand">
+                <Plus />
+                เพิ่มใหม่ {preview.createCount}
+              </Badge>
+            ) : null}
+            {preview.updateCount ? (
+              <Badge variant="info">
+                <RefreshCw />
+                อัปเดตชิ้นเดิม {preview.updateCount}
+              </Badge>
+            ) : null}
             {preview.errorCount > 0 ? (
               <Badge variant="err">
                 <CircleX />
@@ -153,6 +172,7 @@ export function CsvImport() {
                 <TableRow>
                   <TableHead className="w-16">แถว</TableHead>
                   <TableHead>รุ่น</TableHead>
+                  <TableHead>การนำเข้า</TableHead>
                   <TableHead>ผลตรวจ</TableHead>
                 </TableRow>
               </TableHeader>
@@ -161,6 +181,21 @@ export function CsvImport() {
                   <TableRow key={row.row}>
                     <TableCell className="font-mono text-xs">{row.row}</TableCell>
                     <TableCell>{row.label}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {!row.ok ? (
+                        '—'
+                      ) : row.existingId ? (
+                        <span className="inline-flex items-center gap-1 text-info-fg">
+                          <RefreshCw aria-hidden className="size-3.5" />
+                          อัปเดตชิ้นเดิม
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-brand-soft-fg">
+                          <Plus aria-hidden className="size-3.5" />
+                          เพิ่มใหม่
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell className="whitespace-normal">
                       {!row.ok ? (
                         <ul className="flex flex-col gap-0.5 text-xs text-err-fg">

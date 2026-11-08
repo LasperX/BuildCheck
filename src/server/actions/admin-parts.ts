@@ -4,9 +4,9 @@ import { eq, inArray } from 'drizzle-orm';
 import { revalidatePath, updateTag } from 'next/cache';
 
 import { writePart } from '@/db/parts-write';
-import { adminLogs, brands, partPriceHistory, parts } from '@/db/schema';
+import { adminLogs, brands, categories, partPriceHistory, parts } from '@/db/schema';
 import { db } from '@/lib/db';
-import { type CsvParseResult, parsePartsCsv } from '@/lib/parts/csv';
+import { type CsvParseResult, matchExistingParts, parsePartsCsv } from '@/lib/parts/csv';
 import { type CategorySlug, isCategorySlug } from '@/lib/parts/spec-fields';
 import { type ActionResult, authorizeAdmin } from '@/lib/session';
 import { uploadImage } from '@/lib/storage';
@@ -218,13 +218,30 @@ async function brandLookup() {
   return new Map(rows.map((row) => [row.name.toLowerCase(), row.id]));
 }
 
-/** ตรวจไฟล์แล้วคืนผลพรีวิว ยังไม่เขียนฐานข้อมูล */
+/** อะไหล่ที่มีอยู่แล้วในหมวดนั้น ใช้จับคู่กับแถวใน CSV (รวมชิ้นที่ซ่อนไว้ จะได้ไม่สร้างซ้ำ) */
+async function existingPartsIn(category: CategorySlug) {
+  return db
+    .select({
+      id: parts.id,
+      brandId: parts.brandId,
+      model: parts.model,
+      isActive: parts.isActive,
+      imageUrl: parts.imageUrl,
+    })
+    .from(parts)
+    .innerJoin(categories, eq(parts.categoryId, categories.id))
+    .where(eq(categories.slug, category));
+}
+
+/** ตรวจไฟล์แล้วคืนผลพรีวิว บอกด้วยว่าแถวไหนเพิ่มใหม่ แถวไหนอัปเดตชิ้นเดิม ยังไม่เขียนฐานข้อมูล */
 export async function previewPartsCsv(formData: FormData): Promise<CsvParseResult> {
   const authz = await authorizeAdmin();
   if (!authz.ok) return authz;
   const form = await readCsvForm(formData);
   if ('error' in form) return { ok: false, error: form.error ?? 'ข้อมูลไม่ถูกต้อง' };
-  return parsePartsCsv(form.text, form.category, await brandLookup());
+  const parsed = parsePartsCsv(form.text, form.category, await brandLookup());
+  if (!parsed.ok) return parsed;
+  return matchExistingParts(parsed, await existingPartsIn(form.category));
 }
 
 /**
@@ -233,23 +250,40 @@ export async function previewPartsCsv(formData: FormData): Promise<CsvParseResul
  */
 export async function importPartsCsv(
   formData: FormData,
-): Promise<{ ok: true; imported: number } | { ok: false; error: string }> {
+): Promise<
+  { ok: true; imported: number; created: number; updated: number } | { ok: false; error: string }
+> {
   const authz = await authorizeAdmin();
   if (!authz.ok) return authz;
   const form = await readCsvForm(formData);
   if ('error' in form) return { ok: false, error: form.error ?? 'ข้อมูลไม่ถูกต้อง' };
 
-  const parsed = parsePartsCsv(form.text, form.category, await brandLookup());
-  if (!parsed.ok) return parsed;
+  const firstPass = parsePartsCsv(form.text, form.category, await brandLookup());
+  if (!firstPass.ok) return firstPass;
+  // จับคู่ใหม่ตอนนำเข้าจริง ไม่เชื่อผลพรีวิวจากเบราว์เซอร์ เผื่อมีคนเพิ่มอะไหล่ระหว่างนั้น
+  const existing = await existingPartsIn(form.category);
+  const parsed = matchExistingParts(firstPass, existing);
   if (parsed.errorCount > 0) {
     return { ok: false, error: `มี ${parsed.errorCount} แถวที่ผิด แก้ไฟล์ก่อนนำเข้า` };
   }
+  const existingById = new Map(existing.map((part) => [part.id, part]));
 
   try {
     await db.transaction(async (tx) => {
       for (const row of parsed.rows) {
         if (!row.ok) continue;
-        const written = await writePart(tx, row.input, authz.user.id);
+        const current = row.existingId ? existingById.get(row.existingId) : undefined;
+        // อัปเดตชิ้นเดิม: CSV ไม่มีคอลัมน์ซ่อน/แสดง จึงคงสถานะเดิมไว้
+        // และถ้าช่องรูปในไฟล์ว่าง ให้คงรูปเดิม ไม่ลบรูปที่อัปโหลดไว้
+        const input = current
+          ? {
+              ...row.input,
+              id: current.id,
+              isActive: current.isActive,
+              imageUrl: row.input.imageUrl ?? current.imageUrl,
+            }
+          : row.input;
+        const written = await writePart(tx, input, authz.user.id);
         if (written.priceChanged && !written.created) {
           await notifyPriceChange(
             tx,
@@ -263,12 +297,23 @@ export async function importPartsCsv(
         action: 'part.import',
         targetType: 'category',
         targetId: form.category,
-        changes: { after: { rows: parsed.rows.length } },
+        changes: {
+          after: {
+            rows: parsed.rows.length,
+            created: parsed.createCount ?? 0,
+            updated: parsed.updateCount ?? 0,
+          },
+        },
       });
     });
   } catch {
     return { ok: false, error: 'นำเข้าไม่สำเร็จ ไม่มีข้อมูลถูกเพิ่ม' };
   }
   revalidateParts();
-  return { ok: true, imported: parsed.rows.length };
+  return {
+    ok: true,
+    imported: parsed.rows.length,
+    created: parsed.createCount ?? 0,
+    updated: parsed.updateCount ?? 0,
+  };
 }

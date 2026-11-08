@@ -27,12 +27,71 @@ export const csvHeaderFor = (category: CategorySlug) => [
 ];
 
 export type CsvRowResult =
-  | { row: number; ok: true; label: string; verified: boolean; input: PartInput }
+  | {
+      row: number;
+      ok: true;
+      label: string;
+      verified: boolean;
+      input: PartInput;
+      /** รหัสอะไหล่ที่มียี่ห้อและรุ่นตรงกันอยู่แล้ว (ตั้งตอนพรีวิว/นำเข้า) ถ้ามี = อัปเดตชิ้นเดิม ไม่ใช่เพิ่มใหม่ */
+      existingId?: number;
+    }
   | { row: number; ok: false; label: string; errors: string[] };
 
 export type CsvParseResult =
   | { ok: false; error: string }
-  | { ok: true; rows: CsvRowResult[]; validCount: number; errorCount: number };
+  | {
+      ok: true;
+      rows: CsvRowResult[];
+      validCount: number;
+      errorCount: number;
+      /** จำนวนแถวที่จะเพิ่มใหม่ / อัปเดตชิ้นเดิม (ตั้งตอนพรีวิว/นำเข้า) */
+      createCount?: number;
+      updateCount?: number;
+    };
+
+/** กุญแจจับคู่อะไหล่: ยี่ห้อเดียวกัน + ชื่อรุ่นเดียวกัน (ไม่สนตัวพิมพ์เล็กใหญ่และช่องว่างซ้ำ) */
+export const partMatchKey = (brandId: number, model: string) =>
+  `${brandId}|${model.trim().replace(/\s+/g, ' ').toLowerCase()}`;
+
+/**
+ * จับคู่แถวใน CSV กับอะไหล่ที่มีอยู่แล้วในหมวดเดียวกัน
+ * - เจอ → ใส่ existingId ให้แถวนั้น นำเข้าแล้วจะอัปเดตชิ้นเดิม
+ * - รุ่นเดียวกันซ้ำในไฟล์เดียว → แถวหลังถือว่าผิด เพราะไม่รู้ว่าค่าไหนถูก
+ */
+export function matchExistingParts(
+  parsed: Extract<CsvParseResult, { ok: true }>,
+  existing: { id: number; brandId: number; model: string }[],
+): Extract<CsvParseResult, { ok: true }> {
+  const byKey = new Map(existing.map((part) => [partMatchKey(part.brandId, part.model), part.id]));
+  const seen = new Map<string, number>();
+  const rows: CsvRowResult[] = parsed.rows.map((row) => {
+    if (!row.ok) return row;
+    const key = partMatchKey(row.input.brandId, row.input.model);
+    const firstRow = seen.get(key);
+    if (firstRow !== undefined) {
+      return {
+        row: row.row,
+        ok: false,
+        label: row.label,
+        errors: [`รุ่นนี้ซ้ำกับแถว ${firstRow} ในไฟล์เดียวกัน`],
+      };
+    }
+    seen.set(key, row.row);
+    const existingId = byKey.get(key);
+    return existingId === undefined ? row : { ...row, existingId };
+  });
+  const valid = rows.filter((row) => row.ok);
+  const updateCount = valid.filter((row) => row.ok && row.existingId !== undefined).length;
+  return {
+    ok: true,
+    rows,
+    validCount: valid.length,
+    errorCount: rows.length - valid.length,
+    createCount: valid.length - updateCount,
+    updateCount,
+  };
+}
 
 export const MAX_CSV_ROWS = 1000;
 
