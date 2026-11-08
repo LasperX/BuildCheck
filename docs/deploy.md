@@ -48,6 +48,7 @@ DATABASE_URL="postgresql://...neon.tech/neondb?sslmode=require" pnpm admin:promo
 ```
 
 4. Cron คำนวณราคากลางมือสองทุกคืน ตั้งไว้แล้วใน `vercel.json` (`/api/cron/used-stats` ตี 2 เวลาไทย) ดูผลได้ที่แท็บ Cron Jobs ของโปรเจคใน Vercel และตรวจขีดจำกัดจำนวน Cron ของแพ็กเกจที่ใช้
+5. เซิร์ฟเวอร์ตั้งไว้ที่สิงคโปร์ (`"regions": ["sin1"]` ใน `vercel.json`) ให้อยู่ที่เดียวกับฐานข้อมูล Neon ถ้าเลือก Region ของ Neon เป็นที่อื่น ให้แก้ค่านี้ให้ตรงกัน ไม่เช่นนั้นทุกคำสั่งฐานข้อมูลจะข้ามทวีปและหน้าเว็บช้าลงมาก
 
 ## 4. ตรวจหลัง Deploy
 
