@@ -31,6 +31,7 @@ const ACTION_LABELS: Record<string, string> = {
   'user.ban': 'ระงับผู้ใช้',
   'user.unban': 'ปลดระงับผู้ใช้',
   'user.role': 'เปลี่ยนสิทธิ์',
+  'user.verify_email': 'ยืนยันอีเมลให้',
   'report.hide': 'ซ่อนเนื้อหาที่ถูกรายงาน',
   'report.dismiss': 'ปิดรายงาน (ไม่ผิดกติกา)',
 };

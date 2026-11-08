@@ -180,6 +180,40 @@ export async function setUserRole(rawId: unknown, rawRole: unknown): Promise<Act
   return { ok: true };
 }
 
+/**
+ * แอดมินยืนยันอีเมลให้สมาชิก ใช้แทนอีเมลยืนยันเมื่อเว็บยังไม่ได้ตั้งระบบส่งอีเมล (Resend)
+ * สมาชิกที่ยืนยันแล้วจึงโหวต คอมเมนต์ Fork และรายงานราคาได้ (มติ Q4)
+ * แอดมินควรยืนยันเฉพาะคนที่รู้จักตัวจริง เช่นผู้ร่วมทดสอบ เพราะไม่ได้พิสูจน์ว่าเป็นเจ้าของอีเมลจริง
+ */
+export async function verifyUserEmail(rawId: unknown): Promise<ActionResult> {
+  const auth = await authorizeAdmin();
+  if (!auth.ok) return auth;
+  const id = userIdSchema.safeParse(rawId);
+  if (!id.success) return { ok: false, error: 'ข้อมูลไม่ถูกต้อง' };
+
+  const done = await db.transaction(async (tx) => {
+    const [before] = await tx
+      .select({ emailVerified: users.emailVerified })
+      .from(users)
+      .where(eq(users.id, id.data));
+    if (!before) return 'missing';
+    if (before.emailVerified) return 'already';
+    await tx.update(users).set({ emailVerified: true }).where(eq(users.id, id.data));
+    await tx.insert(adminLogs).values({
+      adminId: auth.user.id,
+      action: 'user.verify_email',
+      targetType: 'user',
+      targetId: id.data,
+      changes: { before: { emailVerified: false }, after: { emailVerified: true } },
+    });
+    return 'ok';
+  });
+  if (done === 'missing') return { ok: false, error: 'ไม่พบผู้ใช้' };
+  if (done === 'already') return { ok: false, error: 'ผู้ใช้นี้ยืนยันอีเมลแล้ว' };
+  revalidatePath('/admin/users');
+  return { ok: true };
+}
+
 // ---------- จัดการรายงาน resolveReport(id, action) ----------
 
 /**

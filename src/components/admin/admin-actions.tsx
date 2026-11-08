@@ -1,6 +1,6 @@
 'use client';
 
-import { Ban, Check, EyeOff, ShieldCheck, TriangleAlert, Undo2, X } from 'lucide-react';
+import { Ban, Check, EyeOff, MailCheck, ShieldCheck, TriangleAlert, Undo2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
@@ -28,6 +28,7 @@ import {
   setUserRole,
   unbanUser,
   updateSetting,
+  verifyUserEmail,
 } from '@/server/actions/admin';
 
 // ปุ่มและฟอร์มในหน้าแอดมิน ทุกปุ่มเรียก Server Action ที่ตรวจสิทธิ์แอดมินซ้ำเองเสมอ
@@ -68,12 +69,14 @@ export function UserActions({
   name,
   role,
   banned,
+  emailVerified,
   isSelf,
 }: {
   userId: string;
   name: string;
   role: 'member' | 'admin';
   banned: boolean;
+  emailVerified: boolean;
   isSelf: boolean;
 }) {
   const { pending, error, run } = useAction();
@@ -106,6 +109,23 @@ export function UserActions({
           <option value="member">สมาชิก</option>
           <option value="admin">แอดมิน</option>
         </NativeSelect>
+        {/* ใช้แทนอีเมลยืนยันเมื่อยังไม่ได้ตั้งระบบส่งอีเมล ยืนยันเฉพาะคนที่รู้จักตัวจริง */}
+        {!emailVerified && (
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={pending}
+            onClick={() => {
+              if (window.confirm(`ยืนยันอีเมลให้ ${name}? ทำเฉพาะคนที่คุณรู้จักตัวจริง`)) {
+                run(() => verifyUserEmail(userId));
+              }
+            }}
+          >
+            <MailCheck aria-hidden />
+            ยืนยันอีเมลให้
+          </Button>
+        )}
         {banned ? (
           <Button
             type="button"

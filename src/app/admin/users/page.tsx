@@ -135,6 +135,7 @@ async function UsersContent({
                     name={user.displayName}
                     role={user.role}
                     banned={user.banned}
+                    emailVerified={user.emailVerified}
                     isSelf={user.id === admin.id}
                   />
                 </td>

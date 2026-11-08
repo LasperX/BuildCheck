@@ -17,6 +17,7 @@ import {
   setUserRole,
   unbanUser,
   updateSetting,
+  verifyUserEmail,
 } from '@/server/actions/admin';
 import { setPartActive, updatePartPrice, upsertPart } from '@/server/actions/admin-parts';
 import { saveBuild } from '@/server/actions/builds';
@@ -67,6 +68,7 @@ describe('สิทธิ์แอดมิน: ผู้เยี่ยมช�
     resolveReport: () => resolveReport(1, 'dismiss'),
     reviewUsedReport: () => reviewUsedReport({ id: 1, decision: 'approved' }),
     saveUsedSettings: () => saveUsedSettings({}),
+    verifyUserEmail: () => verifyUserEmail(member.id),
   };
 
   for (const [name, call] of Object.entries(calls)) {
@@ -188,5 +190,37 @@ describe('banUser / setUserRole', () => {
       .from(users)
       .where(eq(users.id, member.id));
     expect(row?.banned).toBe(false);
+  });
+});
+
+describe('verifyUserEmail', () => {
+  it('แอดมินยืนยันอีเมลให้สมาชิกที่ยังไม่ยืนยันได้ มีบันทึกการทำงาน และกดซ้ำไม่ได้', async () => {
+    const pending = await createAccount({ verified: false });
+    const isVerified = async () =>
+      (await db.select({ v: users.emailVerified }).from(users).where(eq(users.id, pending.id)))[0]
+        ?.v;
+    expect(await isVerified()).toBe(false);
+
+    // สมาชิกที่ยังไม่ยืนยัน ยืนยันตัวเองผ่าน Action นี้ไม่ได้
+    actAs(pending);
+    expect((await verifyUserEmail(pending.id)).ok).toBe(false);
+    expect(await isVerified()).toBe(false);
+
+    actAs(admin);
+    expect(await verifyUserEmail(pending.id)).toEqual({ ok: true });
+    expect(await isVerified()).toBe(true);
+    expect(await verifyUserEmail(pending.id)).toMatchObject({ ok: false });
+
+    const logs = await db
+      .select({ action: adminLogs.action })
+      .from(adminLogs)
+      .where(and(eq(adminLogs.adminId, admin.id), eq(adminLogs.targetId, pending.id)));
+    expect(logs).toContainEqual({ action: 'user.verify_email' });
+  });
+
+  it('รหัสผู้ใช้ผิดรูปแบบหรือไม่มีอยู่ถูกปฏิเสธ', async () => {
+    actAs(admin);
+    expect(await verifyUserEmail("x' OR 1=1 --")).toMatchObject({ ok: false });
+    expect(await verifyUserEmail(null)).toMatchObject({ ok: false });
   });
 });
