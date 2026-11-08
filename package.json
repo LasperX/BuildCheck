@@ -29,7 +29,8 @@
     "test:e2e:report": "playwright show-report",
     "docs:er": "tsx scripts/er-diagram.ts",
     "docs:diagrams": "tsx scripts/diagrams-md.ts",
-    "test:integration": "vitest run --config vitest.integration.config.mts"
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "parts:export": "tsx --env-file=.env scripts/export-parts-csv.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1161.0",
