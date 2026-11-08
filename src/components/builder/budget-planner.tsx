@@ -55,7 +55,7 @@ export function BudgetPlanner({
   } = useForm<FormInput>({
     resolver: zodResolver(budgetInputSchema),
     defaultValues: {
-      budget: 30000,
+      budget: 40000,
       usage: 'gaming',
       cpuBrand: '',
       allowUsed: false,

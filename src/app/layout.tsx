@@ -23,9 +23,22 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
+const SITE_DESCRIPTION =
+  'เลือกอะไหล่คอมทีละชิ้น ระบบบอกทันทีว่าใส่กันได้ไหม ไฟพอไหม และราคารวมเท่าไหร่';
+
+// metadataBase: ให้ลิงก์รูปตอนแชร์ (og:image) เป็นที่อยู่เต็ม LINE / Facebook จึงโหลดรูปได้
+// openGraph / twitter: ทุกหน้าได้ชื่อเว็บ คำอธิบาย และรูปจาก app/opengraph-image.tsx เว้นแต่หน้านั้นกำหนดเอง
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3100'),
   title: 'BuildCheck · จัดสเปกคอมพร้อมเช็กความเข้ากันได้',
-  description: 'เลือกอะไหล่คอมทีละชิ้น ระบบบอกทันทีว่าใส่กันได้ไหม ไฟพอไหม และราคารวมเท่าไหร่',
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    siteName: 'BuildCheck',
+    locale: 'th_TH',
+    type: 'website',
+    description: SITE_DESCRIPTION,
+  },
+  twitter: { card: 'summary_large_image' },
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

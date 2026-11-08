@@ -137,7 +137,7 @@ export default function HomePage() {
               <Input
                 name="budget"
                 inputMode="numeric"
-                defaultValue="30000"
+                defaultValue="40000"
                 required
                 pattern="[0-9,]*"
                 className="font-mono"

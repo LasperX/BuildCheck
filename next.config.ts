@@ -14,7 +14,8 @@ const isHttps = Boolean(process.env.VERCEL);
 function imageOrigins(): string[] {
   const origins = ['https://lh3.googleusercontent.com'];
   try {
-    if (process.env.STORAGE_PUBLIC_URL) origins.push(new URL(process.env.STORAGE_PUBLIC_URL).origin);
+    if (process.env.STORAGE_PUBLIC_URL)
+      origins.push(new URL(process.env.STORAGE_PUBLIC_URL).origin);
   } catch {
     // ค่าไม่ใช่ URL ข้ามไป
   }
@@ -53,7 +54,10 @@ const nextConfig: NextConfig = {
   experimental: { serverActions: { bodySizeLimit: '3mb' } },
   cacheComponents: true,
   // ฟอนต์ไทยของรูปสรุปสเปก อ่านจากไฟล์ตอนรัน ต้องบอกให้รวมไฟล์ไปตอน Deploy ด้วย
-  outputFileTracingIncludes: { '/api/og/build/[id]': ['./src/assets/fonts/*.woff'] },
+  outputFileTracingIncludes: {
+    '/api/og/build/[id]': ['./src/assets/fonts/*.woff'],
+    '/opengraph-image': ['./src/assets/fonts/*.woff'],
+  },
   partialPrefetching: true,
   poweredByHeader: false,
   async headers() {

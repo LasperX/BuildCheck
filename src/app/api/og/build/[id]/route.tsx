@@ -1,9 +1,7 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
 import { ImageResponse } from 'next/og';
 
 import { USAGE_LABELS } from '@/lib/builder/types';
+import { loadOgFonts, OG_FONT_FAMILY } from '@/lib/og-fonts';
 import { formatBaht } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS } from '@/lib/parts/spec-fields';
 import { getSession } from '@/lib/session';
@@ -12,23 +10,6 @@ import { canViewBuild, getBuildWithItems } from '@/server/queries/builds';
 
 // รูปสรุปสเปก 1200 × 630 สำหรับโพสต์ลงโซเชียลและพรีวิวลิงก์ (หัวข้อ 3.3)
 // สร้างจากข้อมูลในฐานข้อมูลทุกครั้ง สเปกส่วนตัวเปิดได้เฉพาะเจ้าของ
-
-const FONT_DIR = join(process.cwd(), 'src/assets/fonts');
-let fontCache: Promise<{ name: string; data: Buffer; weight: 400 | 700 }[]> | null = null;
-
-function loadFonts() {
-  // ฟอนต์ IBM Plex Sans Thai (สัญญาอนุญาต OFL) แยกไฟล์ภาษาไทยกับละติน ใช้ชื่อเดียวกันให้สลับกันอัตโนมัติ
-  fontCache ??= Promise.all(
-    (['thai', 'latin'] as const).flatMap((subset) =>
-      ([400, 700] as const).map(async (weight) => ({
-        name: 'Plex',
-        weight,
-        data: await readFile(join(FONT_DIR, `ibm-plex-sans-thai-${subset}-${weight}-normal.woff`)),
-      })),
-    ),
-  );
-  return fontCache;
-}
 
 const STATUS = {
   ok: { text: 'เข้ากันได้ทั้งหมด', color: '#15803d', bg: '#dcfce7' },
@@ -57,7 +38,7 @@ export async function GET(request: Request, { params }: RouteContext<'/api/og/bu
         flexDirection: 'column',
         padding: 56,
         background: '#f8fafc',
-        fontFamily: 'Plex',
+        fontFamily: OG_FONT_FAMILY,
         color: '#0f172a',
       }}
     >
@@ -126,7 +107,7 @@ export async function GET(request: Request, { params }: RouteContext<'/api/og/bu
     {
       width: 1200,
       height: 630,
-      fonts: await loadFonts(),
+      fonts: await loadOgFonts(),
       headers: {
         'Cache-Control': 'private, max-age=60',
         ...(new URL(request.url).searchParams.has('download')
