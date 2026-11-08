@@ -183,10 +183,20 @@ async function ReviewContent({
                     <dt className="text-xs text-muted-foreground">ราคาอ้างอิง</dt>
                     <dd className="font-mono">{formatBaht(item.price)}</dd>
                   </div>
-                  <div>
-                    <dt className="text-xs text-muted-foreground">กำลังไฟ (W)</dt>
-                    <dd className="font-mono">{item.powerWatt ?? '—'}</dd>
-                  </div>
+                  {/* ช่องกำลังไฟใช้คำนวณเฉพาะเมนบอร์ด (lib/compat/power.ts) หมวดอื่นใช้ TDP/TBP หรือค่ามาตรฐาน
+                      จึงแสดงเฉพาะเมนบอร์ด ไม่ให้เข้าใจผิดว่าลืมกรอก */}
+                  {item.categorySlug === 'motherboard' ? (
+                    <div>
+                      <dt className="text-xs text-muted-foreground">กำลังไฟบอร์ด (W)</dt>
+                      <dd className="font-mono">
+                        {item.powerWatt ?? (
+                          <span className="font-sans text-muted-foreground">
+                            ว่าง = ใช้ค่าตั้งต้น
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                  ) : null}
                   <div>
                     <dt className="text-xs text-muted-foreground">ปีที่วางขาย</dt>
                     <dd className="font-mono">{item.releaseYear ?? '—'}</dd>
