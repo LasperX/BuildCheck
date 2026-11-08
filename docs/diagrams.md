@@ -20,7 +20,7 @@ flowchart LR
   subgraph BuildCheck
     direction TB
     uc1((ดูคลังอะไหล่))
-    uc2((จัดสเปกและดูผลตรวจ))
+    uc2((จัดสเปกมือหนึ่ง/มือสองและดูผลตรวจ))
     uc3((จัดสเปกตามงบ))
     uc4((เทียบสเปก))
     uc5((ดูสเปกสาธารณะ / ตลาดมือสอง))
@@ -30,16 +30,17 @@ flowchart LR
     uc9((Fork สเปก))
     uc10((รายงานเนื้อหา / รายงานราคามือสอง))
     uc11((รับแจ้งเตือน / ตั้งเตือนราคา))
-    uc12((จัดการอะไหล่ / นำเข้า CSV))
+    uc12((จัดการอะไหล่ / นำเข้า CSV เพิ่มหรืออัปเดต))
     uc13((ตั้งค่ากฎและสัดส่วนงบ))
-    uc14((จัดการผู้ใช้และรายงาน))
+    uc14((จัดการผู้ใช้ ยืนยันอีเมลให้ และรายงาน))
     uc15((อนุมัติราคามือสอง))
     uc16((ดู Dashboard และบันทึกการทำงาน))
+    uc17((ตรวจสเปกอะไหล่))
   end
 
   guest --- uc1 & uc2 & uc3 & uc4 & uc5 & uc6
   member --- uc7 & uc8 & uc9 & uc10 & uc11
-  admin --- uc12 & uc13 & uc14 & uc15 & uc16
+  admin --- uc12 & uc13 & uc14 & uc15 & uc16 & uc17
 ```
 
 ## ผังเว็บไซต์
@@ -74,6 +75,7 @@ flowchart LR
   home --> adminHome["Dashboard /admin"]
   adminHome --> aParts["จัดการอะไหล่ /admin/parts"] --> aPartForm["เพิ่ม/แก้ /admin/parts/new, [id]"]
   aParts --> aImport["นำเข้า CSV /admin/parts/import"]
+  aParts --> aReview["ตรวจสเปก /admin/parts/review"]
   adminHome --> aUsed["ราคามือสอง /admin/used-prices"]
   adminHome --> aUsers["ผู้ใช้ /admin/users"]
   adminHome --> aReports["รายงาน /admin/reports"]
@@ -85,7 +87,7 @@ flowchart LR
   classDef admin fill:#fdf0e6,stroke:#b5530e,color:#4a2206
   class home,builder,budget,parts,partCat,partDetail,used,builds,buildDetail,profile,compare,guide,about,privacy,auth all
   class usedReport,me,meBuilds,meFav,meNoti,meAlerts,meSettings member
-  class adminHome,aParts,aPartForm,aImport,aUsed,aUsers,aReports,aSettings,aLogs admin
+  class adminHome,aParts,aPartForm,aImport,aReview,aUsed,aUsers,aReports,aSettings,aLogs admin
 ```
 
 ## สถาปัตยกรรมระบบ
@@ -397,6 +399,7 @@ erDiagram
     text image_url
     smallint release_year
     boolean is_active
+    part_availability availability
     text spec_source_url
     boolean spec_verified
     tsvector search_vector
@@ -736,8 +739,8 @@ flowchart TD
 %% อัลกอริทึมจัดสเปกตามงบ (หัวข้อ 4.5) ตามโค้ดใน src/lib/compat/budget.ts
 flowchart TD
   input([งบ · ประเภทการใช้งาน · ยี่ห้อ CPU · ยอมมือสอง?]) --> used{"ยอมใช้มือสอง?"}
-  used -- ใช่ --> swap["หมวดที่ยอม: ใช้ราคากลางมือสอง<br/>แทนราคาใหม่ (ถ้าถูกกว่า)"] --> split
-  used -- ไม่ --> split["แบ่งงบตามสัดส่วนของประเภท"]
+  used -- ใช่ --> swap["หมวดที่ยอม: ใช้ราคากลางมือสอง<br/>แทนราคาใหม่ (ถ้าถูกกว่า)<br/>รุ่นที่มีแต่มือสอง: ใช้ราคามือสองเสมอ<br/>ไม่มีราคากลาง = ตัดออก"] --> split
+  used -- ไม่ --> drop["ตัดรุ่นที่มีแต่มือสองออก"] --> split["แบ่งงบตามสัดส่วนของประเภท"]
   split --> gpu["การ์ดจอคะแนนสูงสุดในงบหมวด<br/>(ออฟฟิศ + CPU มีกราฟิกในตัว = ข้าม)"]
   gpu --> cpu["CPU คะแนนสูงสุดในงบหมวด"]
   cpu --> rest["เมนบอร์ด (R01–R02, M.2 ≥ 1) → แรม (R04–R06)<br/>→ SSD NVMe → PSU (วัตต์ ≥ ค่าแนะนำ)<br/>→ เคส (R08, R09, R15) → ชุดระบายความร้อน (R10–R13)"]
@@ -768,7 +771,7 @@ flowchart TD
   conf -- ไม่ --> mid["ป้าย: ความน่าเชื่อถือกลาง"]
   n -- ไม่ --> sv{"มีราคาสำรวจของแอดมิน<br/>ไม่เกิน 90 วัน?"}
   sv -- มี --> svp["จุดกึ่งกลางของช่วงราคาสำรวจ<br/>ป้าย: กลาง"]
-  sv -- ไม่มี --> est["P_used = P_new × r^t × k<br/>ป้าย: ประมาณการ"]
+  sv -- ไม่มี --> est["P_used = P_new × r^t × k<br/>ป้าย: ประมาณการ<br/>(รุ่นที่มีแต่มือสอง P_new = ราคาตอนเปิดตัว)"]
 ```
 
 ## Sequence Diagram เลือกอะไหล่และบันทึกอัตโนมัติ

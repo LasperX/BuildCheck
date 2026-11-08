@@ -25,6 +25,7 @@ flowchart LR
   home --> adminHome["Dashboard /admin"]
   adminHome --> aParts["จัดการอะไหล่ /admin/parts"] --> aPartForm["เพิ่ม/แก้ /admin/parts/new, [id]"]
   aParts --> aImport["นำเข้า CSV /admin/parts/import"]
+  aParts --> aReview["ตรวจสเปก /admin/parts/review"]
   adminHome --> aUsed["ราคามือสอง /admin/used-prices"]
   adminHome --> aUsers["ผู้ใช้ /admin/users"]
   adminHome --> aReports["รายงาน /admin/reports"]
@@ -36,4 +37,4 @@ flowchart LR
   classDef admin fill:#fdf0e6,stroke:#b5530e,color:#4a2206
   class home,builder,budget,parts,partCat,partDetail,used,builds,buildDetail,profile,compare,guide,about,privacy,auth all
   class usedReport,me,meBuilds,meFav,meNoti,meAlerts,meSettings member
-  class adminHome,aParts,aPartForm,aImport,aUsed,aUsers,aReports,aSettings,aLogs admin
+  class adminHome,aParts,aPartForm,aImport,aReview,aUsed,aUsers,aReports,aSettings,aLogs admin
