@@ -307,3 +307,9 @@ export const priceUpdateSchema = z.object({
     .min(0, 'ราคาต้องไม่ติดลบ')
     .max(99999999.99, 'ราคาสูงเกินไป'),
 });
+
+/** กดตรวจสเปกแล้ว / ยกเลิก ในหน้าตรวจสเปก รับหลายชิ้นได้ (สูงสุด 100 ต่อครั้ง) */
+export const partVerifySchema = z.object({
+  ids: z.array(z.number().int().positive()).min(1).max(100),
+  verified: z.boolean(),
+});

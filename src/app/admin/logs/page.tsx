@@ -20,6 +20,8 @@ const ACTION_LABELS: Record<string, string> = {
   'part.import': 'นำเข้า CSV',
   'part.hide': 'ซ่อนอะไหล่',
   'part.show': 'แสดงอะไหล่',
+  'part.verify': 'ตรวจสเปกแล้ว',
+  'part.unverify': 'ยกเลิกตรวจสเปก',
   'part.delete': 'ลบอะไหล่',
   'settings.update': 'แก้ค่าตั้งระบบ',
   'settings.used': 'แก้ค่าเสื่อมมือสอง',

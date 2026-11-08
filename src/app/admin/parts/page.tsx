@@ -1,4 +1,4 @@
-import { CircleCheck, Clock, FileUp, Plus, Search } from 'lucide-react';
+import { CircleCheck, ClipboardCheck, Clock, FileUp, Plus, Search } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -268,6 +268,12 @@ export default function AdminPartsPage({ searchParams }: PageProps<'/admin/parts
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="t-h1">จัดการอะไหล่</h1>
         <div className="flex flex-wrap gap-2">
+          <Button asChild variant="secondary">
+            <Link href="/admin/parts/review">
+              <ClipboardCheck />
+              ตรวจสเปก
+            </Link>
+          </Button>
           <Button asChild variant="secondary">
             <Link href="/admin/parts/import">
               <FileUp />

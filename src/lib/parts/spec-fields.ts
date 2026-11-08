@@ -368,3 +368,18 @@ export const CATEGORY_LABELS: Record<CategorySlug, string> = {
 export function isCategorySlug(value: unknown): value is CategorySlug {
   return typeof value === 'string' && (CATEGORY_SLUGS as readonly string[]).includes(value);
 }
+
+/** แปลงค่าสเปกเป็นข้อความที่คนอ่าน ใช้ร่วมกันในหน้ารายละเอียดอะไหล่และหน้าตรวจสเปกของแอดมิน */
+export function formatSpecValue(value: unknown, kind: SpecFieldKind): string {
+  if (value === null || value === undefined || value === '') return '—';
+  if (kind === 'bool') return value ? 'มี' : 'ไม่มี';
+  if (kind === 'connectors') {
+    return (
+      Object.entries(value as Record<string, number>)
+        .map(([name, count]) => `${name} × ${count}`)
+        .join(', ') || '—'
+    );
+  }
+  if (Array.isArray(value)) return value.join(', ') || '—';
+  return String(value);
+}

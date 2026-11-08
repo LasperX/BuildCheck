@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatBaht } from '@/lib/parts/catalog';
-import { SPEC_FIELDS } from '@/lib/parts/spec-fields';
+import { formatSpecValue, SPEC_FIELDS } from '@/lib/parts/spec-fields';
 import { getSession } from '@/lib/session';
 import { getPartDetail, getPopularBuildsUsingPart } from '@/server/queries/parts';
 import { getPartUsedDetail } from '@/server/queries/used';
@@ -26,20 +26,6 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title: `${part.brandName} ${part.model} · BuildCheck`,
     description: `สเปกและราคาอ้างอิงของ ${part.brandName} ${part.model}`,
   };
-}
-
-function formatSpecValue(value: unknown, kind: string): string {
-  if (value === null || value === undefined || value === '') return '—';
-  if (kind === 'bool') return value ? 'มี' : 'ไม่มี';
-  if (kind === 'connectors') {
-    return (
-      Object.entries(value as Record<string, number>)
-        .map(([name, count]) => `${name} × ${count}`)
-        .join(', ') || '—'
-    );
-  }
-  if (Array.isArray(value)) return value.join(', ') || '—';
-  return String(value);
 }
 
 async function PartContent({ params }: { params: Params }) {

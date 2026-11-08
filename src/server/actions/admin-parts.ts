@@ -1,6 +1,6 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { revalidatePath, updateTag } from 'next/cache';
 
 import { writePart } from '@/db/parts-write';
@@ -11,7 +11,7 @@ import { type CategorySlug, isCategorySlug } from '@/lib/parts/spec-fields';
 import { type ActionResult, authorizeAdmin } from '@/lib/session';
 import { uploadImage } from '@/lib/storage';
 import { notifyPriceChange } from '@/server/notify';
-import { partInputSchema, priceUpdateSchema } from '@/lib/validators/parts';
+import { partInputSchema, partVerifySchema, priceUpdateSchema } from '@/lib/validators/parts';
 
 // ทุกฟังก์ชันในไฟล์นี้เรียกจากเบราว์เซอร์ได้ตรงๆ จึงต้องขึ้นต้นด้วย authorizeAdmin() เสมอ
 
@@ -124,6 +124,44 @@ export async function setPartActive(input: {
     });
   });
   revalidateParts();
+  return { ok: true };
+}
+
+/**
+ * หน้าตรวจสเปก: ตั้งสถานะ "ตรวจแล้ว" หรือยกเลิก โดยไม่ต้องเปิดฟอร์มแก้ไข
+ * รับเป็นรายการ id เผื่อกดหลายชิ้นพร้อมกัน บันทึก admin_logs ทีละชิ้นเพื่อให้ย้อนดูได้ว่าใครตรวจชิ้นไหน
+ */
+export async function setPartVerified(input: {
+  ids: number[];
+  verified: boolean;
+}): Promise<ActionResult> {
+  const authz = await authorizeAdmin();
+  if (!authz.ok) return authz;
+  const parsed = partVerifySchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'ข้อมูลไม่ถูกต้อง' };
+  const { ids, verified } = parsed.data;
+
+  const updated = await db.transaction(async (tx) => {
+    const rows = await tx
+      .update(parts)
+      .set({ specVerified: verified })
+      .where(inArray(parts.id, ids))
+      .returning({ id: parts.id });
+    if (rows.length > 0) {
+      await tx.insert(adminLogs).values(
+        rows.map((row) => ({
+          adminId: authz.user.id,
+          action: verified ? 'part.verify' : 'part.unverify',
+          targetType: 'part',
+          targetId: String(row.id),
+        })),
+      );
+    }
+    return rows.length;
+  });
+  if (updated === 0) return { ok: false, error: 'ไม่พบอะไหล่ที่เลือก' };
+  revalidateParts();
+  revalidatePath('/admin/parts/review');
   return { ok: true };
 }
 

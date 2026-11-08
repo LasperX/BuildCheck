@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  ClipboardCheck,
   FileUp,
   Flag,
   History,
@@ -14,10 +15,11 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-// เมนูหลังบ้านครบ 9 หน้าตามหัวข้อ 5.2 และ 5.4
+// เมนูหลังบ้านครบ 9 หน้าตามหัวข้อ 5.2 และ 5.4 และหน้าตรวจสเปก (เพิ่ม 8 พ.ย. 2569)
 const ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/parts', label: 'จัดการอะไหล่', icon: Package, exact: true },
+  { href: '/admin/parts/review', label: 'ตรวจสเปก', icon: ClipboardCheck, exact: true },
   { href: '/admin/parts/import', label: 'นำเข้า CSV', icon: FileUp, exact: true },
   { href: '/admin/used-prices', label: 'ราคามือสอง', icon: Recycle, exact: true },
   { href: '/admin/users', label: 'จัดการผู้ใช้', icon: Users, exact: true },

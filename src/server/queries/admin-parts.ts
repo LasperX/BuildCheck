@@ -161,3 +161,78 @@ export async function getPartForEdit(id: number) {
   };
   return { values, history, category };
 }
+
+export const REVIEW_PAGE_SIZE = 10;
+
+/**
+ * หน้าตรวจสเปก: ดึงอะไหล่พร้อมสเปกทุกช่องของหมวดตัวเอง เรียงตามหมวด แล้วตามวันที่เพิ่ม (เก่าก่อน)
+ * verified=false คือคิวที่ยังไม่ได้ตรวจ ส่วน true ใช้ดูย้อนหลังหรือยกเลิกการตรวจ
+ */
+export async function listReviewParts(filters: {
+  category?: string | undefined;
+  verified: boolean;
+  page: number;
+}) {
+  const category = isCategorySlug(filters.category) ? filters.category : undefined;
+  const categoryRow = category
+    ? await db.query.categories.findFirst({ where: eq(categories.slug, category) })
+    : undefined;
+  const where = and(
+    eq(parts.specVerified, filters.verified),
+    categoryRow ? eq(parts.categoryId, categoryRow.id) : undefined,
+  );
+
+  const [rows, totalRows, byCategory] = await Promise.all([
+    db.query.parts.findMany({
+      where,
+      with: {
+        category: true,
+        brand: true,
+        cpu: true,
+        motherboard: true,
+        ram: true,
+        gpu: true,
+        storage: true,
+        psu: true,
+        case: true,
+        cooler: true,
+      },
+      orderBy: [asc(parts.categoryId), asc(parts.createdAt), asc(parts.id)],
+      limit: REVIEW_PAGE_SIZE,
+      offset: (filters.page - 1) * REVIEW_PAGE_SIZE,
+    }),
+    db.select({ value: count() }).from(parts).where(where),
+    db
+      .select({ slug: categories.slug, value: count() })
+      .from(parts)
+      .innerJoin(categories, eq(parts.categoryId, categories.id))
+      .where(eq(parts.specVerified, filters.verified))
+      .groupBy(categories.slug),
+  ]);
+
+  const items = rows.flatMap((part) => {
+    const slug = part.category.slug;
+    if (!isCategorySlug(slug)) return [];
+    return [
+      {
+        id: part.id,
+        model: part.model,
+        brandName: part.brand.name,
+        categorySlug: slug,
+        price: Number(part.price),
+        powerWatt: part.powerWatt,
+        releaseYear: part.releaseYear,
+        isActive: part.isActive,
+        specVerified: part.specVerified,
+        specSourceUrl: part.specSourceUrl,
+        imageUrl: part.imageUrl,
+        spec: (part[slug] ?? {}) as Record<string, unknown>,
+      },
+    ];
+  });
+  return {
+    items,
+    total: totalRows[0]?.value ?? 0,
+    categoryCounts: Object.fromEntries(byCategory.map((row) => [row.slug, row.value])),
+  };
+}
