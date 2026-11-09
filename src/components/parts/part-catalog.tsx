@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
+import { SegmentIndicator } from '@/components/ui/segment-indicator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   formatBaht,
@@ -224,8 +225,9 @@ export function PartCatalog({
           <div
             role="group"
             aria-label="รูปแบบการแสดงผล"
-            className="inline-flex gap-0.5 rounded-md bg-surface-3 p-0.5"
+            className="group/seg relative inline-flex gap-0.5 rounded-md bg-surface-3 p-0.5"
           >
+            <SegmentIndicator selector="[aria-pressed=true]" className="rounded-sm bg-surface shadow-sm" />
             <ViewButton active={view === 'cards'} label="การ์ด" onClick={() => setView('cards')}>
               <LayoutGrid aria-hidden />
             </ViewButton>
@@ -347,7 +349,7 @@ function ViewButton({
       aria-pressed={active}
       title={label}
       onClick={onClick}
-      className="grid size-9 place-items-center rounded-sm text-muted-foreground hover:text-foreground aria-pressed:bg-surface aria-pressed:text-foreground aria-pressed:shadow-sm [&>svg]:size-4"
+      className="relative z-10 grid size-9 place-items-center rounded-sm text-muted-foreground transition-colors duration-200 hover:text-foreground aria-pressed:bg-surface aria-pressed:text-foreground aria-pressed:shadow-sm group-data-[seg=ready]/seg:aria-pressed:bg-transparent group-data-[seg=ready]/seg:aria-pressed:shadow-none [&>svg]:size-4"
     >
       {children}
     </button>

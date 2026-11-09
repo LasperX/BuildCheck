@@ -5,6 +5,7 @@ import { useId, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { SegmentIndicator } from '@/components/ui/segment-indicator';
 import {
   BUYING_CHECKLIST,
   CONFIDENCE_LABELS,
@@ -105,8 +106,12 @@ export function UsedControls({
         <div
           role="radiogroup"
           aria-label={`สภาพของ ${part?.model ?? 'อะไหล่'}`}
-          className="flex rounded-lg border border-border p-0.5 text-xs"
+          className="group/seg relative flex rounded-lg border border-border p-0.5 text-xs"
         >
+          <SegmentIndicator
+            selector="[aria-checked=true]"
+            className={condition === 'new' ? 'bg-primary' : 'bg-used'}
+          />
           {(['new', ...USED_GRADES] as const).map((value) => {
             const active = condition === value;
             // รุ่นที่มีแต่มือสอง ซื้อมือหนึ่งไม่ได้แล้ว จึงกดเลือกมือหนึ่งไม่ได้
@@ -127,12 +132,15 @@ export function UsedControls({
                 }
                 onClick={() => !active && !blocked && onUpdate({ condition: value })}
                 className={cn(
-                  'rounded-md px-2 py-1 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40',
+                  'relative z-10 rounded-md px-2 py-1 font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40',
                   active
-                    ? value === 'new'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-used text-white'
-                    : 'text-muted-foreground hover:bg-surface-2',
+                    ? cn(
+                        value === 'new'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-used text-white',
+                        'group-data-[seg=ready]/seg:bg-transparent',
+                      )
+                    : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 {value === 'new' ? 'มือหนึ่ง' : `มือสอง ${value}`}

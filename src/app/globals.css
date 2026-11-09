@@ -395,6 +395,100 @@
   animation-duration: 0.2s;
 }
 
+/* ดรอปดาวน์ (NativeSelect): เบราว์เซอร์ที่รองรับ customizable select เช่น Chrome/Edge รุ่นใหม่
+   ได้หน้าต่างตัวเลือกที่เข้ากับเว็บ ค่อยๆ เลื่อนลงมา มีติ๊กถูกหน้าตัวที่เลือก
+   เบราว์เซอร์อื่นยังใช้หน้าต่างของระบบตามเดิม ใช้คีย์บอร์ดและโปรแกรมอ่านหน้าจอได้เหมือนเดิม */
+@supports (appearance: base-select) {
+  .bc-select,
+  .bc-select::picker(select) {
+    appearance: base-select;
+  }
+  .bc-select {
+    align-items: center;
+    white-space: nowrap;
+    /* ตัดข้อความที่ยาวเกินก่อนถึงลูกศร ไม่ให้ทับกัน */
+    overflow: clip;
+    overflow-clip-margin: content-box;
+  }
+  .bc-select::picker-icon {
+    display: none;
+  }
+  .bc-select:open {
+    border-color: var(--ring);
+  }
+  .bc-select:open + .bc-select-icon {
+    rotate: 180deg;
+  }
+  .bc-select::picker(select) {
+    margin-block: 6px;
+    padding: 4px;
+    max-height: min(20rem, 60vh);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--popover);
+    color: var(--popover-foreground);
+    box-shadow: var(--elevation-lg);
+    opacity: 0;
+    translate: 0 -6px;
+    scale: 0.98;
+    transition:
+      opacity 0.16s ease-out,
+      translate 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+      scale 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+      overlay 0.2s allow-discrete,
+      display 0.2s allow-discrete;
+  }
+  .bc-select:open::picker(select) {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+  @starting-style {
+    .bc-select:open::picker(select) {
+      opacity: 0;
+      translate: 0 -6px;
+      scale: 0.98;
+    }
+  }
+  .bc-select option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+  }
+  .bc-select option::checkmark {
+    content: '';
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+  .bc-select option:not(:checked)::checkmark {
+    visibility: hidden;
+  }
+  .bc-select option:hover,
+  .bc-select option:focus-visible {
+    background: var(--accent);
+    outline: none;
+  }
+  .bc-select option:checked {
+    background: var(--brand-soft);
+    color: var(--brand-soft-fg);
+    font-weight: 600;
+  }
+  .bc-select option:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

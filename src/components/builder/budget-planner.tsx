@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
+import { SegmentIndicator } from '@/components/ui/segment-indicator';
 import {
   type BudgetOptionView,
   type BudgetResponse,
@@ -170,14 +171,15 @@ export function BudgetPlanner({
               control={control}
               name="usage"
               render={({ field }) => (
-                <div className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1 sm:grid-cols-4">
+                <div className="group/seg relative grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1 sm:grid-cols-4">
+                  <SegmentIndicator selector="[aria-pressed=true]" className="bg-surface shadow-sm" />
                   {USAGES.map((usage) => (
                     <button
                       key={usage}
                       type="button"
                       aria-pressed={field.value === usage}
                       onClick={() => field.onChange(usage)}
-                      className="h-8 rounded-md px-2 text-sm font-medium whitespace-nowrap text-muted-foreground aria-pressed:bg-surface aria-pressed:text-foreground aria-pressed:shadow-sm"
+                      className="relative z-10 h-8 rounded-md px-2 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors duration-200 hover:text-foreground aria-pressed:bg-surface aria-pressed:text-foreground aria-pressed:shadow-sm group-data-[seg=ready]/seg:aria-pressed:bg-transparent group-data-[seg=ready]/seg:aria-pressed:shadow-none"
                     >
                       {USAGE_LABELS[usage]}
                     </button>

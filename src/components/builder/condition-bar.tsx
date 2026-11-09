@@ -18,9 +18,9 @@ import { type BuildItem, useBuilderStore } from '@/stores/builder-store';
 
 const OPTIONS: { value: ItemCondition; label: string }[] = [
   { value: 'new', label: 'มือหนึ่ง' },
-  { value: 'A', label: 'มือสอง เกรด A' },
-  { value: 'B', label: 'มือสอง เกรด B' },
-  { value: 'C', label: 'มือสอง เกรด C' },
+  { value: 'A', label: 'มือสอง A' },
+  { value: 'B', label: 'มือสอง B' },
+  { value: 'C', label: 'มือสอง C' },
 ];
 
 const labelOf = (value: ItemCondition) =>
