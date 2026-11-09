@@ -33,6 +33,7 @@ export async function getBuildWithItems(id: string) {
       updatedAt: builds.updatedAt,
       ownerName: users.displayName,
       ownerUsername: users.username,
+      ownerRole: users.role,
       ownerImage: users.image,
     })
     .from(builds)

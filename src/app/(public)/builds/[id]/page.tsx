@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
+import { AdminBadge } from '@/components/account/admin-badge';
 import { IssueList } from '@/components/builder/issue-list';
 import { STATUS_UI } from '@/components/builder/levels';
 import { PowerGauge } from '@/components/builder/power-gauge';
@@ -93,7 +94,8 @@ async function BuildContent({ params }: { params: Params }) {
                   </Link>
                 ) : (
                   build.ownerName
-                )}
+                )}{' '}
+                <AdminBadge role={build.ownerRole} />
               </span>
               <span>· แก้ไขล่าสุด {build.updatedAt.toLocaleDateString('th-TH')}</span>
             </p>
@@ -108,6 +110,7 @@ async function BuildContent({ params }: { params: Params }) {
                   {social.forkedFrom.title}
                 </Link>{' '}
                 ของ {social.forkedFrom.ownerName}
+                <AdminBadge role={social.forkedFrom.ownerRole} size={14} />
               </p>
             )}
             {build.description && <p className="mt-3 whitespace-pre-line">{build.description}</p>}

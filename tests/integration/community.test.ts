@@ -12,6 +12,7 @@ import {
   toggleFavorite,
   voteBuild,
 } from '@/server/actions/community';
+import { getBuildWithItems } from '@/server/queries/builds';
 
 import {
   actAs,
@@ -201,5 +202,30 @@ describe('toggleFavorite / forkBuild / reportContent', () => {
     expect(
       (await reportContent({ targetType: 'build', targetId: privateBuild, reason: 'spam' })).ok,
     ).toBe(false);
+  });
+});
+
+describe('ป้ายติ๊กถูกของแอดมิน (ownerRole / authorRole)', () => {
+  it('ข้อมูลที่หน้าเว็บใช้แสดงป้าย มาจาก role ในฐานข้อมูล', async () => {
+    const adminUser = await createAccount({ role: 'admin' });
+    const memberUser = await createAccount();
+    const { pick } = await partsByCategory();
+    const cpuPart = pick('cpu')[0]!;
+    const ids: string[] = [];
+    for (const account of [adminUser, memberUser]) {
+      actAs(account);
+      const saved = await saveBuild({
+        title: 'ทดสอบป้ายแอดมิน',
+        description: '',
+        usageType: 'gaming',
+        budget: null,
+        items: [{ partId: cpuPart.id, quantity: 1 }],
+      });
+      if (!saved.ok) throw new Error('บันทึกไม่สำเร็จ');
+      ids.push(saved.id);
+    }
+    const [adminBuild, memberBuild] = await Promise.all(ids.map((id) => getBuildWithItems(id)));
+    expect(adminBuild?.build.ownerRole).toBe('admin');
+    expect(memberBuild?.build.ownerRole).toBe('member');
   });
 });

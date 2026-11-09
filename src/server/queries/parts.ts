@@ -325,6 +325,7 @@ export async function getPopularBuildsUsingPart(partId: number) {
       voteScore: builds.voteScore,
       usageType: builds.usageType,
       ownerName: users.displayName,
+      ownerRole: users.role,
     })
     .from(buildItems)
     .innerJoin(builds, eq(buildItems.buildId, builds.id))

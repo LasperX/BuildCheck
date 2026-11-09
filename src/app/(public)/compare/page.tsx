@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
+import { AdminBadge } from '@/components/account/admin-badge';
 import { STATUS_UI } from '@/components/builder/levels';
 import { CompareControls } from '@/components/community/compare-controls';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -101,7 +102,7 @@ async function CompareContent({
                         {build.title}
                       </Link>
                       <span className="block text-xs font-normal text-muted-foreground">
-                        โดย {build.ownerName}
+                        โดย {build.ownerName} <AdminBadge role={build.ownerRole} size={12} />
                       </span>
                       <span
                         className={cn(

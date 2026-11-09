@@ -1,6 +1,7 @@
 import { ArrowBigUp, MessageSquare, Zap } from 'lucide-react';
 import Link from 'next/link';
 
+import { AdminBadge } from '@/components/account/admin-badge';
 import { STATUS_UI } from '@/components/builder/levels';
 import { Badge } from '@/components/ui/badge';
 import { USAGE_LABELS } from '@/lib/builder/types';
@@ -46,7 +47,8 @@ export function BuildCardView({
             </Link>
           ) : (
             build.ownerName
-          )}
+          )}{' '}
+          <AdminBadge role={build.ownerRole} size={14} />
         </p>
       )}
       <p className="mt-3 font-mono text-2xl font-semibold tabular-nums">

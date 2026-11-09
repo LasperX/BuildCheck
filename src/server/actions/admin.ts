@@ -176,6 +176,9 @@ export async function setUserRole(rawId: unknown, rawRole: unknown): Promise<Act
   });
   if (done === 'missing') return { ok: false, error: 'ไม่พบผู้ใช้' };
   if (done === 'banned') return { ok: false, error: 'ปลดระงับก่อนให้สิทธิ์แอดมิน' };
+  // ป้ายติ๊กถูกของแอดมินแสดงในหน้าชุมชนและโปรไฟล์ ล้างแคชให้ป้ายขึ้นหรือหายทันที
+  updateTag('builds');
+  updateTag('profiles');
   revalidatePath('/admin/users');
   return { ok: true };
 }

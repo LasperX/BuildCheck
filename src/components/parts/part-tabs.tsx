@@ -4,6 +4,7 @@ import { ArrowBigUp } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
+import { AdminBadge } from '@/components/account/admin-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UsedTab } from '@/components/used/used-tab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,6 +25,7 @@ type BuildSummary = {
   totalPrice: number;
   voteScore: number;
   ownerName: string;
+  ownerRole: 'member' | 'admin';
 };
 
 export function PartTabs({
@@ -94,7 +96,9 @@ export function PartTabs({
                   className="block rounded-lg border border-border bg-surface p-4 hover:border-border-strong hover:shadow-md"
                 >
                   <h3 className="text-lg font-semibold">{build.title}</h3>
-                  <p className="text-xs text-muted-foreground">{build.ownerName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {build.ownerName} <AdminBadge role={build.ownerRole} size={12} />
+                  </p>
                   <div className="mt-3 flex items-center justify-between">
                     <span className="font-semibold">{formatBaht(build.totalPrice)}</span>
                     <span className="flex items-center gap-1 text-sm text-muted-foreground">

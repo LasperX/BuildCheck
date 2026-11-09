@@ -26,6 +26,8 @@ export type BuildCard = {
   updatedAt: Date;
   ownerName: string;
   ownerUsername: string | null;
+  /** ใช้แสดงป้ายติ๊กถูกของแอดมิน */
+  ownerRole: 'member' | 'admin';
 };
 
 const commentCount = sql<number>`(SELECT COUNT(*)::int FROM ${comments} WHERE ${comments.buildId} = ${builds.id} AND ${comments.isHidden} = false)`;
@@ -43,6 +45,7 @@ const cardColumns = {
   updatedAt: builds.updatedAt,
   ownerName: users.displayName,
   ownerUsername: users.username,
+  ownerRole: users.role,
   commentCount,
 };
 
@@ -120,6 +123,7 @@ export async function getMyFavorites(userId: string): Promise<BuildCard[]> {
 export type PublicProfile = {
   username: string;
   displayName: string;
+  role: 'member' | 'admin';
   image: string | null;
   bio: string | null;
   joinedAt: Date;
@@ -138,6 +142,7 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
       id: users.id,
       username: users.username,
       displayName: users.displayName,
+      role: users.role,
       image: users.image,
       bio: users.bio,
       joinedAt: users.createdAt,
@@ -157,6 +162,7 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
   return {
     username: user.username,
     displayName: user.displayName,
+    role: user.role,
     image: user.image,
     bio: user.bio,
     joinedAt: user.joinedAt,
@@ -172,6 +178,7 @@ export type CommentView = {
   authorId: string;
   authorName: string;
   authorUsername: string | null;
+  authorRole: 'member' | 'admin';
   authorImage: string | null;
   replies: Omit<CommentView, 'replies'>[];
 };
@@ -181,7 +188,12 @@ export type BuildSocial = {
   favorited: boolean;
   favoriteCount: number;
   forkCount: number;
-  forkedFrom: { id: string; title: string; ownerName: string } | null;
+  forkedFrom: {
+    id: string;
+    title: string;
+    ownerName: string;
+    ownerRole: 'member' | 'admin';
+  } | null;
   comments: CommentView[];
 };
 
@@ -213,6 +225,7 @@ export async function getBuildSocial(
             title: builds.title,
             visibility: builds.visibility,
             ownerName: users.displayName,
+            ownerRole: users.role,
           })
           .from(builds)
           .innerJoin(users, eq(users.id, builds.userId))
@@ -227,6 +240,7 @@ export async function getBuildSocial(
         authorId: users.id,
         authorName: users.displayName,
         authorUsername: users.username,
+        authorRole: users.role,
         authorImage: users.image,
       })
       .from(comments)
@@ -262,7 +276,12 @@ export async function getBuildSocial(
     forkCount: forkTotal[0]?.value ?? 0,
     forkedFrom:
       origin && origin.visibility !== 'private'
-        ? { id: origin.id, title: origin.title, ownerName: origin.ownerName }
+        ? {
+            id: origin.id,
+            title: origin.title,
+            ownerName: origin.ownerName,
+            ownerRole: origin.ownerRole,
+          }
         : null,
     comments: top.reverse(),
   };

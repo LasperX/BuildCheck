@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
+import { AdminBadge } from '@/components/account/admin-badge';
 import { UserAvatar } from '@/components/account/user-avatar';
 import { Button } from '@/components/ui/button';
 import { COMMENT_MAX } from '@/lib/validators/community';
@@ -127,6 +128,7 @@ function CommentItem({
           ) : (
             <span className="font-semibold">{comment.authorName}</span>
           )}
+          <AdminBadge role={comment.authorRole} size={14} className="self-center" />
           {comment.authorId === ownerId && (
             <span className="rounded-xs bg-brand-soft px-1 text-2xs text-brand-soft-fg">
               เจ้าของสเปก

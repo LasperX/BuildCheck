@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
+import { AdminBadge } from '@/components/account/admin-badge';
 import { UserAvatar } from '@/components/account/user-avatar';
 import { ReportButton } from '@/components/community/build-actions';
 import { BuildCardView } from '@/components/community/build-card';
@@ -40,7 +41,13 @@ async function ProfileContent({ params }: { params: Params }) {
       <section className="flex flex-wrap items-start gap-4 rounded-xl border border-border bg-card p-5">
         <UserAvatar name={profile.displayName} image={profile.image} size={72} />
         <div className="min-w-0 flex-1">
-          <h1 className="t-h1 break-words">{profile.displayName}</h1>
+          <h1 className="flex flex-wrap items-center gap-2 t-h1 break-words">
+            {profile.displayName}
+            <AdminBadge role={profile.role} size={24} />
+          </h1>
+          {profile.role === 'admin' && (
+            <p className="mt-1 text-sm font-medium text-link">แอดมิน BuildCheck</p>
+          )}
           <p className="font-mono text-sm text-muted-foreground">@{profile.username}</p>
           {profile.bio && <p className="mt-2 whitespace-pre-line">{profile.bio}</p>}
           <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
