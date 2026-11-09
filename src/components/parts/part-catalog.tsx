@@ -402,7 +402,7 @@ function PartCard({ part }: { part: PartListItem }) {
           alt=""
           category={part.categorySlug}
           size={120}
-          className="h-28 w-full lg:h-32"
+          className="aspect-[4/3] h-auto w-full"
         />
         <span className="mt-3 text-xs text-muted-foreground">{part.brandName}</span>
         <h3 className="text-sm font-medium break-words">{part.model}</h3>

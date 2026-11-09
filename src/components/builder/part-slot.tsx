@@ -110,8 +110,9 @@ export function PartSlot({
                       src={part?.imageUrl ?? null}
                       alt={part ? `${part.brandName} ${part.model}` : label}
                       category={category}
-                      size={48}
-                      className="size-12 shrink-0"
+                      size={64}
+                      className="size-14 shrink-0 md:size-16"
+                      zoom
                     />
                     <div className="min-w-0 flex-1">
                       {part ? (

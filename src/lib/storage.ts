@@ -6,6 +6,8 @@ import path from 'node:path';
 
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
+import { toProductImage } from '@/lib/product-image';
+
 // อัปโหลดรูปตามหัวข้อ 9.1: รับเฉพาะ JPG/PNG/WebP ไม่เกิน 2 MB ตรวจชนิดไฟล์จากเนื้อไฟล์จริง
 // และตั้งชื่อใหม่แบบสุ่มเสมอ ไม่เชื่อชื่อหรือชนิดไฟล์ที่เบราว์เซอร์ส่งมา
 //
@@ -39,9 +41,19 @@ export async function uploadImage(
   if (file.size === 0) return { ok: false, error: 'ไม่พบไฟล์รูป' };
   if (file.size > MAX_IMAGE_BYTES) return { ok: false, error: 'รูปต้องมีขนาดไม่เกิน 2 MB' };
 
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const type = detectImageType(bytes);
+  let bytes: Uint8Array = new Uint8Array(await file.arrayBuffer());
+  let type = detectImageType(bytes);
   if (!type) return { ok: false, error: 'รับเฉพาะไฟล์ JPG, PNG หรือ WebP' };
+
+  // รูปอะไหล่: ตัดขอบว่าง ทำเป็นสี่เหลี่ยมจัตุรัส และแปลงเป็น WebP ให้ทุกรูปแสดงได้เท่ากัน
+  if (folder === 'parts') {
+    try {
+      bytes = new Uint8Array(await toProductImage(bytes));
+      type = { ext: 'webp', contentType: 'image/webp' };
+    } catch {
+      return { ok: false, error: 'อ่านไฟล์รูปไม่ได้ ไฟล์อาจเสีย ลองบันทึกรูปใหม่แล้วอัปโหลดอีกครั้ง' };
+    }
+  }
 
   const key = `${folder}/${randomUUID()}.${type.ext}`;
   const { STORAGE_ENDPOINT, STORAGE_BUCKET, STORAGE_PUBLIC_URL } = process.env;
