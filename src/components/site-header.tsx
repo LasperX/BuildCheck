@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
@@ -11,8 +12,11 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-surface">
       <div className="mx-auto flex h-14 w-full max-w-[1328px] items-center gap-6 px-4 md:px-6 lg:h-16">
-        <Link href="/" className="shrink-0 text-lg font-bold">
-          BuildCheck
+        <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-bold">
+          {/* โลโก้ตัว B กับเครื่องหมายถูก ชื่อเว็บอยู่ข้างๆ จึงใส่ alt ว่าง
+              มือถือจอแคบเหลือแค่โลโก้ ชื่อยังอยู่ให้โปรแกรมอ่านหน้าจออ่านได้ */}
+          <Image src="/brand-mark.png" alt="" width={28} height={28} priority className="rounded-md" />
+          <span className="max-sm:sr-only">BuildCheck</span>
         </Link>
         <Suspense>
           <DesktopNav />
