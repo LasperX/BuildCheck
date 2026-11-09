@@ -50,6 +50,8 @@ export async function uploadImage(
     const client = new S3Client({
       endpoint: STORAGE_ENDPOINT,
       region: process.env.STORAGE_REGION || 'auto',
+      // Supabase Storage บังคับใช้แบบ endpoint/bucket/key (R2 ก็รองรับแบบนี้)
+      forcePathStyle: true,
       credentials: {
         accessKeyId: process.env.STORAGE_ACCESS_KEY_ID ?? '',
         secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY ?? '',
