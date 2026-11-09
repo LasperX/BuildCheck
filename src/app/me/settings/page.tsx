@@ -21,6 +21,7 @@ async function SettingsContent() {
       emailVerified: users.emailVerified,
       username: users.username,
       displayName: users.displayName,
+      role: users.role,
       bio: users.bio,
       image: users.image,
       muted: users.mutedNotifications,

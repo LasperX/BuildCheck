@@ -2,10 +2,12 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { AdminBadge, type UserRole } from '@/components/account/admin-badge';
 import { UserAvatar } from '@/components/account/user-avatar';
 import { FormAlert, FormField } from '@/components/auth/form-field';
 import { Button } from '@/components/ui/button';
@@ -39,6 +41,7 @@ type SettingsUser = {
   emailVerified: boolean;
   username: string;
   displayName: string;
+  role: UserRole;
   bio: string;
   image: string | null;
 };
@@ -55,6 +58,7 @@ export function SettingsPanels({
       <Suspense>
         <WelcomeNotice />
       </Suspense>
+      {user.role === 'admin' ? <AdminStatusPanel /> : null}
       <EmailPanel email={user.email} verified={user.emailVerified} />
       <ProfilePanel user={user} />
       {hasPassword ? <PasswordPanel /> : null}
@@ -187,6 +191,10 @@ function ProfilePanel({ user }: { user: SettingsUser }) {
           <div className="flex items-center gap-3">
             <UserAvatar name={user.displayName} image={user.image} size={56} />
             <div className="min-w-0 text-sm">
+              <p className="flex items-center gap-1.5 font-semibold">
+                <span className="truncate">{user.displayName}</span>
+                <AdminBadge role={user.role} />
+              </p>
               <p className="truncate font-mono text-xs text-muted-foreground">@{user.username}</p>
               <label className="mt-1 inline-flex h-8 cursor-pointer items-center rounded-sm border border-input bg-surface px-3 text-xs font-medium focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring hover:bg-surface-2">
                 {uploading ? 'กำลังอัปโหลด...' : 'เปลี่ยนรูป'}
@@ -418,6 +426,29 @@ function DeletePanel({ hasPassword }: { hasPassword: boolean }) {
             </Button>
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/** บอกแอดมินว่าบัญชีนี้มีป้ายติ๊กถูก และป้ายแสดงที่ไหนบ้าง */
+function AdminStatusPanel() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <AdminBadge role="admin" size={20} />
+          บัญชีแอดมิน BuildCheck
+        </CardTitle>
+        <CardDescription>
+          ป้ายติ๊กถูกสีฟ้าแสดงข้างชื่อของคุณในหน้าโปรไฟล์ การ์ดสเปก หน้าสเปก และคอมเมนต์
+          ให้ผู้ใช้รู้ว่าเนื้อหานี้มาจากทีมดูแลเว็บ ป้ายนี้ได้จากสิทธิ์แอดมินเท่านั้น
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Link href="/admin" className="text-sm font-medium text-link hover:underline">
+          ไปหน้าหลังบ้าน
+        </Link>
       </CardContent>
     </Card>
   );
