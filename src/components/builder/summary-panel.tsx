@@ -1,7 +1,10 @@
+'use client';
+
 import { Recycle } from 'lucide-react';
 
 import type { CheckResult, Level } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
+import { useAnimatedNumber, useChangeKey } from '@/lib/use-motion';
 import { cn } from '@/lib/utils';
 
 import { LEVEL_UI, STATUS_UI } from './levels';
@@ -24,12 +27,25 @@ export function SummaryPanel({
   const { price, power, score, counts } = result;
   const usedPercent = budget ? Math.min((price.total / budget) * 100, 100) : 0;
   const over = budget !== null && price.total > budget;
+  // ราคารวมวิ่งไปค่าใหม่ · กล่องสถานะเด้งเข้าเมื่อสถานะรวมเปลี่ยน (เช่น แก้ปัญหาจนเข้ากันได้ทั้งหมด)
+  const total = useAnimatedNumber(price.total);
+  const statusKey = useChangeKey(itemCount === 0 ? null : result.status);
 
   return (
     <div className="flex flex-col divide-y divide-border">
       {status && StatusIcon ? (
-        <div className={cn('flex items-start gap-3 rounded-t-xl border-b p-4', status.soft)}>
-          <StatusIcon aria-hidden className={cn('size-7 shrink-0', status.text)} />
+        <div
+          key={statusKey}
+          className={cn(
+            'flex items-start gap-3 rounded-t-xl border-b p-4',
+            statusKey > 0 && 'anim-slot-in',
+            status.soft,
+          )}
+        >
+          <StatusIcon
+            aria-hidden
+            className={cn('size-7 shrink-0', statusKey > 0 && 'anim-pop', status.text)}
+          />
           <div>
             <h2 className="font-semibold">{status.title}</h2>
             <p className="text-sm text-muted-foreground">{status.body}</p>
@@ -45,7 +61,7 @@ export function SummaryPanel({
       <div className="flex flex-col gap-3 p-4">
         <div>
           <p className="text-sm text-muted-foreground">ราคารวม{price.saved > 0 ? 'แบบผสม' : ''}</p>
-          <p className="font-mono text-3xl font-semibold tabular-nums">{formatBaht(price.total)}</p>
+          <p className="font-mono text-3xl font-semibold tabular-nums">{formatBaht(total)}</p>
         </div>
         {price.saved > 0 && (
           <p className="flex items-center justify-between text-sm text-used-fg">

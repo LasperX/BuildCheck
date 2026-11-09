@@ -22,7 +22,7 @@ export function BuildCardView({
   const status = STATUS_UI[build.compatStatus];
   const StatusIcon = status.icon;
   return (
-    <article className="flex h-full flex-col rounded-xl border border-border bg-card p-4 transition-shadow hover:border-border-strong hover:shadow-md">
+    <article className="flex h-full lift flex-col rounded-xl border border-border bg-card p-4 hover:border-border-strong hover:shadow-md">
       <div className="flex items-start justify-between gap-2">
         <Badge variant="brand">{USAGE_LABELS[build.usageType]}</Badge>
         <span

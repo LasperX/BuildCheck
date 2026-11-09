@@ -91,7 +91,7 @@ export function VoteButtons({
           onClick={() => vote(1)}
           className={cn(state.myVote === 1 && 'text-link')}
         >
-          <ArrowBigUp aria-hidden className={cn(state.myVote === 1 && 'fill-current')} />
+          <ArrowBigUp aria-hidden className={cn(state.myVote === 1 && 'anim-pop fill-current')} />
         </Button>
         <output aria-live="polite" className="min-w-8 text-center font-mono font-semibold">
           <span className="sr-only">คะแนน </span>
@@ -107,7 +107,10 @@ export function VoteButtons({
           onClick={() => vote(-1)}
           className={cn(state.myVote === -1 && 'text-err-fg')}
         >
-          <ArrowBigDown aria-hidden className={cn(state.myVote === -1 && 'fill-current')} />
+          <ArrowBigDown
+            aria-hidden
+            className={cn(state.myVote === -1 && 'anim-pop fill-current')}
+          />
         </Button>
       </div>
       {isOwner && <p className="text-xs text-muted-foreground">โหวตสเปกของตัวเองไม่ได้</p>}
@@ -149,7 +152,7 @@ export function FavoriteButton({
           });
         }}
       >
-        <Heart aria-hidden className={cn(state.favorited && 'fill-current text-err-fg')} />
+        <Heart aria-hidden className={cn(state.favorited && 'anim-pop fill-current text-err-fg')} />
         {state.favorited ? 'อยู่ในรายการโปรด' : 'บันทึกเป็นรายการโปรด'}
         <span className="font-mono text-xs text-muted-foreground">{state.count}</span>
       </Button>

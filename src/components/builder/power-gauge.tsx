@@ -1,6 +1,9 @@
+'use client';
+
 import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 
 import type { PowerResult } from '@/lib/compat';
+import { useAnimatedNumber, useChangeKey } from '@/lib/use-motion';
 import { cn } from '@/lib/utils';
 
 // เกจกำลังไฟครึ่งวงกลม (หัวข้อ 4.3 และมติ Q2)
@@ -21,6 +24,9 @@ export function PowerGauge({ power }: { power: PowerResult }) {
   const fill = Math.min(power.load ?? 0, 1);
   // ข้อความตามค่าเผื่อที่แอดมินตั้ง ไม่เขียนตายตัว
   const headroom = Math.round(power.headroom * 100);
+  // ตัวเลขวัตต์ค่อยๆ วิ่งไปค่าใหม่ และข้อความสถานะเด้งเมื่อระดับเปลี่ยน
+  const watt = Math.round(useAnimatedNumber(power.totalWatt));
+  const levelKey = useChangeKey(power.level);
 
   const status = {
     none: {
@@ -72,13 +78,13 @@ export function PowerGauge({ power }: { power: PowerResult }) {
               strokeWidth="16"
               strokeLinecap="round"
               strokeDasharray={`${ARC * fill} ${ARC}`}
-              className="transition-[stroke-dasharray] duration-300 motion-reduce:transition-none"
+              className="transition-[stroke-dasharray,stroke] duration-500 ease-out motion-reduce:transition-none"
             />
           )}
         </svg>
         <div className="absolute inset-x-0 bottom-1 text-center">
           <div className="font-mono text-2xl font-semibold tabular-nums">
-            {power.totalWatt} <small className="text-sm font-normal text-muted-foreground">W</small>
+            {watt} <small className="text-sm font-normal text-muted-foreground">W</small>
           </div>
         </div>
       </div>
@@ -91,7 +97,14 @@ export function PowerGauge({ power }: { power: PowerResult }) {
           'ยังไม่ได้เลือก PSU'
         )}
       </p>
-      <p className={cn('flex items-center gap-1.5 text-sm font-medium', status.cls)}>
+      <p
+        key={levelKey}
+        className={cn(
+          'flex items-center gap-1.5 text-sm font-medium',
+          levelKey > 0 && 'anim-slot-in',
+          status.cls,
+        )}
+      >
         <StatusIcon aria-hidden className="size-4 shrink-0" />
         {status.text}
       </p>

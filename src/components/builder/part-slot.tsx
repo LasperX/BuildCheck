@@ -1,5 +1,8 @@
+'use client';
+
 import { Minus, Pencil, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { CATEGORY_ICONS, PartImage } from '@/components/parts/part-icon';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +11,7 @@ import type { BuilderPart } from '@/lib/builder/types';
 import { type Issue, isUsedOnly } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS, type CategorySlug } from '@/lib/parts/spec-fields';
+import { useChangeKey } from '@/lib/use-motion';
 import { MAX_QUANTITY } from '@/lib/validators/builds';
 import { cn } from '@/lib/utils';
 import { type BuildItem, MULTI_CATEGORIES } from '@/stores/builder-store';
@@ -48,6 +52,10 @@ export function PartSlot({
   const required = REQUIRED.includes(category);
   const level = issue && issue.level !== 'info' ? LEVEL_UI[issue.level] : null;
   const LevelIcon = level?.icon;
+  // ปัญหาใหม่ (รหัสเปลี่ยน) เด้งเข้าและสั่นถ้าเป็นระดับผิดพลาด · ไม่เล่นตอนเปิดหน้า
+  const issueKey = useChangeKey(level ? issue?.code : null);
+  // ชิ้นที่เพิ่มหลังเปิดหน้า เลื่อนเข้ามา · ชิ้นที่มีอยู่แล้วตอนเปิดหน้าไม่เล่นอนิเมชั่น
+  const [initialIds] = useState(() => new Set(items.map((item) => item.partId)));
 
   const head = (
     <div className="flex items-baseline gap-1.5 text-sm">
@@ -92,7 +100,10 @@ export function PartSlot({
             {items.map((item) => {
               const part = parts.get(item.partId);
               return (
-                <li key={item.partId}>
+                <li
+                  key={item.partId}
+                  className={initialIds.has(item.partId) ? undefined : 'anim-slot-in'}
+                >
                   {/* แถวบน: รูป ชื่อ ราคา ปุ่ม · แถวล่าง: สภาพมือหนึ่ง/มือสอง (แยกแถวกันไม่ให้ช่องมือสองบีบชื่ออะไหล่) */}
                   <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
                     <PartImage
@@ -213,7 +224,12 @@ export function PartSlot({
       )}
       {level && LevelIcon && issue && (
         <p
-          className={cn('mt-3 flex items-start gap-1.5 rounded-lg border p-2 text-sm', level.soft)}
+          key={issueKey}
+          className={cn(
+            'mt-3 flex items-start gap-1.5 rounded-lg border p-2 text-sm',
+            issueKey > 0 && (issue.level === 'error' ? 'anim-shake' : 'anim-slot-in'),
+            level.soft,
+          )}
         >
           <LevelIcon aria-hidden className={cn('mt-0.5 size-4 shrink-0', level.text)} />
           <span>

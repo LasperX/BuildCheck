@@ -393,7 +393,7 @@ function VerifiedHint({ verified }: { verified: boolean }) {
 
 function PartCard({ part }: { part: PartListItem }) {
   return (
-    <article className="flex h-full flex-col rounded-lg border border-border bg-surface p-3 transition-shadow hover:border-border-strong hover:shadow-md">
+    <article className="flex h-full lift flex-col rounded-lg border border-border bg-surface p-3 hover:border-border-strong hover:shadow-md">
       <Link href={partHref(part)} className="flex flex-1 flex-col">
         <PartImage
           src={part.imageUrl}

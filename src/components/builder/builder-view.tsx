@@ -23,7 +23,6 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
 import { conditionForNewPart, impossibleConditionFixes } from '@/lib/builder/conditions';
 import { USAGE_LABELS } from '@/lib/builder/types';
 import type { EngineSettings, Issue, Suggestion, UsageType } from '@/lib/compat';
@@ -93,7 +92,6 @@ export function BuilderView({
   const hydrated = useBuilderHydrated();
   const items = useBuilderStore((s) => s.items);
   const meta = useBuilderStore((s) => s.meta);
-  const smartFilter = useBuilderStore((s) => s.smartFilter);
   const canUndo = useBuilderStore((s) => s.past.length > 0);
   const canRedo = useBuilderStore((s) => s.future.length > 0);
   const store = useBuilderStore.getState;
@@ -326,22 +324,6 @@ export function BuilderView({
             <h2 id="slots-title" className="sr-only">
               ช่องอะไหล่ 8 หมวด
             </h2>
-            {/* สวิตช์อยู่นอกหน้าต่างเลือก ผู้ใช้เห็นและตั้งค่าได้ก่อนกดเลือก ใช้ค่าเดียวกันทุกหมวด */}
-            <label className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
-              <Switch
-                checked={smartFilter}
-                onCheckedChange={(checked) => store().setSmartFilter(checked)}
-                aria-describedby="smart-filter-hint"
-              />
-              <span className="flex flex-col">
-                <span className="text-sm font-semibold">กรองอัจฉริยะ</span>
-                <span id="smart-filter-hint" className="text-xs text-muted-foreground">
-                  {smartFilter
-                    ? 'เปิด: ตอนเลือกอะไหล่จะแสดงเฉพาะรุ่นที่เข้ากับชิ้นที่เลือกไว้'
-                    : 'ปิด: แสดงทุกรุ่น รุ่นที่ใส่ไม่ได้มีป้ายบอกเหตุผล ลองเลือกผิดเพื่อดูคำเตือนได้'}
-                </span>
-              </span>
-            </label>
             <ConditionBar items={items} parts={parts} />
             {CATEGORY_SLUGS.map((category) => (
               <PartSlot

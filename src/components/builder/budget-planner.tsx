@@ -35,6 +35,8 @@ import { LEVEL_UI } from './levels';
 type FormInput = z.input<typeof budgetInputSchema>;
 const USAGES = Object.keys(USAGE_LABELS) as UsageType[];
 
+const DEFAULT_BUDGET = '40000';
+
 /** หน้าจัดสเปกตามงบ (หัวข้อ 3.5) ฟอร์ม → 3 ตัวเลือก → นำไปแก้ต่อในหน้าจัดสเปก */
 export function BudgetPlanner({
   cpuBrands,
@@ -54,8 +56,9 @@ export function BudgetPlanner({
     formState: { errors },
   } = useForm<FormInput>({
     resolver: zodResolver(budgetInputSchema),
+    // งบเริ่มต้นมาจาก defaultValue ของช่องที่ render จากเซิร์ฟเวอร์ ไม่ใส่ตรงนี้ เพื่อให้ตอนสคริปต์
+    // โหลดเสร็จ RHF อ่านค่าจากช่องแทนการเขียนทับ (การเขียนทับทำให้ตัวที่กำลังพิมพ์หาย)
     defaultValues: {
-      budget: 40000,
       usage: 'gaming',
       cpuBrand: '',
       allowUsed: false,
@@ -119,10 +122,15 @@ export function BudgetPlanner({
     router.push('/builder');
   };
 
+  const budgetField = register('budget', {
+    setValueAs: (value: unknown) =>
+      typeof value === 'string' ? value.replace(/[,\s฿]/g, '') : value,
+  });
+
   // ส่วนแบ่งงบเปลี่ยนตามค่าที่กรอกอยู่ทันที ไม่ต้องกดจัดก่อน
   const liveUsage = useWatch({ control, name: 'usage' });
   const liveBudget = Number(
-    String(useWatch({ control, name: 'budget' }) ?? '').replace(/[,\s฿]/g, ''),
+    String(useWatch({ control, name: 'budget', defaultValue: DEFAULT_BUDGET }) ?? '').replace(/[,\s฿]/g, ''),
   );
   const shownUsage: UsageType = liveUsage ?? 'gaming';
   const shownBudget = Number.isFinite(liveBudget) && liveBudget > 0 ? liveBudget : 0;
@@ -145,10 +153,15 @@ export function BudgetPlanner({
               className="font-mono"
               aria-invalid={Boolean(errors.budget)}
               aria-describedby={errors.budget ? 'budget-error' : undefined}
-              {...register('budget', {
-                setValueAs: (value: unknown) =>
-                  typeof value === 'string' ? value.replace(/[,\s฿]/g, '') : value,
-              })}
+              defaultValue={DEFAULT_BUDGET}
+              {...budgetField}
+              ref={(el) => {
+                budgetField.ref(el);
+                // ผู้ใช้พิมพ์งบก่อนสคริปต์โหลดเสร็จ → แจ้ง RHF ให้ส่วนแบ่งงบอัปเดตตาม
+                if (el && el.value !== DEFAULT_BUDGET) {
+                  setValue('budget', el.value.replace(/[,\s฿]/g, ''));
+                }
+              }}
             />
           </div>
           <fieldset className="flex min-w-0 flex-col gap-1.5 xl:col-span-1 sm:col-span-2">

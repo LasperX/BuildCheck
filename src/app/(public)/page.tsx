@@ -55,7 +55,7 @@ async function PopularBuilds() {
   return (
     <ul className="grid gap-4 xl:grid-cols-3 sm:grid-cols-2">
       {items.slice(0, 6).map((build) => (
-        <li key={build.id}>
+        <li key={build.id} className="reveal">
           <BuildCardView build={build} />
         </li>
       ))}
@@ -68,7 +68,7 @@ async function NewParts() {
   return (
     <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {items.map((part) => (
-        <li key={part.id}>
+        <li key={part.id} className="reveal">
           <Link
             href={`/parts/${part.categorySlug}/${part.slug}`}
             className="flex h-full flex-col gap-2 rounded-xl border border-border bg-card p-3 hover:border-border-strong hover:shadow-md"
@@ -168,7 +168,7 @@ export default function HomePage() {
           </h2>
           <ol className="grid gap-4 md:grid-cols-3">
             {STEPS.map((step, index) => (
-              <li key={step.title} className="rounded-xl border border-border bg-card p-5">
+              <li key={step.title} className="reveal rounded-xl border border-border bg-card p-5">
                 <span className="flex items-center gap-2 text-sm font-medium text-link">
                   <step.icon aria-hidden className="size-5" />
                   ขั้นที่ {index + 1}
