@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 import { PartCatalog } from '@/components/parts/part-catalog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CATEGORY_LABELS, CATEGORY_SLUGS, isCategorySlug } from '@/lib/parts/spec-fields';
-import { getPartFacets } from '@/server/queries/parts';
+import { getDefaultParts, getPartFacets } from '@/server/queries/parts';
 
 // หมวดมีจำนวนคงที่ จึงสร้างหน้าไว้ล่วงหน้าได้
 export function generateStaticParams() {
@@ -39,7 +39,7 @@ function CategorySkeleton() {
     <main className="mx-auto w-full max-w-[1328px] px-4 py-4 md:px-6">
       <Skeleton className="h-4 w-40" />
       <Skeleton className="mt-2 mb-4 h-8 w-56" />
-      <Skeleton className="h-96 rounded-lg" />
+      <Skeleton className="h-[110svh] rounded-lg" />
     </main>
   );
 }
@@ -47,7 +47,7 @@ function CategorySkeleton() {
 async function CategoryContent({ params }: Pick<PageProps<'/parts/[category]'>, 'params'>) {
   const { category } = await params;
   if (!isCategorySlug(category)) notFound();
-  const facets = await getPartFacets(category);
+  const [facets, initial] = await Promise.all([getPartFacets(category), getDefaultParts(category)]);
 
   return (
     <main className="mx-auto w-full max-w-[1328px] px-4 py-4 md:px-6">
@@ -59,8 +59,9 @@ async function CategoryContent({ params }: Pick<PageProps<'/parts/[category]'>, 
         <span aria-current="page">{CATEGORY_LABELS[category]}</span>
       </nav>
       <h1 className="mt-1 mb-4 t-h1">{CATEGORY_LABELS[category]}</h1>
-      <Suspense fallback={<Skeleton className="h-96 rounded-lg" />}>
-        <PartCatalog key={category} category={category} facets={facets} />
+      {/* สูงเกินจอไว้ก่อน แถบล่างของเว็บจะไม่ขึ้นมาแล้วถูกดันลงตอนรายการโหลดเสร็จ (Lighthouse CLS) */}
+      <Suspense fallback={<Skeleton className="h-[110svh] rounded-lg" />}>
+        <PartCatalog key={category} category={category} facets={facets} initial={initial} />
       </Suspense>
     </main>
   );

@@ -195,6 +195,18 @@ async function withChips(rows: RawRow[]): Promise<PartListItem[]> {
   });
 }
 
+/**
+ * หน้าแรกของคลังอะไหล่ (ไม่มีตัวกรอง) เรนเดอร์มากับ HTML เลย ไม่ต้องรอเบราว์เซอร์เรียก API
+ * หน้าจึงไม่มีจังหวะโครงโหลดแล้วกระตุก (Lighthouse CLS) และรูปการ์ดแถวแรกเริ่มโหลดได้เร็วขึ้น
+ */
+export async function getDefaultParts(category?: CategorySlug): Promise<PartsResponse> {
+  'use cache';
+  cacheTag('parts');
+  cacheLife('minutes');
+
+  return getParts({ category, brand: [], sort: 'popular', page: 1, spec: {} });
+}
+
 /** ตัวเลือกในตัวกรอง: ยี่ห้อที่มีของในหมวด และค่าที่มีจริงของแต่ละคอลัมน์สเปก */
 export async function getPartFacets(category: CategorySlug): Promise<PartFacets> {
   'use cache';

@@ -6,7 +6,7 @@ import { PartCatalog } from '@/components/parts/part-catalog';
 import { CATEGORY_ICONS } from '@/components/parts/part-icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isCategorySlug } from '@/lib/parts/spec-fields';
-import { getCategoryCounts } from '@/server/queries/parts';
+import { getCategoryCounts, getDefaultParts } from '@/server/queries/parts';
 
 export const metadata: Metadata = {
   title: 'คลังอะไหล่ · BuildCheck',
@@ -43,6 +43,12 @@ async function CategoryGrid() {
   );
 }
 
+/** หน้าแรกของรายการทุกหมวดมากับ HTML เลย ไม่ต้องรอเบราว์เซอร์โหลด */
+async function AllPartsCatalog() {
+  const initial = await getDefaultParts();
+  return <PartCatalog initial={initial} />;
+}
+
 export default function PartsIndexPage() {
   return (
     <main className="mx-auto w-full max-w-[1328px] px-4 py-6 md:px-6">
@@ -51,8 +57,9 @@ export default function PartsIndexPage() {
         <CategoryGrid />
       </Suspense>
       <h2 className="mt-8 mb-3 t-h2">ค้นหาอะไหล่ทุกหมวด</h2>
-      <Suspense fallback={<Skeleton className="h-64 rounded-lg" />}>
-        <PartCatalog />
+      {/* สูงเกินจอไว้ก่อน แถบล่างของเว็บจะไม่ขึ้นมาแล้วถูกดันลงตอนรายการโหลดเสร็จ (Lighthouse CLS) */}
+      <Suspense fallback={<Skeleton className="h-[110svh] rounded-lg" />}>
+        <AllPartsCatalog />
       </Suspense>
     </main>
   );

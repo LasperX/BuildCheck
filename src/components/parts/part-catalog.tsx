@@ -45,9 +45,12 @@ async function fetchParts(query: string): Promise<PartsResponse> {
 export function PartCatalog({
   category,
   facets,
+  initial,
 }: {
   category?: CategorySlug;
   facets?: PartFacets;
+  /** หน้าแรกแบบไม่มีตัวกรองจากเซิร์ฟเวอร์ ใช้ตอนเปิดหน้าโดยไม่มีตัวกรองใน URL */
+  initial?: PartsResponse;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -80,9 +83,13 @@ export function PartCatalog({
   if (category) apiParams.set('category', category);
   const apiQuery = apiParams.toString();
 
+  // ข้อมูลจากเซิร์ฟเวอร์ตรงกับเงื่อนไขนี้เท่านั้น (ไม่มีตัวกรองอื่นนอกจากหมวด)
+  const defaultQuery = category ? new URLSearchParams({ category }).toString() : '';
   const { data, isPending, isError, isFetching } = useQuery({
     queryKey: ['parts', apiQuery],
     queryFn: () => fetchParts(apiQuery),
+    initialData: initial && apiQuery === defaultQuery ? initial : undefined,
+    staleTime: 60_000,
     placeholderData: keepPreviousData, // เปลี่ยนตัวกรองแล้วรายการเดิมยังอยู่ระหว่างรอ หน้าไม่กระพริบ
   });
 
