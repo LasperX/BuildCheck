@@ -5,7 +5,11 @@ import { AuthCard } from '@/components/auth/auth-card';
 import { LoginForm } from '@/components/auth/login-form';
 import { isGoogleEnabled } from '@/lib/auth';
 
-export const metadata: Metadata = { title: 'เข้าสู่ระบบ · BuildCheck' };
+export const metadata: Metadata = {
+  title: 'เข้าสู่ระบบ · BuildCheck',
+  description:
+    'เข้าสู่ระบบ BuildCheck เพื่อบันทึกสเปกคอมไว้ทุกเครื่อง แชร์สเปก โหวต และรายงานราคามือสอง',
+};
 
 export default function LoginPage() {
   return (

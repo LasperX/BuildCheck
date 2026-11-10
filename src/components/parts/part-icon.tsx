@@ -25,6 +25,16 @@ export const CATEGORY_ICONS: Record<CategorySlug, LucideIcon> = {
 };
 
 /**
+ * ย่อรูปผ่าน Next.js ได้เฉพาะไฟล์ในเว็บเอง (/uploads ตอนพัฒนา) และที่เก็บรูปของเรา (ตั้งใน next.config.ts)
+ * ลิงก์รูปจากเว็บอื่นที่นำเข้าผ่าน CSV แสดงตรงตามเดิม เพราะไม่ได้อนุญาตให้ Next.js ไปดึงมาย่อ
+ */
+function canOptimize(src: string): boolean {
+  if (src.startsWith('/') && !src.startsWith('//')) return true;
+  const origin = process.env.NEXT_PUBLIC_STORAGE_ORIGIN;
+  return Boolean(origin) && src.startsWith(`${origin}/`);
+}
+
+/**
  * รูปอะไหล่ ถ้าแอดมินยังไม่ใส่รูปจะแสดงไอคอนของหมวดแทน
  * พื้นขาวเสมอ (ทั้งโหมดสว่างและมืด) เพราะรูปสินค้าส่วนใหญ่พื้นขาว รูปจะกลืนกับช่อง ไม่เห็นเป็นกล่องซ้อน
  * รูปพื้นโปร่งใสก็แสดงบนพื้นขาวได้สวยเหมือนกัน และใช้ object-contain ไม่ครอปส่วนของสินค้าทิ้ง
@@ -36,23 +46,30 @@ export function PartImage({
   size,
   className = '',
   zoom = false,
+  eager = false,
 }: {
   src: string | null;
   alt: string;
   category: CategorySlug;
+  /** ขนาดที่แสดง (px) ใช้เลือกขนาดรูปที่ย่อให้ ไม่ใช่ขนาดไฟล์ต้นฉบับ */
   size: number;
   className?: string;
   /** เอาเมาส์ชี้แล้วเห็นรูปใหญ่ ใช้กับรูปเล็กในหน้าจัดสเปก (เฉพาะอุปกรณ์ที่มีเมาส์) */
   zoom?: boolean;
+  /** รูปที่เห็นทันทีตอนเปิดหน้า (แถวแรก) โหลดก่อน ไม่รอเลื่อนถึง */
+  eager?: boolean;
 }) {
   if (src) {
+    const unoptimized = !canOptimize(src);
     const image = (
       <Image
         src={src}
         alt={alt}
         width={size}
         height={size}
-        unoptimized
+        unoptimized={unoptimized}
+        loading={eager ? 'eager' : 'lazy'}
+        fetchPriority={eager ? 'high' : undefined}
         className={`rounded-md bg-white object-contain p-0.5 ring-1 ring-black/5 ${className}`}
       />
     );
@@ -69,7 +86,7 @@ export function PartImage({
             alt=""
             width={240}
             height={240}
-            unoptimized
+            unoptimized={unoptimized}
             className="size-full object-contain"
           />
         </span>

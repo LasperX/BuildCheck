@@ -17,7 +17,7 @@ import { usePathname } from 'next/navigation';
 
 // เมนูหลังบ้านครบ 9 หน้าตามหัวข้อ 5.2 และ 5.4 และหน้าตรวจสเปก (เพิ่ม 8 พ.ย. 2569)
 const ITEMS = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { href: '/admin', label: 'ภาพรวม', icon: LayoutDashboard, exact: true },
   { href: '/admin/parts', label: 'จัดการอะไหล่', icon: Package, exact: true },
   { href: '/admin/parts/review', label: 'ตรวจสเปก', icon: ClipboardCheck, exact: true },
   { href: '/admin/parts/import', label: 'นำเข้า CSV', icon: FileUp, exact: true },

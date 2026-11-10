@@ -227,7 +227,10 @@ export function PartCatalog({
             aria-label="รูปแบบการแสดงผล"
             className="group/seg relative inline-flex gap-0.5 rounded-md bg-surface-3 p-0.5"
           >
-            <SegmentIndicator selector="[aria-pressed=true]" className="rounded-sm bg-surface shadow-sm" />
+            <SegmentIndicator
+              selector="[aria-pressed=true]"
+              className="rounded-sm bg-surface shadow-sm"
+            />
             <ViewButton active={view === 'cards'} label="การ์ด" onClick={() => setView('cards')}>
               <LayoutGrid aria-hidden />
             </ViewButton>
@@ -250,9 +253,13 @@ export function PartCatalog({
               โหลดรายการอะไหล่ไม่สำเร็จ กรุณาลองใหม่
             </FormAlert>
           ) : isPending ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3" aria-label="กำลังโหลด">
-              {[1, 2, 3, 4, 5, 6].map((key) => (
-                <Skeleton key={key} className="h-64 rounded-lg" />
+            <div
+              className="grid grid-cols-2 gap-3 xl:grid-cols-4 md:grid-cols-3"
+              aria-label="กำลังโหลด"
+            >
+              {/* โครงเดียวกับการ์ดจริง ความสูงใกล้กัน หน้าไม่กระตุกตอนรายการโหลดเสร็จ */}
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((key) => (
+                <CardSkeleton key={key} />
               ))}
             </div>
           ) : data.items.length === 0 ? (
@@ -261,9 +268,10 @@ export function PartCatalog({
             </p>
           ) : view === 'cards' ? (
             <ul className="grid grid-cols-2 gap-3 xl:grid-cols-4 md:grid-cols-3">
-              {data.items.map((part) => (
+              {data.items.map((part, index) => (
                 <li key={part.id}>
-                  <PartCard part={part} />
+                  {/* แถวแรกเห็นทันทีตอนเปิดหน้า โหลดรูปก่อน */}
+                  <PartCard part={part} eager={index < 4} />
                 </li>
               ))}
             </ul>
@@ -393,7 +401,20 @@ function VerifiedHint({ verified }: { verified: boolean }) {
   );
 }
 
-function PartCard({ part }: { part: PartListItem }) {
+function CardSkeleton() {
+  return (
+    <div className="flex flex-col rounded-lg border border-border bg-surface p-3">
+      <Skeleton className="aspect-[4/3] w-full rounded-md" />
+      <Skeleton className="mt-3 h-3 w-1/3" />
+      <Skeleton className="mt-1.5 h-4 w-4/5" />
+      <Skeleton className="mt-2 h-5 w-3/4" />
+      <Skeleton className="mt-4 h-5 w-2/5" />
+      <Skeleton className="mt-3 h-10 w-full" />
+    </div>
+  );
+}
+
+function PartCard({ part, eager = false }: { part: PartListItem; eager?: boolean }) {
   return (
     <article className="flex h-full lift flex-col rounded-lg border border-border bg-surface p-3 hover:border-border-strong hover:shadow-md">
       <Link href={partHref(part)} className="flex flex-1 flex-col">
@@ -401,7 +422,8 @@ function PartCard({ part }: { part: PartListItem }) {
           src={part.imageUrl}
           alt=""
           category={part.categorySlug}
-          size={120}
+          size={280}
+          eager={eager}
           className="aspect-[4/3] h-auto w-full"
         />
         <span className="mt-3 text-xs text-muted-foreground">{part.brandName}</span>

@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { getDashboardStats } from '@/server/queries/admin';
 import { getUsedMarket } from '@/server/queries/used';
 
-export const metadata: Metadata = { title: 'Dashboard · BuildCheck' };
+export const metadata: Metadata = { title: 'ภาพรวมหลังบ้าน · BuildCheck' };
 
 // Dashboard แอดมิน (หัวข้อ 3.10, 5.2 และส่วนมือสองใน 5.4)
 
@@ -260,7 +260,7 @@ async function DashboardContent({
 export default function AdminPage({ searchParams }: PageProps<'/admin'>) {
   return (
     <>
-      <h1 className="mb-4 t-h1">Dashboard</h1>
+      <h1 className="mb-4 t-h1">ภาพรวม</h1>
       <Suspense
         fallback={
           <div className="grid gap-3 xl:grid-cols-4 sm:grid-cols-2">

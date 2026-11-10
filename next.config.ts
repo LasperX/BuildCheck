@@ -10,15 +10,30 @@ const isDev = process.env.NODE_ENV === 'development';
 // บน Vercel เป็น HTTPS เสมอ ส่วน next start ในเครื่องเป็น http://localhost จึงเปิดสองข้อนี้เฉพาะบน Vercel
 const isHttps = Boolean(process.env.VERCEL);
 
+/** ที่อยู่ของที่เก็บรูป (STORAGE_PUBLIC_URL) ถ้าไม่ได้ตั้งค่าหรือค่าไม่ใช่ URL คืน null */
+function storageUrl(): URL | null {
+  try {
+    return process.env.STORAGE_PUBLIC_URL ? new URL(process.env.STORAGE_PUBLIC_URL) : null;
+  } catch {
+    return null;
+  }
+}
+
+function storageOrigin(): string | null {
+  return storageUrl()?.origin ?? null;
+}
+
+/** ให้ Next.js ย่อรูปได้เฉพาะไฟล์ในที่เก็บรูปของเรา */
+function storageImagePattern(): URL[] {
+  const url = storageUrl();
+  return url ? [new URL(`${url.href.replace(/\/$/, '')}/**`)] : [];
+}
+
 /** โดเมนรูปภายนอกที่อนุญาต: รูปโปรไฟล์ Google และที่เก็บรูปของเรา (ถ้าตั้งค่า STORAGE_PUBLIC_URL) */
 function imageOrigins(): string[] {
   const origins = ['https://lh3.googleusercontent.com'];
-  try {
-    if (process.env.STORAGE_PUBLIC_URL)
-      origins.push(new URL(process.env.STORAGE_PUBLIC_URL).origin);
-  } catch {
-    // ค่าไม่ใช่ URL ข้ามไป
-  }
+  const storage = storageOrigin();
+  if (storage) origins.push(storage);
   return origins;
 }
 
@@ -60,6 +75,13 @@ const nextConfig: NextConfig = {
   },
   partialPrefetching: true,
   poweredByHeader: false,
+  // รูปอะไหล่: ให้ Next.js ย่อตามขนาดที่แสดงจริง มือถือไม่ต้องโหลดรูป 800px (Lighthouse หน้าคลังอะไหล่)
+  // อนุญาตเฉพาะที่เก็บรูปของเรา ชื่อไฟล์สุ่มใหม่ทุกครั้งที่อัปโหลด จึงเก็บแคชได้นาน
+  images: {
+    remotePatterns: storageImagePattern(),
+    minimumCacheTTL: 2678400,
+  },
+  env: { NEXT_PUBLIC_STORAGE_ORIGIN: storageOrigin() ?? '' },
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];
   },
