@@ -53,7 +53,8 @@ export default function PartsIndexPage() {
   return (
     <main className="mx-auto w-full max-w-[1328px] px-4 py-6 md:px-6">
       <h1 className="t-h1">คลังอะไหล่</h1>
-      <Suspense fallback={<Skeleton className="mt-4 h-40 rounded-lg" />}>
+      {/* สูงเท่าตารางหมวดจริง: มือถือ 4 แถว · จอใหญ่ 2 แถว (การ์ดสูง 64px ห่างกัน 12px) */}
+      <Suspense fallback={<Skeleton className="mt-4 h-[292px] rounded-lg md:h-[140px]" />}>
         <CategoryGrid />
       </Suspense>
       <h2 className="mt-8 mb-3 t-h2">ค้นหาอะไหล่ทุกหมวด</h2>
