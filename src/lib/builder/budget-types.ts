@@ -55,4 +55,15 @@ export type BudgetResponse =
       usage?: UsageType;
       minimumBudget?: number | null;
       allocation?: Record<CategorySlug, number>;
+      /** ทางเลือกที่ลองจัดจริงแล้วว่าได้ผล ให้ผู้ใช้กดลองต่อได้ทันที ไม่เจอทางตัน */
+      alternatives?: BudgetAlternative[];
     };
+
+/**
+ * ทางเลือกเมื่องบไม่พอ ทุกข้อลองจัดบนเซิร์ฟเวอร์แล้วว่าได้ชุดที่เข้ากันได้จริง
+ * - used: รวมอะไหล่มือสอง (ราคากลางเกรด B ไม่รวม PSU) ที่งบ budget
+ * - usage: เปลี่ยนประเภทการใช้งาน จัดได้ในงบเดิม
+ * - brand: ไม่จำกัดยี่ห้อ CPU จัดได้ในงบเดิม
+ */
+export type BudgetAlternative =
+  { kind: 'used'; budget: number } | { kind: 'usage'; usage: UsageType } | { kind: 'brand' };

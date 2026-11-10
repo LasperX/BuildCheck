@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, CircleCheck, Info, Pencil, Recycle, TriangleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { Controller, useForm, useWatch } from 'react-hook-form';
+import { Controller, type UseFormSetValue, useForm, useWatch } from 'react-hook-form';
 import type { z } from 'zod';
 
 import { FormAlert } from '@/components/auth/form-field';
@@ -37,6 +37,106 @@ type FormInput = z.input<typeof budgetInputSchema>;
 const USAGES = Object.keys(USAGE_LABELS) as UsageType[];
 
 const DEFAULT_BUDGET = '40000';
+
+type FailedResponse = Extract<BudgetResponse, { ok: false }>;
+
+/**
+ * เมื่องบไม่พอ แสดงทางเลือกที่เซิร์ฟเวอร์ลองจัดแล้วว่าได้ผล กดแล้วเปลี่ยนค่าในฟอร์มและจัดใหม่ทันที
+ * ผู้ใช้จึงไม่เจอทางตัน และเห็นว่าฟอร์มถูกเปลี่ยนเป็นอะไร (แก้กลับเองได้)
+ */
+function AlternativeList({
+  response,
+  pending,
+  onTry,
+  setValue,
+}: {
+  response: FailedResponse;
+  pending: boolean;
+  onTry: (change: () => void) => void;
+  setValue: UseFormSetValue<FormInput>;
+}) {
+  const rows: { key: string; title: string; detail: string; apply: () => void }[] = [];
+  const minimum = response.minimumBudget ?? null;
+  const currentBudget = response.budget ?? 0;
+
+  for (const alt of response.alternatives ?? []) {
+    if (alt.kind === 'used') {
+      const sameBudget = alt.budget <= currentBudget;
+      rows.push({
+        key: 'used',
+        title: sameBudget
+          ? `รวมอะไหล่มือสอง จัดได้ในงบ ${formatBaht(currentBudget)}`
+          : `รวมอะไหล่มือสอง เริ่มที่ ${formatBaht(alt.budget)}`,
+        detail:
+          'คิดราคากลางมือสองเกรด B ทุกหมวดยกเว้น PSU' +
+          (minimum && !sameBudget
+            ? ` · ถูกกว่าซื้อมือหนึ่งทั้งชุด ${formatBaht(minimum - alt.budget)}`
+            : ''),
+        apply: () => {
+          setValue('allowUsed', true);
+          setValue('usedCategories', [...DEFAULT_USED_CATEGORIES]);
+          setValue('usedGrade', 'B');
+          if (!sameBudget) setValue('budget', String(alt.budget));
+        },
+      });
+    } else if (alt.kind === 'brand') {
+      rows.push({
+        key: 'brand',
+        title: 'ไม่จำกัดยี่ห้อ CPU',
+        detail: 'ยี่ห้อที่เลือกไว้ยังไม่มีรุ่นที่ลงงบนี้ได้',
+        apply: () => setValue('cpuBrand', ''),
+      });
+    } else {
+      rows.push({
+        key: `usage-${alt.usage}`,
+        title: `ใช้${USAGE_LABELS[alt.usage]} จัดได้ในงบนี้`,
+        detail:
+          response.usage === 'gaming'
+            ? 'ถ้าไม่ได้ต้องการเล่นเกมหนัก ๆ ประเภทนี้ไม่ต้องใช้การ์ดจอแรง'
+            : 'ลองจัดให้แล้ว ได้ชุดที่เข้ากันได้ในงบเดิม',
+        apply: () => setValue('usage', alt.usage),
+      });
+    }
+  }
+  if (minimum) {
+    rows.push({
+      key: 'minimum',
+      title: `เพิ่มงบเป็น ${formatBaht(minimum)}`,
+      detail: `งบขั้นต่ำสำหรับ${response.usage ? USAGE_LABELS[response.usage] : 'ประเภทนี้'} ซื้อมือหนึ่งทั้งชุด`,
+      apply: () => setValue('budget', String(minimum)),
+    });
+  }
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="mt-3 anim-slot-in rounded-xl border border-border bg-card p-4">
+      <h3 className="font-semibold">ลองทางเลือกเหล่านี้</h3>
+      <p className="text-xs text-muted-foreground">
+        ทุกข้อลองจัดให้แล้วว่าได้ชุดที่ใส่ด้วยกันได้จริง
+      </p>
+      <ul className="mt-3 flex flex-col divide-y divide-border">
+        {rows.map((row) => (
+          <li key={row.key} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-2.5">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">{row.title}</p>
+              <p className="text-xs text-muted-foreground">{row.detail}</p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              disabled={pending}
+              onClick={() => onTry(row.apply)}
+            >
+              ลองเลย
+              <ArrowRight aria-hidden />
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 /** หน้าจัดสเปกตามงบ (หัวข้อ 3.5) ฟอร์ม → 3 ตัวเลือก → นำไปแก้ต่อในหน้าจัดสเปก */
 export function BudgetPlanner({
@@ -131,7 +231,10 @@ export function BudgetPlanner({
   // ส่วนแบ่งงบเปลี่ยนตามค่าที่กรอกอยู่ทันที ไม่ต้องกดจัดก่อน
   const liveUsage = useWatch({ control, name: 'usage' });
   const liveBudget = Number(
-    String(useWatch({ control, name: 'budget', defaultValue: DEFAULT_BUDGET }) ?? '').replace(/[,\s฿]/g, ''),
+    String(useWatch({ control, name: 'budget', defaultValue: DEFAULT_BUDGET }) ?? '').replace(
+      /[,\s฿]/g,
+      '',
+    ),
   );
   const shownUsage: UsageType = liveUsage ?? 'gaming';
   const shownBudget = Number.isFinite(liveBudget) && liveBudget > 0 ? liveBudget : 0;
@@ -172,7 +275,10 @@ export function BudgetPlanner({
               name="usage"
               render={({ field }) => (
                 <div className="group/seg relative grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1 sm:grid-cols-4">
-                  <SegmentIndicator selector="[aria-pressed=true]" className="bg-surface shadow-sm" />
+                  <SegmentIndicator
+                    selector="[aria-pressed=true]"
+                    className="bg-surface shadow-sm"
+                  />
                   {USAGES.map((usage) => (
                     <button
                       key={usage}
@@ -286,6 +392,15 @@ export function BudgetPlanner({
             <FormAlert variant="warn" icon={<TriangleAlert aria-hidden />}>
               {response.error}
             </FormAlert>
+            <AlternativeList
+              response={response}
+              pending={pending}
+              onTry={(change) => {
+                change();
+                void handleSubmit(onSubmit)();
+              }}
+              setValue={setValue}
+            />
           </div>
         )}
         {response?.ok && (

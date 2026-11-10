@@ -3,12 +3,14 @@
 import { headers } from 'next/headers';
 import type { z } from 'zod';
 
-import type { BudgetResponse } from '@/lib/builder/budget-types';
+import type { BudgetAlternative, BudgetResponse } from '@/lib/builder/budget-types';
 import type { BuilderPart } from '@/lib/builder/types';
-import { generateBudgetBuilds as runBudget } from '@/lib/compat/budget';
-import { CATEGORY_SLUGS } from '@/lib/parts/spec-fields';
+import { DEFAULT_USED_CATEGORIES, generateBudgetBuilds as runBudget } from '@/lib/compat/budget';
+import type { UsedGrade } from '@/lib/compat/used-price';
+import { CATEGORY_SLUGS, type CategorySlug } from '@/lib/parts/spec-fields';
 import { clientIp, hitRateLimit } from '@/lib/rate-limit';
 import { budgetInputSchema } from '@/lib/validators/budget';
+import { usageTypeSchema } from '@/lib/validators/builds';
 import { getCategoryEngineParts } from '@/server/queries/engine-parts';
 import { getSystemConfig } from '@/server/queries/settings';
 import { getUsedPriceSets } from '@/server/queries/used';
@@ -37,28 +39,32 @@ export async function generateBudgetBuilds(
     ...CATEGORY_SLUGS.map((category) => getCategoryEngineParts(category)),
   ]);
   const catalog = groups.flat();
-  const used =
-    allowUsed && usedCategories.length
-      ? await (async () => {
-          const sets = await getUsedPriceSets(
-            catalog.filter((part) => usedCategories.includes(part.categorySlug)).map((p) => p.id),
-          );
-          const prices = Object.fromEntries(
-            Object.entries(sets).map(([id, set]) => [id, set[usedGrade].median]),
-          );
-          return { categories: usedCategories, grade: usedGrade, prices };
-        })()
-      : null;
+  const usedFor = async (categories: readonly CategorySlug[], grade: UsedGrade) => {
+    const sets = await getUsedPriceSets(
+      catalog.filter((part) => categories.includes(part.categorySlug)).map((p) => p.id),
+    );
+    const prices = Object.fromEntries(
+      Object.entries(sets).map(([id, set]) => [id, set[grade].median]),
+    );
+    return { categories, grade, prices };
+  };
+  const used = allowUsed && usedCategories.length ? await usedFor(usedCategories, usedGrade) : null;
 
-  const result = runBudget({
-    budget,
-    usage,
-    cpuBrand,
-    catalog,
-    ratios: config.budgetRatios[usage],
-    settings: config.engine,
-    used,
-  });
+  const run = (over: Partial<Parameters<typeof runBudget>[0]> = {}) => {
+    const runUsage = over.usage ?? usage;
+    return runBudget({
+      budget,
+      usage: runUsage,
+      cpuBrand,
+      catalog,
+      ratios: config.budgetRatios[runUsage],
+      settings: config.engine,
+      used,
+      ...over,
+    });
+  };
+
+  const result = run();
 
   if (!result.ok) {
     return {
@@ -70,7 +76,32 @@ export async function generateBudgetBuilds(
       usage,
       minimumBudget: result.minimumBudget,
       allocation: result.allocation,
+      alternatives: await findAlternatives(),
     };
+  }
+
+  /** ลองจัดจริงทีละทางเลือก ส่งกลับเฉพาะทางที่ได้ผล คำนวณบนเซิร์ฟเวอร์ ไม่เรียกฐานข้อมูลเพิ่มนอกจากราคามือสอง */
+  async function findAlternatives(): Promise<BudgetAlternative[]> {
+    const found: BudgetAlternative[] = [];
+    // 1. รวมมือสอง (ถ้ายังไม่ได้เปิด) ใช้ค่าเริ่มต้นของฟอร์ม: เกรด B ไม่รวม PSU
+    if (!used) {
+      const withUsed = run({ used: await usedFor(DEFAULT_USED_CATEGORIES, 'B') });
+      const usedBudget = withUsed.ok ? budget : withUsed.minimumBudget;
+      // บอกเฉพาะเมื่อถูกกว่าการซื้อมือหนึ่งทั้งชุด ไม่งั้นไม่ได้ช่วยอะไร
+      if (
+        usedBudget &&
+        (!result.ok && result.minimumBudget ? usedBudget < result.minimumBudget : true)
+      ) {
+        found.push({ kind: 'used', budget: usedBudget });
+      }
+    }
+    // 2. ไม่จำกัดยี่ห้อ CPU
+    if (cpuBrand && run({ cpuBrand: undefined }).ok) found.push({ kind: 'brand' });
+    // 3. ประเภทการใช้งานอื่นที่จัดได้ในงบเดิม
+    for (const other of usageTypeSchema.options) {
+      if (other !== usage && run({ usage: other }).ok) found.push({ kind: 'usage', usage: other });
+    }
+    return found;
   }
 
   return {
