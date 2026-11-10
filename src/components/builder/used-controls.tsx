@@ -75,10 +75,13 @@ export function UsedControls({
   item,
   part,
   onUpdate,
+  children,
 }: {
   item: BuildItem;
   part: BuilderPart | undefined;
   onUpdate: (patch: Patch) => void;
+  /** จัดวางเอง: chips = แถบมือหนึ่ง/มือสอง · panel = แผงราคามือสอง (null เมื่อเป็นมือหนึ่ง) */
+  children?: (parts: { chips: React.ReactNode; panel: React.ReactNode }) => React.ReactNode;
 }) {
   const id = useId();
   const usedOnly = part ? isUsedOnly(part) : false;
@@ -100,135 +103,136 @@ export function UsedControls({
   const verdict = stat && item.offeredPrice ? assessOffer(item.offeredPrice, stat.median) : null;
   const VerdictIcon = verdict ? VERDICT_UI[verdict.verdict].icon : null;
 
-  return (
-    <div className="mt-2 w-full">
-      <div className="flex flex-wrap items-center gap-2">
-        <div
-          role="radiogroup"
-          aria-label={`สภาพของ ${part?.model ?? 'อะไหล่'}`}
-          className="group/seg relative flex rounded-lg border border-border p-0.5 text-xs"
-        >
-          <SegmentIndicator
-            selector="[aria-checked=true]"
-            className={condition === 'new' ? 'bg-primary' : 'bg-used'}
-          />
-          {(['new', ...USED_GRADES] as const).map((value) => {
-            const active = condition === value;
-            // รุ่นที่มีแต่มือสอง ซื้อมือหนึ่งไม่ได้แล้ว จึงกดเลือกมือหนึ่งไม่ได้
-            const blocked = value === 'new' && usedOnly;
-            return (
-              <button
-                key={value}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                disabled={blocked}
-                title={
-                  blocked
-                    ? 'รุ่นนี้เลิกขายมือหนึ่งแล้ว มีแต่มือสอง'
-                    : value === 'new'
-                      ? 'มือหนึ่ง'
-                      : `มือสอง เกรด ${value}: ${GRADE_LABELS[value].detail}`
-                }
-                onClick={() => !active && !blocked && onUpdate({ condition: value })}
-                className={cn(
-                  'relative z-10 rounded-md px-2 py-1 font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40',
-                  active
-                    ? cn(
-                        value === 'new'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-used text-white',
-                        'group-data-[seg=ready]/seg:bg-transparent',
-                      )
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {value === 'new' ? 'มือหนึ่ง' : `มือสอง ${value}`}
-              </button>
-            );
-          })}
-        </div>
-        {used && (
-          <span className="text-xs text-muted-foreground">{GRADE_LABELS[grade].detail}</span>
-        )}
-        {usedOnly && <span className="text-xs font-medium text-used">รุ่นนี้มีแต่มือสอง</span>}
-      </div>
-
-      {used && (
-        <div className="mt-2 flex flex-col gap-2 rounded-lg border border-used-border bg-used-soft/50 p-3">
-          {stat ? (
-            <UsedPriceLine stat={stat} />
-          ) : (
-            <p className="text-xs text-muted-foreground">กำลังโหลดราคากลาง…</p>
-          )}
-          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_140px]">
-            <div>
-              <label htmlFor={`${id}-offered`} className="text-xs font-medium">
-                ราคาที่เจอจริง (บาท)
-              </label>
-              <Input
-                id={`${id}-offered`}
-                inputMode="numeric"
-                placeholder={
-                  stat ? `เช่น ${stat.median.toLocaleString('th-TH')}` : 'ราคาที่ผู้ขายเสนอ'
-                }
-                value={offered}
-                onChange={(event) => setOffered(event.target.value.replace(/[^\d]/g, ''))}
-                onBlur={() => commitNumber(offered, 'offeredPrice', 1_000_000)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') commitNumber(offered, 'offeredPrice', 1_000_000);
-                }}
-                className="h-9 bg-surface font-mono"
-              />
-            </div>
-            <div>
-              <label htmlFor={`${id}-warranty`} className="text-xs font-medium">
-                ประกันเหลือ (เดือน)
-              </label>
-              <Input
-                id={`${id}-warranty`}
-                inputMode="numeric"
-                placeholder="ไม่ทราบ"
-                value={warranty}
-                onChange={(event) => setWarranty(event.target.value.replace(/[^\d]/g, ''))}
-                onBlur={() => commitNumber(warranty, 'warrantyMonthsLeft', 120)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') commitNumber(warranty, 'warrantyMonthsLeft', 120);
-                }}
-                className="h-9 bg-surface font-mono"
-              />
-            </div>
-          </div>
-          {verdict && VerdictIcon && (
-            <p
-              role="status"
+  const chips = (
+    <div className="flex flex-wrap items-center gap-2">
+      <div
+        role="radiogroup"
+        aria-label={`สภาพของ ${part?.model ?? 'อะไหล่'}`}
+        className="group/seg relative flex rounded-lg border border-border p-0.5 text-xs"
+      >
+        <SegmentIndicator
+          selector="[aria-checked=true]"
+          className={condition === 'new' ? 'bg-primary' : 'bg-used'}
+        />
+        {(['new', ...USED_GRADES] as const).map((value) => {
+          const active = condition === value;
+          // รุ่นที่มีแต่มือสอง ซื้อมือหนึ่งไม่ได้แล้ว จึงกดเลือกมือหนึ่งไม่ได้
+          const blocked = value === 'new' && usedOnly;
+          return (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              disabled={blocked}
+              title={
+                blocked
+                  ? 'รุ่นนี้เลิกขายมือหนึ่งแล้ว มีแต่มือสอง'
+                  : value === 'new'
+                    ? 'มือหนึ่ง'
+                    : `มือสอง เกรด ${value}: ${GRADE_LABELS[value].detail}`
+              }
+              onClick={() => !active && !blocked && onUpdate({ condition: value })}
               className={cn(
-                'flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-sm',
-                VERDICT_UI[verdict.verdict].className,
+                'relative z-10 rounded-md px-2 py-1 font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40',
+                active
+                  ? cn(
+                      value === 'new' ? 'bg-primary text-primary-foreground' : 'bg-used text-white',
+                      'group-data-[seg=ready]/seg:bg-transparent',
+                    )
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              <VerdictIcon aria-hidden className="size-4 shrink-0" />
-              <span>
-                <b>{VERDICT_LABELS[verdict.verdict]}</b> · {Math.round(verdict.ratio * 100)}%
-                ของราคากลาง
-              </span>
-            </p>
-          )}
-          {part && (
-            <details className="text-sm">
-              <summary className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-used-fg">
-                <ClipboardList aria-hidden className="size-3.5" />
-                เช็กลิสต์ก่อนซื้อ
-              </summary>
-              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground">
-                {BUYING_CHECKLIST[part.categorySlug].map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            </details>
-          )}
-        </div>
+              {value === 'new' ? 'มือหนึ่ง' : `มือสอง ${value}`}
+            </button>
+          );
+        })}
+      </div>
+      {used && <span className="text-xs text-muted-foreground">{GRADE_LABELS[grade].detail}</span>}
+      {usedOnly && <span className="text-xs font-medium text-used">รุ่นนี้มีแต่มือสอง</span>}
+    </div>
+  );
+
+  const panel = used ? (
+    <div className="mt-2 flex flex-col gap-2 rounded-lg border border-used-border bg-used-soft/50 p-3">
+      {stat ? (
+        <UsedPriceLine stat={stat} />
+      ) : (
+        <p className="text-xs text-muted-foreground">กำลังโหลดราคากลาง…</p>
       )}
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_140px]">
+        <div>
+          <label htmlFor={`${id}-offered`} className="text-xs font-medium">
+            ราคาที่เจอจริง (บาท)
+          </label>
+          <Input
+            id={`${id}-offered`}
+            inputMode="numeric"
+            placeholder={stat ? `เช่น ${stat.median.toLocaleString('th-TH')}` : 'ราคาที่ผู้ขายเสนอ'}
+            value={offered}
+            onChange={(event) => setOffered(event.target.value.replace(/[^\d]/g, ''))}
+            onBlur={() => commitNumber(offered, 'offeredPrice', 1_000_000)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') commitNumber(offered, 'offeredPrice', 1_000_000);
+            }}
+            className="h-9 bg-surface font-mono"
+          />
+        </div>
+        <div>
+          <label htmlFor={`${id}-warranty`} className="text-xs font-medium">
+            ประกันเหลือ (เดือน)
+          </label>
+          <Input
+            id={`${id}-warranty`}
+            inputMode="numeric"
+            placeholder="ไม่ทราบ"
+            value={warranty}
+            onChange={(event) => setWarranty(event.target.value.replace(/[^\d]/g, ''))}
+            onBlur={() => commitNumber(warranty, 'warrantyMonthsLeft', 120)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') commitNumber(warranty, 'warrantyMonthsLeft', 120);
+            }}
+            className="h-9 bg-surface font-mono"
+          />
+        </div>
+      </div>
+      {verdict && VerdictIcon && (
+        <p
+          role="status"
+          className={cn(
+            'flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-sm',
+            VERDICT_UI[verdict.verdict].className,
+          )}
+        >
+          <VerdictIcon aria-hidden className="size-4 shrink-0" />
+          <span>
+            <b>{VERDICT_LABELS[verdict.verdict]}</b> · {Math.round(verdict.ratio * 100)}%
+            ของราคากลาง
+          </span>
+        </p>
+      )}
+      {part && (
+        <details className="text-sm">
+          <summary className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-used-fg">
+            <ClipboardList aria-hidden className="size-3.5" />
+            เช็กลิสต์ก่อนซื้อ
+          </summary>
+          <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground">
+            {BUYING_CHECKLIST[part.categorySlug].map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  ) : null;
+
+  // ผู้เรียกจัดวางแถบสภาพและแผงราคามือสองแยกกันได้ เช่นแถบอยู่ข้างรูป แต่แผงกว้างเต็มการ์ด
+  if (children) return children({ chips, panel });
+  return (
+    <div className="mt-2 w-full">
+      {chips}
+      {panel}
     </div>
   );
 }

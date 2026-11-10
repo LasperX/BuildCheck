@@ -104,123 +104,133 @@ export function PartSlot({
                   key={item.partId}
                   className={initialIds.has(item.partId) ? undefined : 'anim-slot-in'}
                 >
-                  {/* จอใหญ่: รูปซ้ายสูงเท่าสองแถว · คอลัมน์ขวา ชื่อ ราคา ปุ่ม แล้วต่อด้วยสภาพมือหนึ่ง/มือสอง
+                  <UsedControls
+                    item={item}
+                    part={part}
+                    onUpdate={(patch) => onUpdate(item.partId, patch)}
+                  >
+                    {({ chips, panel }) => (
+                      <>
+                        {/* จอใหญ่: รูปซ้ายสูงเท่าสองแถว · คอลัมน์ขวา ชื่อ ราคา ปุ่ม แล้วต่อด้วยสภาพมือหนึ่ง/มือสอง
                       มือถือ: คอลัมน์ขวาเป็น contents ลูกจึงเข้าตารางของแถวนี้แทน รูปอยู่แถวเดียวกับชื่อ
-                      ส่วนสภาพอะไหล่กว้างเต็มการ์ด ไม่ถูกรูปเบียด */}
-                  <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 md:flex md:gap-x-4">
-                    <PartImage
-                      src={part?.imageUrl ?? null}
-                      alt={part ? `${part.brandName} ${part.model}` : label}
-                      category={category}
-                      size={96}
-                      className="size-14 shrink-0 md:size-24"
-                      zoom
-                    />
-                    <div className="contents md:block md:min-w-0 md:flex-1">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:flex-nowrap">
-                          {/* มือถือ: ชื่อเต็มแถว ราคาและปุ่มลงไปแถวถัดไป ชื่อจะได้ไม่ถูกบีบ */}
-                          <div className="min-w-0 basis-full sm:flex-1 sm:basis-0">
-                            {part ? (
-                              <Link
-                                href={`/parts/${category}/${part.slug}`}
-                                className="line-clamp-2 font-medium hover:underline"
-                              >
-                                {part.brandName} {part.model}
-                              </Link>
-                            ) : (
-                              <span className="text-muted-foreground">กำลังโหลด…</span>
-                            )}
-                            <div className="mt-1 flex flex-wrap gap-1">
-                              {part?.chips.map((chip) => (
-                                <Badge key={chip} variant="neutral" className="font-mono">
-                                  {chip}
-                                </Badge>
-                              ))}
-                              {part && !part.isActive && <Badge variant="warn">เลิกขายแล้ว</Badge>}
-                              {part && isUsedOnly(part) && (
-                                <Badge variant="used">มีแต่มือสอง</Badge>
-                              )}
+                      ส่วนสภาพอะไหล่กว้างเต็มการ์ด ไม่ถูกรูปเบียด
+                      แผงราคามือสองอยู่นอกแถวนี้ กว้างเต็มการ์ดทุกขนาดจอ */}
+                        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 md:flex md:gap-x-4">
+                          <PartImage
+                            src={part?.imageUrl ?? null}
+                            alt={part ? `${part.brandName} ${part.model}` : label}
+                            category={category}
+                            size={96}
+                            className="size-14 shrink-0 md:size-24"
+                            zoom
+                          />
+                          <div className="contents md:block md:min-w-0 md:flex-1">
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:flex-nowrap">
+                                {/* มือถือ: ชื่อเต็มแถว ราคาและปุ่มลงไปแถวถัดไป ชื่อจะได้ไม่ถูกบีบ */}
+                                <div className="min-w-0 basis-full sm:flex-1 sm:basis-0">
+                                  {part ? (
+                                    <Link
+                                      href={`/parts/${category}/${part.slug}`}
+                                      className="line-clamp-2 font-medium hover:underline"
+                                    >
+                                      {part.brandName} {part.model}
+                                    </Link>
+                                  ) : (
+                                    <span className="text-muted-foreground">กำลังโหลด…</span>
+                                  )}
+                                  <div className="mt-1 flex flex-wrap gap-1">
+                                    {part?.chips.map((chip) => (
+                                      <Badge key={chip} variant="neutral" className="font-mono">
+                                        {chip}
+                                      </Badge>
+                                    ))}
+                                    {part && !part.isActive && (
+                                      <Badge variant="warn">เลิกขายแล้ว</Badge>
+                                    )}
+                                    {part && isUsedOnly(part) && (
+                                      <Badge variant="used">มีแต่มือสอง</Badge>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="ml-auto flex items-center gap-1">
+                                  <span className="mr-2 flex flex-col items-end font-mono tabular-nums">
+                                    <span className="font-semibold">
+                                      {part
+                                        ? formatBaht(slotUnitPrice(item, part) * item.quantity)
+                                        : '–'}
+                                    </span>
+                                    {/* รุ่นที่มีแต่มือสองไม่แสดงราคาใหม่ขีดฆ่า เพราะซื้อใหม่ไม่ได้ (ราคาในระบบคือราคาตอนเปิดตัว) */}
+                                    {part && item.condition !== 'new' && !isUsedOnly(part) && (
+                                      <span className="text-xs text-muted-foreground line-through">
+                                        <span className="sr-only">ราคาใหม่ </span>
+                                        {formatBaht(part.price * item.quantity)}
+                                      </span>
+                                    )}
+                                  </span>
+                                  {multi && (
+                                    <span
+                                      role="group"
+                                      aria-label={`จำนวน${label}`}
+                                      className="flex items-center rounded-lg border border-border"
+                                    >
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        aria-label="ลดจำนวน"
+                                        onClick={() => onQuantity(item.partId, item.quantity - 1)}
+                                      >
+                                        <Minus aria-hidden />
+                                      </Button>
+                                      <output
+                                        className="w-6 text-center font-mono text-sm"
+                                        aria-live="polite"
+                                      >
+                                        {item.quantity}
+                                      </output>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        aria-label="เพิ่มจำนวน"
+                                        disabled={item.quantity >= MAX_QUANTITY}
+                                        onClick={() => onQuantity(item.partId, item.quantity + 1)}
+                                      >
+                                        <Plus aria-hidden />
+                                      </Button>
+                                    </span>
+                                  )}
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    aria-label={`เปลี่ยนรุ่น ${part?.model ?? label}`}
+                                    title="เปลี่ยนรุ่น"
+                                    onClick={() => onPick(item.partId)}
+                                  >
+                                    <Pencil aria-hidden />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    aria-label={`เอา ${part?.model ?? label} ออก`}
+                                    title="เอาออก"
+                                    onClick={() => onRemove(item.partId)}
+                                  >
+                                    <Trash2 aria-hidden />
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          <div className="ml-auto flex items-center gap-1">
-                            <span className="mr-2 flex flex-col items-end font-mono tabular-nums">
-                              <span className="font-semibold">
-                                {part ? formatBaht(slotUnitPrice(item, part) * item.quantity) : '–'}
-                              </span>
-                              {/* รุ่นที่มีแต่มือสองไม่แสดงราคาใหม่ขีดฆ่า เพราะซื้อใหม่ไม่ได้ (ราคาในระบบคือราคาตอนเปิดตัว) */}
-                              {part && item.condition !== 'new' && !isUsedOnly(part) && (
-                                <span className="text-xs text-muted-foreground line-through">
-                                  <span className="sr-only">ราคาใหม่ </span>
-                                  {formatBaht(part.price * item.quantity)}
-                                </span>
-                              )}
-                            </span>
-                            {multi && (
-                              <span
-                                role="group"
-                                aria-label={`จำนวน${label}`}
-                                className="flex items-center rounded-lg border border-border"
-                              >
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon-sm"
-                                  aria-label="ลดจำนวน"
-                                  onClick={() => onQuantity(item.partId, item.quantity - 1)}
-                                >
-                                  <Minus aria-hidden />
-                                </Button>
-                                <output
-                                  className="w-6 text-center font-mono text-sm"
-                                  aria-live="polite"
-                                >
-                                  {item.quantity}
-                                </output>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon-sm"
-                                  aria-label="เพิ่มจำนวน"
-                                  disabled={item.quantity >= MAX_QUANTITY}
-                                  onClick={() => onQuantity(item.partId, item.quantity + 1)}
-                                >
-                                  <Plus aria-hidden />
-                                </Button>
-                              </span>
-                            )}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-label={`เปลี่ยนรุ่น ${part?.model ?? label}`}
-                              title="เปลี่ยนรุ่น"
-                              onClick={() => onPick(item.partId)}
-                            >
-                              <Pencil aria-hidden />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-label={`เอา ${part?.model ?? label} ออก`}
-                              title="เอาออก"
-                              onClick={() => onRemove(item.partId)}
-                            >
-                              <Trash2 aria-hidden />
-                            </Button>
+                            <div className="col-span-2 mt-2">{chips}</div>
                           </div>
                         </div>
-                      </div>
-                      <div className="col-span-2">
-                        <UsedControls
-                          item={item}
-                          part={part}
-                          onUpdate={(patch) => onUpdate(item.partId, patch)}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                        {panel}
+                      </>
+                    )}
+                  </UsedControls>
                 </li>
               );
             })}
