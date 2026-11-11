@@ -23,7 +23,7 @@ test('สมัคร จัดสเปก แก้ปัญหา แชร�
   await page.goto('/budget');
   await page.getByLabel('งบประมาณ (บาท)').fill('30000');
   await page.getByRole('button', { name: 'จัดให้เลย' }).click();
-  await expect(page.getByRole('heading', { name: /3 ตัวเลือกจากงบ/ })).toBeVisible({
+  await expect(page.getByRole('heading', { name: /[23] ตัวเลือกจากงบ/ })).toBeVisible({
     timeout: 20_000,
   });
   await page.getByRole('button', { name: 'นำไปแก้ต่อในหน้าจัดสเปก' }).nth(1).click();

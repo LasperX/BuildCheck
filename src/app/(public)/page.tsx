@@ -19,7 +19,7 @@ import { getNewestParts } from '@/server/queries/parts';
 export const metadata: Metadata = {
   title: 'BuildCheck · จัดสเปกคอมพร้อมเช็กความเข้ากันได้',
   description:
-    'เลือกอะไหล่คอมทีละชิ้น ระบบบอกทันทีว่าใส่กันได้ไหม ไฟพอไหม และราคารวมเท่าไหร่ หรือใส่งบให้ระบบจัดให้ 3 ตัวเลือก',
+    'เลือกอะไหล่คอมทีละชิ้น ระบบบอกทันทีว่าใส่กันได้ไหม ไฟพอไหม และราคารวมเท่าไหร่ หรือใส่งบให้ระบบจัดให้',
 };
 
 // หน้าแรก (หัวข้อ 5.1): ภาพเปิดพร้อมปุ่มเริ่มจัดสเปก ช่องใส่งบด่วน สเปกยอดนิยมสัปดาห์นี้ อะไหล่มาใหม่ วิธีใช้ 3 ขั้นตอน
@@ -53,7 +53,7 @@ async function PopularBuilds() {
     );
   }
   return (
-    <ul className="grid gap-4 xl:grid-cols-3 sm:grid-cols-2">
+    <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {items.slice(0, 6).map((build) => (
         <li key={build.id} className="reveal">
           <BuildCardView build={build} />
@@ -154,7 +154,7 @@ export default function HomePage() {
               </NativeSelect>
             </label>
             <Button type="submit">
-              จัดสเปก 3 ตัวเลือก
+              ให้ระบบจัดสเปกให้
               <ArrowRight aria-hidden />
             </Button>
           </form>

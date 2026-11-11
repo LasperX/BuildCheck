@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PartImage } from '@/components/parts/part-icon';
 import { NativeSelect } from '@/components/ui/native-select';
 import { SegmentIndicator } from '@/components/ui/segment-indicator';
 import {
@@ -406,13 +407,21 @@ export function BudgetPlanner({
         {response?.ok && (
           <>
             <h2 className="mt-8 mb-1 t-h2">
-              3 ตัวเลือกจากงบ <span className="font-mono">{formatBaht(response.budget)}</span>
+              {response.options.length} ตัวเลือกจากงบ{' '}
+              <span className="font-mono">{formatBaht(response.budget)}</span>
             </h2>
             <p className="mb-4 text-sm text-muted-foreground">
               {USAGE_LABELS[response.usage]} · ทุกชุดตรวจแล้วว่าไม่มีชิ้นที่ใส่ด้วยกันไม่ได้
               {response.brandFallback && ' · ไม่พบ CPU ยี่ห้อที่เลือก จึงเลือกจากทุกยี่ห้อ'}
+              {response.options.some((option) => option.alsoKinds.length > 0) &&
+                ' · บางแบบได้ชุดเดียวกัน จึงรวมไว้ในการ์ดเดียว'}
             </p>
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div
+              className={cn(
+                'grid gap-4',
+                response.options.length >= 3 ? 'lg:grid-cols-3' : 'md:grid-cols-2',
+              )}
+            >
               {response.options.map((option) => (
                 <OptionCard
                   key={option.kind}
@@ -440,7 +449,12 @@ function OptionCard({
   budget: number;
   onOpen: () => void;
 }) {
-  const label = OPTION_LABELS[option.kind];
+  // การ์ดที่รวมหลายแบบ: "ประหยัด · คุ้มสุด" พร้อมคำอธิบายของทุกแบบ
+  const kinds = [option.kind, ...option.alsoKinds];
+  const label = {
+    title: kinds.map((kind) => OPTION_LABELS[kind].title).join(' · '),
+    hint: kinds.map((kind) => OPTION_LABELS[kind].hint).join(' และ'),
+  };
   const warnings = option.notes.filter((note) => note.level === 'warning');
   const infos = option.notes.filter((note) => note.level === 'info');
   const StatusIcon = option.status === 'ok' ? CircleCheck : TriangleAlert;
@@ -496,8 +510,15 @@ function OptionCard({
 
       <ul className="mt-4 flex flex-1 flex-col gap-2 text-sm">
         {option.items.map((item) => (
-          <li key={item.partId} className="flex items-baseline justify-between gap-2">
-            <span className="min-w-0">
+          <li key={item.partId} className="flex items-center gap-2.5">
+            <PartImage
+              src={item.imageUrl}
+              alt=""
+              category={item.categorySlug}
+              size={40}
+              className="size-10 shrink-0"
+            />
+            <span className="min-w-0 flex-1">
               <span className="block text-xs text-muted-foreground">
                 {CATEGORY_LABELS[item.categorySlug]}
               </span>

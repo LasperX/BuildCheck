@@ -255,7 +255,9 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
 
-  --breakpoint-xl: 1240px;
+  /* ใช้หน่วย rem ให้ตรงกับ breakpoint อื่นของ Tailwind (sm md lg 2xl) ถ้าใช้ px
+     Tailwind จะเรียงไว้ก่อน sm แล้วคลาส md: ทับคลาส xl: บนจอใหญ่ทั้งเว็บ (77.5rem = 1240px) */
+  --breakpoint-xl: 77.5rem;
 }
 
 @layer base {

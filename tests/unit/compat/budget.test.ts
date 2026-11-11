@@ -6,6 +6,7 @@ import {
   DEFAULT_USED_CATEGORIES,
   DEFAULT_BUDGET_RATIOS,
   generateBudgetBuilds,
+  itemsKey,
   MIN_RAM_GB,
 } from '@/lib/compat/budget';
 import type { EngineItem, EnginePart } from '@/lib/compat';
@@ -331,5 +332,20 @@ describe('ยอมใช้มือสอง', () => {
     });
     expect(plain.ok).toBe(false);
     expect(withUsed.ok).toBe(true);
+  });
+});
+
+describe('itemsKey (รวมการ์ดตัวเลือกที่ได้ชุดเดียวกัน)', () => {
+  it('ชุดเดียวกันแม้เรียงต่างกันได้ลายเซ็นเดียวกัน ส่วนต่างจำนวนหรือสภาพได้คนละลายเซ็น', () => {
+    const result = generateBudgetBuilds({ budget: 40000, usage: 'gaming', catalog: catalog() });
+    if (!result.ok) throw new Error('ควรจัดได้');
+    const items = result.options[0].items;
+    expect(itemsKey([...items].reverse())).toBe(itemsKey(items));
+    const first = items[0];
+    if (!first) throw new Error('ควรมีอะไหล่');
+    expect(itemsKey([{ ...first, quantity: first.quantity + 1 }, ...items.slice(1)])).not.toBe(
+      itemsKey(items),
+    );
+    expect(itemsKey([{ ...first, condition: 'B' }, ...items.slice(1)])).not.toBe(itemsKey(items));
   });
 });

@@ -180,6 +180,8 @@ export type UsedMarket = {
   popular: MarketPopular[];
   latest: MarketReport[];
   results: (MarketPart & { prices: UsedPriceSet })[] | null;
+  /** ราคากลางทุกรุ่น ใช้ตอนไม่ได้ค้นหา */
+  overview: (MarketPart & { prices: UsedPriceSet })[];
 };
 
 export type MarketFilters = { q?: string; category?: CategorySlug; grade?: UsedGrade };
@@ -266,13 +268,8 @@ export async function getUsedMarket(filters: MarketFilters): Promise<UsedMarket>
   }
   const popular = [...counts.values()].sort((a, b) => b.reports - a.reports).slice(0, 8);
 
-  let results: UsedMarket['results'] = null;
-  const q = filters.q?.trim();
-  if (q) {
-    const cond: (SQL | undefined)[] = [
-      eq(parts.isActive, true),
-      ilike(parts.model, `%${q.replace(/[\\%_]/g, (m) => `\\${m}`)}%`),
-    ];
+  /** รุ่นที่ตรงเงื่อนไขพร้อมราคากลางทั้ง 3 เกรด (ราคาจากรายงาน การสำรวจ หรือสูตรประมาณค่าเสื่อม) */
+  const withPrices = async (cond: (SQL | undefined)[], limit: number) => {
     if (filters.category) cond.push(eq(categories.slug, filters.category));
     const found = (
       await db
@@ -281,17 +278,30 @@ export async function getUsedMarket(filters: MarketFilters): Promise<UsedMarket>
         .innerJoin(brands, eq(brands.id, parts.brandId))
         .innerJoin(categories, eq(categories.id, parts.categoryId))
         .where(and(...cond))
-        .orderBy(parts.model)
-        .limit(20)
+        .orderBy(categories.sortOrder, parts.model)
+        .limit(limit)
     ).flatMap(asMarketPart);
     const sets = await getUsedPriceSets(found.map((part) => part.partId));
-    results = found.flatMap((part) => {
+    return found.flatMap((part) => {
       const prices = sets[part.partId];
       return prices ? [{ ...part, prices }] : [];
     });
+  };
+
+  let results: UsedMarket['results'] = null;
+  let overview: UsedMarket['overview'] = [];
+  const q = filters.q?.trim();
+  if (q) {
+    results = await withPrices(
+      [eq(parts.isActive, true), ilike(parts.model, `%${q.replace(/[\\%_]/g, (m) => `\\${m}`)}%`)],
+      20,
+    );
+  } else {
+    // ไม่ได้ค้นหา: แสดงราคากลางของทุกรุ่นในหมวด หน้าไม่ว่างแม้ยังไม่มีรายงานจากสมาชิก
+    overview = await withPrices([eq(parts.isActive, true)], 200);
   }
 
-  return { drops: drops.slice(0, 8), popular, latest: reports.slice(0, 20), results };
+  return { drops: drops.slice(0, 8), popular, latest: reports.slice(0, 20), results, overview };
 }
 
 // ---------- ฝั่งสมาชิก ----------

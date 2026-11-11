@@ -5,7 +5,13 @@ import type { z } from 'zod';
 
 import type { BudgetAlternative, BudgetResponse } from '@/lib/builder/budget-types';
 import type { BuilderPart } from '@/lib/builder/types';
-import { DEFAULT_USED_CATEGORIES, generateBudgetBuilds as runBudget } from '@/lib/compat/budget';
+import {
+  type BudgetOption,
+  type BudgetOptionKind,
+  DEFAULT_USED_CATEGORIES,
+  generateBudgetBuilds as runBudget,
+  itemsKey,
+} from '@/lib/compat/budget';
 import type { UsedGrade } from '@/lib/compat/used-price';
 import { CATEGORY_SLUGS, type CategorySlug } from '@/lib/parts/spec-fields';
 import { clientIp, hitRateLimit } from '@/lib/rate-limit';
@@ -110,8 +116,9 @@ export async function generateBudgetBuilds(
     usage,
     allocation: result.allocation,
     brandFallback: result.brandFallback,
-    options: result.options.map((option) => ({
+    options: mergeSameOptions(result.options).map(({ option, alsoKinds }) => ({
       kind: option.kind,
+      alsoKinds,
       totalNew: option.result.price.totalNew,
       saved: option.result.price.saved,
       items: option.items.map((item) => {
@@ -128,6 +135,7 @@ export async function generateBudgetBuilds(
           slug: part.slug,
           price: part.price,
           chips: part.chips,
+          imageUrl: part.imageUrl,
         };
       }),
       status: option.result.status,
@@ -140,4 +148,25 @@ export async function generateBudgetBuilds(
       notes: option.result.issues.map(({ code, level, title }) => ({ code, level, title })),
     })),
   };
+}
+
+/**
+ * ตัวเลือกที่ได้ชุดอะไหล่เดียวกัน (เช่นประหยัดกับคุ้มสุด) รวมเป็นการ์ดเดียว แสดงหลายป้ายแทน
+ * ไม่ให้ผู้ใช้เห็นการ์ดซ้ำแล้วคิดว่าระบบผิด
+ */
+function mergeSameOptions(options: BudgetOption[]) {
+  const merged: { option: BudgetOption; alsoKinds: BudgetOptionKind[] }[] = [];
+  const byKey = new Map<string, (typeof merged)[number]>();
+  for (const option of options) {
+    const key = itemsKey(option.items);
+    const existing = byKey.get(key);
+    if (existing) {
+      existing.alsoKinds.push(option.kind);
+      continue;
+    }
+    const entry = { option, alsoKinds: [] };
+    byKey.set(key, entry);
+    merged.push(entry);
+  }
+  return merged;
 }

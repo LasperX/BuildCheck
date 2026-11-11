@@ -12,6 +12,8 @@ export const OPTION_LABELS: Record<BudgetOptionKind, { title: string; hint: stri
 
 export type BudgetOptionView = {
   kind: BudgetOptionKind;
+  /** ตัวเลือกอื่นที่ได้ชุดเดียวกัน รวมไว้ในการ์ดนี้ (เช่นประหยัดที่เป็นชุดคุ้มสุดด้วย) */
+  alsoKinds: BudgetOptionKind[];
   items: {
     partId: number;
     categorySlug: CategorySlug;
@@ -24,6 +26,7 @@ export type BudgetOptionView = {
     slug: string;
     price: number;
     chips: string[];
+    imageUrl: string | null;
   }[];
   status: CompatStatus;
   total: number;

@@ -15,7 +15,14 @@ export function SiteHeader() {
         <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-bold">
           {/* โลโก้ตัว B กับเครื่องหมายถูก ชื่อเว็บอยู่ข้างๆ จึงใส่ alt ว่าง
               มือถือจอแคบเหลือแค่โลโก้ ชื่อยังอยู่ให้โปรแกรมอ่านหน้าจออ่านได้ */}
-          <Image src="/brand-mark.png" alt="" width={28} height={28} priority className="rounded-md" />
+          <Image
+            src="/brand-mark.png"
+            alt=""
+            width={28}
+            height={28}
+            priority
+            className="rounded-md"
+          />
           <span className="max-sm:sr-only">BuildCheck</span>
         </Link>
         <Suspense>
@@ -35,8 +42,9 @@ export function SiteHeader() {
 
 /** Footer ตามหัวข้อ 5.3 พร้อมลิงก์นโยบายความเป็นส่วนตัวตามหัวข้อ 9.1 */
 export function SiteFooter() {
+  // เว้นด้านล่างให้ปุ่มลอย "สเปกของฉัน" ไม่บังลิงก์ใน footer (มือถือเว้นให้แถบเมนูล่างด้วย)
   return (
-    <footer className="mt-12 border-t border-border bg-surface pb-14 lg:pb-0">
+    <footer className="mt-12 border-t border-border bg-surface pb-14 lg:pb-20">
       <div className="mx-auto flex w-full max-w-[1328px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-6 text-sm text-muted-foreground md:px-6">
         <span>BuildCheck · เครื่องมือจัดสเปกคอมภาษาไทย ไม่ขายสินค้า</span>
         <nav aria-label="ลิงก์ท้ายหน้า" className="flex flex-wrap gap-4 md:ml-auto">

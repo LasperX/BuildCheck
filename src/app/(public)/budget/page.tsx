@@ -7,7 +7,7 @@ import { getSystemConfig } from '@/server/queries/settings';
 export const metadata: Metadata = {
   title: 'จัดสเปกตามงบ · BuildCheck',
   description:
-    'ใส่งบและการใช้งาน ระบบเลือกชุดอะไหล่ที่เข้ากันได้ให้ 3 ตัวเลือก ประหยัด สมดุล คุ้มสุด',
+    'ใส่งบและการใช้งาน ระบบเลือกชุดอะไหล่ที่เข้ากันได้ให้สูงสุด 3 ตัวเลือก ประหยัด สมดุล คุ้มสุด',
 };
 
 export default async function BudgetPage() {
@@ -17,7 +17,8 @@ export default async function BudgetPage() {
     <main className="container mx-auto px-4 py-6">
       <h1 className="t-h1">จัดสเปกตามงบ</h1>
       <p className="mt-1 text-muted-foreground">
-        บอกงบและการใช้งาน ระบบจะแบ่งงบแล้วเลือกชุดที่เข้ากันได้ให้ 3 ตัวเลือก
+        บอกงบและการใช้งาน ระบบจะแบ่งงบแล้วเลือกชุดที่เข้ากันได้ให้สูงสุด 3 ตัวเลือก (ประหยัด สมดุล
+        คุ้มสุด)
       </p>
       <BudgetPlanner
         cpuBrands={facets.brands.map((brand) => brand.name)}

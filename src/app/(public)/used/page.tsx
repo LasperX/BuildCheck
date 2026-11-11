@@ -13,7 +13,7 @@ import { CHANNEL_LABELS, CONFIDENCE_LABELS, REPORT_TYPE_LABELS } from '@/lib/bui
 import { USED_GRADES } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS, CATEGORY_SLUGS } from '@/lib/parts/spec-fields';
-import { getUsedMarket, type MarketPart } from '@/server/queries/used';
+import { getUsedMarket, type MarketPart, type UsedMarket } from '@/server/queries/used';
 
 export const metadata: Metadata = {
   title: 'ตลาดมือสอง · BuildCheck',
@@ -106,51 +106,23 @@ async function MarketContent({
           {market.results.length === 0 ? (
             <p className="text-muted-foreground">ไม่พบรุ่นที่ตรงกับคำค้น</p>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-border bg-card">
-              <table className="w-full min-w-[640px] text-sm">
-                <thead>
-                  <tr className="border-b border-border text-xs text-muted-foreground">
-                    <th scope="col" className="p-3 text-left font-normal">
-                      รุ่น
-                    </th>
-                    <th scope="col" className="p-3 text-right font-normal">
-                      ราคาใหม่
-                    </th>
-                    {USED_GRADES.map((grade) => (
-                      <th key={grade} scope="col" className="p-3 text-right font-normal">
-                        มือสอง {grade}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {market.results.map((row) => (
-                    <tr key={row.partId} className="border-b border-border last:border-0">
-                      <td className="p-3">
-                        <p className="text-xs text-muted-foreground">
-                          {CATEGORY_LABELS[row.categorySlug]}
-                        </p>
-                        <PartLink part={row} />
-                      </td>
-                      <td className="p-3 text-right font-mono text-muted-foreground">
-                        {formatBaht(row.newPrice)}
-                      </td>
-                      {USED_GRADES.map((grade) => (
-                        <td key={grade} className="p-3 text-right">
-                          <span className="font-mono font-semibold">
-                            {formatBaht(row.prices[grade].median)}
-                          </span>
-                          <span className="block text-2xs text-muted-foreground">
-                            {CONFIDENCE_LABELS[row.prices[grade].confidence]}
-                          </span>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <PriceTable rows={market.results} />
           )}
+        </section>
+      )}
+
+      {!market.results && market.overview.length > 0 && (
+        <section aria-labelledby="overview-title" className="mt-6">
+          <h2 id="overview-title" className="text-lg font-semibold">
+            ราคากลางมือสอง
+            {filters.category ? `หมวด${CATEGORY_LABELS[filters.category]}` : 'ทุกรุ่น'}
+          </h2>
+          <p className="mb-3 text-xs text-muted-foreground">
+            ใช้รายงานจากสมาชิกที่อนุมัติแล้วก่อน ถ้ายังมีไม่พอใช้ราคาที่แอดมินสำรวจ
+            หรือประมาณจากค่าเสื่อมตามอายุรุ่น (บอกไว้ใต้ราคาแต่ละช่อง) · ราคาเป็นค่ากลาง
+            ไม่ใช่ราคาขาย
+          </p>
+          <PriceTable rows={market.overview} />
         </section>
       )}
 
@@ -225,7 +197,11 @@ async function MarketContent({
         {market.latest.length === 0 ? (
           <p className="text-muted-foreground">
             ยังไม่มีรายงานที่อนุมัติแล้ว
-            {filters.category || filters.grade ? 'ตามตัวกรองที่เลือก' : ''}
+            {filters.category || filters.grade ? 'ตามตัวกรองที่เลือก' : ''} · ซื้อหรือเจอของมือสองมา{' '}
+            <Link href="/used/report" className="font-medium text-link hover:underline">
+              รายงานราคาที่เจอ
+            </Link>{' '}
+            ช่วยให้ราคากลางแม่นขึ้น
           </p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-border bg-card">
@@ -306,5 +282,53 @@ export default function UsedMarketPage({ searchParams }: PageProps<'/used'>) {
         <MarketContent searchParams={searchParams} />
       </Suspense>
     </main>
+  );
+}
+
+/** ตารางราคากลางมือสองของแต่ละรุ่น ใช้ทั้งผลค้นหาและราคาทุกรุ่น */
+function PriceTable({ rows }: { rows: UsedMarket['overview'] }) {
+  return (
+    <div className="overflow-x-auto rounded-xl border border-border bg-card">
+      <table className="w-full min-w-[640px] text-sm">
+        <thead>
+          <tr className="border-b border-border text-xs text-muted-foreground">
+            <th scope="col" className="p-3 text-left font-normal">
+              รุ่น
+            </th>
+            <th scope="col" className="p-3 text-right font-normal">
+              ราคาใหม่
+            </th>
+            {USED_GRADES.map((grade) => (
+              <th key={grade} scope="col" className="p-3 text-right font-normal">
+                มือสอง {grade}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.partId} className="border-b border-border last:border-0">
+              <td className="p-3">
+                <p className="text-xs text-muted-foreground">{CATEGORY_LABELS[row.categorySlug]}</p>
+                <PartLink part={row} />
+              </td>
+              <td className="p-3 text-right font-mono text-muted-foreground">
+                {formatBaht(row.newPrice)}
+              </td>
+              {USED_GRADES.map((grade) => (
+                <td key={grade} className="p-3 text-right">
+                  <span className="font-mono font-semibold">
+                    {formatBaht(row.prices[grade].median)}
+                  </span>
+                  <span className="block text-2xs text-muted-foreground">
+                    {CONFIDENCE_LABELS[row.prices[grade].confidence]}
+                  </span>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

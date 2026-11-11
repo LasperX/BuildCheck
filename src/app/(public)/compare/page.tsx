@@ -1,4 +1,4 @@
-import { Trophy } from 'lucide-react';
+import { Columns3, Cpu, Link2, Trophy } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { AdminBadge } from '@/components/account/admin-badge';
 import { STATUS_UI } from '@/components/builder/levels';
 import { CompareControls } from '@/components/community/compare-controls';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { compareBuilds } from '@/lib/builder/compare';
 import { checkBuild } from '@/lib/compat';
@@ -72,10 +73,59 @@ async function CompareContent({
       />
 
       {inputs.length < 2 ? (
-        <p className="mt-6 text-muted-foreground">
-          เลือกอย่างน้อย 2 สเปกเพื่อเริ่มเทียบ หรือกดปุ่ม “เทียบกับสเปกอื่น” ในหน้ารายละเอียดสเปก
-          {!session && ' (เข้าสู่ระบบเพื่อเลือกจากสเปกของคุณและรายการโปรด)'}
-        </p>
+        // ยังเลือกไม่ครบ: บอกวิธีใช้เป็นขั้นตอน พร้อมทางไปหาสเปกมาเทียบ แทนหน้าว่าง
+        <section
+          aria-labelledby="compare-howto"
+          className="mt-6 rounded-xl border border-dashed border-border-strong/40 bg-card p-5"
+        >
+          <h2 id="compare-howto" className="font-semibold">
+            เลือกอย่างน้อย 2 สเปกเพื่อเริ่มเทียบ
+          </h2>
+          <ol className="mt-4 grid gap-3 md:grid-cols-3">
+            {[
+              {
+                icon: Cpu,
+                title: 'มีสเปกที่จะเทียบ',
+                text: 'จัดสเปกเองแล้วบันทึก หรือเลือกจากสเปกที่สมาชิกแชร์ไว้ในหน้าชุมชน',
+              },
+              {
+                icon: Link2,
+                title: 'ใส่ลิงก์หรือรหัสสเปก',
+                text: 'วางในช่องด้านบน หรือกด “เทียบกับสเปกอื่น” ในหน้ารายละเอียดสเปก',
+              },
+              {
+                icon: Columns3,
+                title: 'ดูความต่างข้างกัน',
+                text: 'ระบบไฮไลต์หมวดที่ต่างกัน และบอกว่าชุดไหนแรงกว่า คุ้มกว่า ใช้ไฟมากกว่า',
+              },
+            ].map((step, index) => (
+              <li key={step.title} className="flex gap-3 rounded-lg bg-surface-2 p-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-soft-fg">
+                  <step.icon aria-hidden className="size-4.5" />
+                </span>
+                <span>
+                  <span className="block text-sm font-medium">
+                    {index + 1}. {step.title}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">{step.text}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button asChild variant="secondary">
+              <Link href="/builds">ดูสเปกในชุมชน</Link>
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href="/budget">จัดสเปกตามงบ</Link>
+            </Button>
+          </div>
+          {!session && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              เข้าสู่ระบบเพื่อเลือกจากสเปกของคุณและรายการโปรดได้ทันที
+            </p>
+          )}
+        </section>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full min-w-[640px] table-fixed text-sm">

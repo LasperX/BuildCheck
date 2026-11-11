@@ -460,6 +460,13 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
 const total = (items: EngineItem[]) =>
   items.reduce((sum, item) => sum + item.part.price * item.quantity, 0);
 
+/** ลายเซ็นของชุดอะไหล่ ใช้ตรวจว่าสองตัวเลือกเป็นชุดเดียวกันหรือไม่ (ไม่สนลำดับ) */
+export const itemsKey = (items: readonly EngineItem[]) =>
+  items
+    .map((item) => `${item.part.id}x${item.quantity}:${item.condition}`)
+    .sort()
+    .join(',');
+
 const find = (items: EngineItem[], cat: CategorySlug) =>
   items.find((item) => item.part.categorySlug === cat);
 
@@ -618,10 +625,13 @@ export function generateBudgetBuilds(input: BudgetInput): BudgetResult {
     const items = buildForTarget(ctx, target, true);
     if (items) tried.push(make('value', target, items));
   }
-  const value = tried.sort(
+  const ranked = tried.sort(
     (a, b) =>
       b.result.score.value - a.result.score.value || a.result.price.total - b.result.price.total,
-  )[0];
+  );
+  // คุ้มสุดอาจเป็นชุดเดียวกับประหยัดหรือสมดุลได้ (เช่นอะไหล่ในระบบมีน้อย) ไม่บังคับให้ต่าง
+  // เพราะชุดที่ต่างออกไปจะคุ้มน้อยกว่า เรียกว่าคุ้มสุดไม่ได้ หน้าเว็บรวมการ์ดที่ซ้ำกันแทน (sameAs)
+  const value = ranked[0];
 
   return {
     ok: true,

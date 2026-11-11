@@ -60,13 +60,13 @@ async function PartContent({ params }: { params: Params }) {
         <span aria-current="page">{part.model}</span>
       </nav>
 
-      <section className="mt-3 grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)_320px] md:grid-cols-[240px_minmax(0,1fr)]">
+      <section className="mt-3 grid gap-6 md:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_320px]">
         <PartImage
           src={part.imageUrl}
           alt={`รูป ${part.model}`}
           category={part.categorySlug}
           size={320}
-          className="h-48 w-full xl:h-70 md:h-56"
+          className="h-48 w-full md:h-56 xl:h-70"
         />
         <div className="min-w-0">
           <p className="text-sm text-muted-foreground">
@@ -113,7 +113,7 @@ async function PartContent({ params }: { params: Params }) {
             ) : null}
           </div>
         </div>
-        <Card className="xl:col-span-1 md:col-span-2">
+        <Card className="self-start md:col-span-2 xl:col-span-1">
           <CardContent className="flex flex-col gap-3">
             {part.availability === 'used_only' ? (
               // รุ่นที่เลิกขายมือหนึ่งแล้ว: ราคาในระบบคือราคาตอนเปิดตัว ไม่ใช่ราคาที่ซื้อได้

@@ -25,11 +25,14 @@ export function BuildFab() {
       className="fixed right-4 bottom-[68px] z-30 inline-flex h-11 anim-slot-in items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground shadow-lg hover:bg-brand-hover lg:right-6 lg:bottom-6 lg:h-12 lg:px-5"
     >
       <Cpu aria-hidden className="size-4.5" />
-      สเปกของฉัน (
-      <span key={countKey} className={countKey > 0 ? 'inline-block anim-pop' : 'inline-block'}>
-        {count}
-      </span>{' '}
-      ชิ้น)
+      {/* รวมข้อความไว้ก้อนเดียว ไม่งั้น gap ของปุ่มจะแทรกช่องว่างใน "( 7 ชิ้น)" */}
+      <span>
+        สเปกของฉัน (
+        <span key={countKey} className={countKey > 0 ? 'inline-block anim-pop' : 'inline-block'}>
+          {count}
+        </span>{' '}
+        ชิ้น)
+      </span>
     </Link>
   );
 }
