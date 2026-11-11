@@ -1,4 +1,4 @@
-import { ArrowBigUp, MessageSquare, Zap } from 'lucide-react';
+import { ArrowBigUp, MessageSquare, Recycle, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 import { AdminBadge } from '@/components/account/admin-badge';
@@ -54,6 +54,15 @@ export function BuildCardView({
       <p className="mt-3 font-mono text-2xl font-semibold tabular-nums">
         {formatBaht(build.totalPrice)}
       </p>
+      {/* สเปกที่มีของมือสอง บอกให้เห็นตั้งแต่การ์ด คนหาสเปกมือสองจะเลือกได้ทันที */}
+      {build.usedCount > 0 && (
+        <p className="mt-1 flex items-center gap-1 text-xs font-medium text-used-fg">
+          <Recycle aria-hidden className="size-3.5" />
+          {build.usedCount >= build.itemCount
+            ? `มือสองทั้งชุด (${build.itemCount} ชิ้น)`
+            : `มือสอง ${build.usedCount} จาก ${build.itemCount} ชิ้น`}
+        </p>
+      )}
       <div className="mt-auto flex items-center gap-4 pt-3 text-sm text-muted-foreground">
         <span className="flex items-center gap-1" title="คะแนนโหวต">
           <ArrowBigUp aria-hidden className="size-4.5" />

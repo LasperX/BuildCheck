@@ -55,6 +55,8 @@ export const communityQuerySchema = z.object({
   usage: usageTypeSchema.optional().catch(undefined),
   min: z.coerce.number().int().min(0).max(10_000_000).optional().catch(undefined),
   max: z.coerce.number().int().min(0).max(10_000_000).optional().catch(undefined),
+  /** used = มีชิ้นมือสองอย่างน้อย 1 ชิ้น · new = มือหนึ่งทั้งชุด · ไม่ระบุ = ทั้งหมด */
+  condition: z.enum(['used', 'new']).optional().catch(undefined),
   page: z.coerce.number().int().min(1).max(1000).catch(1),
 });
 

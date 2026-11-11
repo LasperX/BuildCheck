@@ -1,9 +1,10 @@
-import { Flame, Megaphone, Search, TrendingDown } from 'lucide-react';
+import { Flame, Megaphone, Recycle, Search, TrendingDown } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { z } from 'zod';
 
+import { BuildCardView } from '@/components/community/build-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ import { CHANNEL_LABELS, CONFIDENCE_LABELS, REPORT_TYPE_LABELS } from '@/lib/bui
 import { USED_GRADES } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS, CATEGORY_SLUGS } from '@/lib/parts/spec-fields';
+import { listCommunityBuilds } from '@/server/queries/community';
 import { getUsedMarket, type MarketPart, type UsedMarket } from '@/server/queries/used';
 
 export const metadata: Metadata = {
@@ -57,7 +59,10 @@ async function MarketContent({
     category: one(raw.category) || undefined,
     grade: one(raw.grade) || undefined,
   });
-  const market = await getUsedMarket(filters);
+  const [market, usedBuilds] = await Promise.all([
+    getUsedMarket(filters),
+    listCommunityBuilds({ tab: 'new', condition: 'used', page: 1 }),
+  ]);
 
   return (
     <>
@@ -110,6 +115,48 @@ async function MarketContent({
           )}
         </section>
       )}
+
+      {/* สเปกที่ประกอบด้วยของมือสองที่สมาชิกแชร์ไว้ ดูเป็นตัวอย่างได้ว่างบเท่านี้ประกอบมือสองได้แค่ไหน */}
+      <section aria-labelledby="used-builds-title" className="mt-6">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 id="used-builds-title" className="flex items-center gap-1.5 text-lg font-semibold">
+              <Recycle aria-hidden className="size-5 text-used-fg" />
+              สเปกมือสองที่สมาชิกแชร์
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              สเปกสาธารณะที่มีอะไหล่มือสองอย่างน้อย 1 ชิ้น ล่าสุดก่อน
+            </p>
+          </div>
+          {usedBuilds.total > 0 && (
+            <Link
+              href="/builds?condition=used"
+              className="text-sm font-medium text-link hover:underline"
+            >
+              ดูทั้งหมด {usedBuilds.total.toLocaleString('th-TH')} สเปก
+            </Link>
+          )}
+        </div>
+        {usedBuilds.items.length === 0 ? (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-used-border bg-used-soft/40 p-4">
+            <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+              ยังไม่มีสเปกมือสองที่แชร์ไว้ ลองจัดตามงบแบบ “ยอมใช้มือสอง” แล้วแชร์เป็นสาธารณะ
+              เป็นคนแรกที่แชร์ได้เลย
+            </p>
+            <Button asChild variant="secondary">
+              <Link href="/budget">จัดสเปกมือสอง</Link>
+            </Button>
+          </div>
+        ) : (
+          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {usedBuilds.items.slice(0, 3).map((build) => (
+              <li key={build.id}>
+                <BuildCardView build={build} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {!market.results && market.overview.length > 0 && (
         <section aria-labelledby="overview-title" className="mt-6">

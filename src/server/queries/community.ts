@@ -3,7 +3,7 @@ import 'server-only';
 import { and, asc, count, desc, eq, gte, lte, type SQL, sql } from 'drizzle-orm';
 import { cacheLife, cacheTag } from 'next/cache';
 
-import { builds, buildVotes, comments, favorites, users } from '@/db/schema';
+import { buildItems, builds, buildVotes, comments, favorites, parts, users } from '@/db/schema';
 import type { UsageType } from '@/lib/compat';
 import { db } from '@/lib/db';
 import { COMMUNITY_PAGE_SIZE, type CommunityQuery } from '@/lib/validators/community';
@@ -28,9 +28,17 @@ export type BuildCard = {
   ownerUsername: string | null;
   /** ใช้แสดงป้ายติ๊กถูกของแอดมิน */
   ownerRole: 'member' | 'admin';
+  /** จำนวนชิ้นทั้งชุด และจำนวนชิ้นที่เป็นมือสอง (นับตามจำนวน เช่นแรม 2 แถว = 2) */
+  itemCount: number;
+  usedCount: number;
 };
 
 const commentCount = sql<number>`(SELECT COUNT(*)::int FROM ${comments} WHERE ${comments.buildId} = ${builds.id} AND ${comments.isHidden} = false)`;
+
+const itemCount = sql<number>`(SELECT COALESCE(SUM(${buildItems.quantity}), 0)::int FROM ${buildItems} WHERE ${buildItems.buildId} = ${builds.id})`;
+
+// มือสอง = ตั้งสภาพเป็นเกรด A/B/C หรือเป็นรุ่นที่มีแต่มือสอง (ตรงกับ effectiveCondition ฝั่งหน้าเว็บ)
+const usedCount = sql<number>`(SELECT COALESCE(SUM(${buildItems.quantity}), 0)::int FROM ${buildItems} INNER JOIN ${parts} ON ${parts.id} = ${buildItems.partId} WHERE ${buildItems.buildId} = ${builds.id} AND (${buildItems.condition} <> 'new' OR ${parts.availability} = 'used_only'))`;
 
 const cardColumns = {
   id: builds.id,
@@ -47,6 +55,8 @@ const cardColumns = {
   ownerUsername: users.username,
   ownerRole: users.role,
   commentCount,
+  itemCount,
+  usedCount,
 };
 
 /**
@@ -67,6 +77,8 @@ export async function listCommunityBuilds(
   if (query.usage) where.push(eq(builds.usageType, query.usage));
   if (query.min !== undefined) where.push(gte(builds.totalPrice, query.min));
   if (query.max !== undefined) where.push(lte(builds.totalPrice, query.max));
+  if (query.condition === 'used') where.push(sql`${usedCount} > 0`);
+  if (query.condition === 'new') where.push(sql`${usedCount} = 0`);
 
   const weekScore = sql<number>`COALESCE((SELECT SUM(${buildVotes.value})::int FROM ${buildVotes} WHERE ${buildVotes.buildId} = ${builds.id} AND ${buildVotes.createdAt} > now() - interval '7 days'), 0)`;
   const order =

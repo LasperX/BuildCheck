@@ -37,6 +37,7 @@ function hrefWith(query: CommunityQuery, patch: Partial<CommunityQuery>) {
   if (next.usage) params.set('usage', next.usage);
   if (next.min !== undefined) params.set('min', String(next.min));
   if (next.max !== undefined) params.set('max', String(next.max));
+  if (next.condition) params.set('condition', next.condition);
   if (next.page > 1) params.set('page', String(next.page));
   const text = params.toString();
   return text ? `/builds?${text}` : '/builds';
@@ -53,6 +54,7 @@ async function CommunityContent({
     usage: one(raw.usage) || undefined,
     min: one(raw.min) || undefined,
     max: one(raw.max) || undefined,
+    condition: one(raw.condition) || undefined,
     page: one(raw.page),
   });
   const { items, total } = await listCommunityBuilds(query);
@@ -78,7 +80,7 @@ async function CommunityContent({
 
       <form
         action="/builds"
-        className="mt-4 grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-[minmax(0,1fr)_140px_140px_auto] sm:items-end"
+        className="mt-4 grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_140px_140px_auto] lg:items-end"
       >
         {query.tab !== 'new' && <input type="hidden" name="tab" value={query.tab} />}
         <label className="flex flex-col gap-1.5 text-sm font-medium">
@@ -90,6 +92,14 @@ async function CommunityContent({
                 {USAGE_LABELS[usage]}
               </option>
             ))}
+          </NativeSelect>
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
+          สภาพอะไหล่
+          <NativeSelect name="condition" defaultValue={query.condition ?? ''}>
+            <option value="">ทั้งหมด</option>
+            <option value="used">มีอะไหล่มือสอง</option>
+            <option value="new">มือหนึ่งทั้งชุด</option>
           </NativeSelect>
         </label>
         <label className="flex flex-col gap-1.5 text-sm font-medium">
@@ -113,16 +123,22 @@ async function CommunityContent({
       {items.length === 0 ? (
         <div className="mt-4 rounded-xl border border-dashed border-border p-8 text-center">
           <Users aria-hidden className="mx-auto size-8 text-muted-foreground" />
-          <p className="mt-2 font-medium">ยังไม่มีสเปกสาธารณะที่ตรงกับตัวกรอง</p>
+          <p className="mt-2 font-medium">
+            {query.condition === 'used'
+              ? 'ยังไม่มีสเปกมือสองที่แชร์ไว้'
+              : 'ยังไม่มีสเปกสาธารณะที่ตรงกับตัวกรอง'}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            จัดสเปกของคุณแล้วเปลี่ยนเป็น “สาธารณะ” เพื่อแชร์ในหน้านี้
+            {query.condition === 'used'
+              ? 'จัดสเปกแล้วกด “มือสอง A/B/C” ที่ช่องอะไหล่ หรือเปลี่ยนทั้งชุดเป็นมือสอง จากนั้นแชร์เป็น “สาธารณะ”'
+              : 'จัดสเปกของคุณแล้วเปลี่ยนเป็น “สาธารณะ” เพื่อแชร์ในหน้านี้'}
           </p>
           <Button asChild className="mt-4">
             <Link href="/builder">เริ่มจัดสเปก</Link>
           </Button>
         </div>
       ) : (
-        <ul className="mt-4 grid gap-4 xl:grid-cols-3 sm:grid-cols-2">
+        <ul className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((build) => (
             <li key={build.id}>
               <BuildCardView build={build} />
@@ -176,7 +192,7 @@ export default function CommunityPage({ searchParams }: PageProps<'/builds'>) {
       </p>
       <Suspense
         fallback={
-          <div className="mt-5 grid gap-4 xl:grid-cols-3 sm:grid-cols-2">
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }, (_, i) => (
               <Skeleton key={i} className="h-48" />
             ))}

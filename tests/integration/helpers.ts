@@ -68,7 +68,13 @@ export async function cleanupAccounts() {
 /** อะไหล่ที่ขายอยู่ 1 ชิ้นต่อหมวด (จากอะไหล่ตัวอย่าง) */
 export async function partsByCategory() {
   const rows = await db
-    .select({ id: parts.id, price: parts.price, slug: categories.slug, model: parts.model })
+    .select({
+      id: parts.id,
+      price: parts.price,
+      slug: categories.slug,
+      model: parts.model,
+      availability: parts.availability,
+    })
     .from(parts)
     .innerJoin(categories, eq(categories.id, parts.categoryId))
     .where(eq(parts.isActive, true));
