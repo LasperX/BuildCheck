@@ -13,6 +13,7 @@ import { z } from 'zod';
 import * as schema from '@/db/schema';
 import { db } from '@/lib/db';
 import { sendResetPasswordEmail, sendVerificationEmail } from '@/lib/email';
+import { isEmailVerificationRequired } from '@/lib/email-verification';
 import { clientIp, hitRateLimit, peekRateLimit, resetRateLimit } from '@/lib/rate-limit';
 import { emailSchema, registerServerSchema } from '@/lib/validators/auth';
 
@@ -62,7 +63,8 @@ export const auth = betterAuth({
     },
   },
   emailVerification: {
-    sendOnSignUp: true,
+    // ส่งลิงก์ยืนยันตอนสมัครเฉพาะเมื่อส่งอีเมลได้จริง (ดู lib/email-verification)
+    sendOnSignUp: isEmailVerificationRequired(),
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
       await sendVerificationEmail({ to: user.email, url });

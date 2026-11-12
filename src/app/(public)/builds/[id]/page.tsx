@@ -27,6 +27,7 @@ import { checkBuild, unitPrice } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
 import { CATEGORY_LABELS } from '@/lib/parts/spec-fields';
 import { getSession } from '@/lib/session';
+import { canUseCommunity } from '@/lib/email-verification';
 import { cn } from '@/lib/utils';
 import { buildIdSchema } from '@/lib/validators/builds';
 import { canViewBuild, getBuildWithItems } from '@/server/queries/builds';
@@ -234,7 +235,7 @@ async function BuildContent({ params }: { params: Params }) {
             buildId={build.id}
             ownerId={build.userId}
             comments={social.comments}
-            viewer={viewer ? { id: viewer.id, verified: viewer.emailVerified } : null}
+            viewer={viewer ? { id: viewer.id, verified: canUseCommunity(viewer) } : null}
           />
         )}
       </div>

@@ -7,6 +7,7 @@ import { NotificationPrefs } from '@/components/notifications/notification-prefs
 import { Skeleton } from '@/components/ui/skeleton';
 import { accounts, users } from '@/db/schema';
 import { db } from '@/lib/db';
+import { isEmailVerificationRequired } from '@/lib/email-verification';
 import { requireUser } from '@/lib/session';
 
 export const metadata: Metadata = { title: 'ตั้งค่าบัญชี · BuildCheck' };
@@ -40,6 +41,7 @@ async function SettingsContent() {
       <SettingsPanels
         user={{ ...profile, bio: profile.bio ?? '', username: profile.username ?? '' }}
         hasPassword={logins.some((login) => login.providerId === 'credential')}
+        verificationRequired={isEmailVerificationRequired()}
       />
       <NotificationPrefs muted={muted} />
     </div>

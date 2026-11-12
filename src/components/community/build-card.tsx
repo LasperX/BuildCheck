@@ -22,7 +22,9 @@ export function BuildCardView({
   const status = STATUS_UI[build.compatStatus];
   const StatusIcon = status.icon;
   return (
-    <article className="flex h-full lift flex-col rounded-xl border border-border bg-card p-4 hover:border-border-strong hover:shadow-md">
+    // กดตรงไหนของการ์ดก็เปิดสเปกได้: ลิงก์ชื่อสเปกขยายคลุมทั้งการ์ด (after:inset-0)
+    // ส่วนลิงก์เจ้าของและปุ่มด้านล่างยกขึ้นมาด้วย relative z-10 จึงยังกดแยกได้
+    <article className="relative flex h-full lift flex-col rounded-xl border border-border bg-card p-4 hover:border-border-strong hover:shadow-md">
       <div className="flex items-start justify-between gap-2">
         <Badge variant="brand">{USAGE_LABELS[build.usageType]}</Badge>
         <span
@@ -34,7 +36,10 @@ export function BuildCardView({
         </span>
       </div>
       <h3 className="mt-2 line-clamp-2 text-lg font-semibold break-words">
-        <Link href={`/builds/${build.id}`} className="hover:underline">
+        <Link
+          href={`/builds/${build.id}`}
+          className="after:absolute after:inset-0 after:rounded-xl hover:underline focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-ring"
+        >
           {build.title}
         </Link>
       </h3>
@@ -42,7 +47,7 @@ export function BuildCardView({
         <p className="text-xs text-muted-foreground">
           โดย{' '}
           {build.ownerUsername ? (
-            <Link href={`/u/${build.ownerUsername}`} className="hover:underline">
+            <Link href={`/u/${build.ownerUsername}`} className="relative z-10 hover:underline">
               {build.ownerName}
             </Link>
           ) : (
@@ -86,7 +91,7 @@ export function BuildCardView({
           </span>
         )}
       </div>
-      {footer}
+      {footer ? <div className="relative z-10">{footer}</div> : null}
     </article>
   );
 }

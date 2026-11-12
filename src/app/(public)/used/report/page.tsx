@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { UsedReportForm } from '@/components/used/report-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { requireUser } from '@/lib/session';
+import { canUseCommunity } from '@/lib/email-verification';
 import { getEngineParts } from '@/server/queries/engine-parts';
 import { todayInThailand } from '@/server/used/stats';
 
@@ -26,7 +27,7 @@ async function ReportContent({
   const partId = Number(Array.isArray(raw) ? raw[0] : raw);
   const [part] = Number.isInteger(partId) && partId > 0 ? await getEngineParts([partId]) : [];
 
-  if (!user.emailVerified) {
+  if (!canUseCommunity(user)) {
     return (
       <div className="mt-5 flex max-w-2xl items-start gap-3 rounded-xl border border-warn-border bg-warn-soft p-4">
         <MailWarning aria-hidden className="mt-0.5 size-5 shrink-0 text-warn-fg" />

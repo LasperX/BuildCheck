@@ -49,17 +49,24 @@ type SettingsUser = {
 export function SettingsPanels({
   user,
   hasPassword,
+  verificationRequired,
 }: {
   user: SettingsUser;
   hasPassword: boolean;
+  /** เว็บจริงที่ยังไม่ได้ตั้งระบบส่งอีเมล ไม่บังคับยืนยันอีเมล (lib/email-verification) */
+  verificationRequired: boolean;
 }) {
   return (
     <div className="flex flex-col gap-4">
       <Suspense>
-        <WelcomeNotice />
+        <WelcomeNotice verificationRequired={verificationRequired} />
       </Suspense>
       {user.role === 'admin' ? <AdminStatusPanel /> : null}
-      <EmailPanel email={user.email} verified={user.emailVerified} />
+      <EmailPanel
+        email={user.email}
+        verified={user.emailVerified}
+        verificationRequired={verificationRequired}
+      />
       <ProfilePanel user={user} />
       {hasPassword ? <PasswordPanel /> : null}
       <SessionsPanel />
@@ -68,7 +75,7 @@ export function SettingsPanels({
   );
 }
 
-function WelcomeNotice() {
+function WelcomeNotice({ verificationRequired }: { verificationRequired: boolean }) {
   const params = useSearchParams();
   if (params.get('verified')) {
     return (
@@ -80,14 +87,24 @@ function WelcomeNotice() {
   if (params.get('welcome')) {
     return (
       <FormAlert variant="info" icon={<Info />}>
-        สมัครสมาชิกเรียบร้อย เราส่งลิงก์ยืนยันไปที่อีเมลของคุณแล้ว
+        {verificationRequired
+          ? 'สมัครสมาชิกเรียบร้อย เราส่งลิงก์ยืนยันไปที่อีเมลของคุณแล้ว'
+          : 'สมัครสมาชิกเรียบร้อย ใช้งานได้ทุกฟีเจอร์แล้ว ทั้งบันทึก แชร์ โหวต และคอมเมนต์'}
       </FormAlert>
     );
   }
   return null;
 }
 
-function EmailPanel({ email, verified }: { email: string; verified: boolean }) {
+function EmailPanel({
+  email,
+  verified,
+  verificationRequired,
+}: {
+  email: string;
+  verified: boolean;
+  verificationRequired: boolean;
+}) {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [pending, setPending] = useState(false);
 
@@ -116,6 +133,10 @@ function EmailPanel({ email, verified }: { email: string; verified: boolean }) {
         {verified ? (
           <FormAlert variant="ok" icon={<CircleCheck />}>
             ยืนยันอีเมลแล้ว
+          </FormAlert>
+        ) : !verificationRequired ? (
+          <FormAlert variant="info" icon={<Info />}>
+            ตอนนี้ไม่ต้องยืนยันอีเมล ใช้ฟีเจอร์ชุมชนได้ทุกอย่าง ทั้งโหวต คอมเมนต์ Fork และรายงานราคา
           </FormAlert>
         ) : (
           <>

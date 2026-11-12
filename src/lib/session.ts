@@ -6,6 +6,7 @@ import { connection } from 'next/server';
 import { cache } from 'react';
 
 import { auth } from '@/lib/auth';
+import { canUseCommunity } from '@/lib/email-verification';
 
 // จุดเดียวที่อ่าน Session ฝั่งเซิร์ฟเวอร์ (Data Access Layer)
 // หน้าเว็บและ Server Action ทุกตัวตรวจสิทธิ์ผ่านไฟล์นี้ ไม่เชื่อค่าที่ส่งมาจากหน้าเว็บ
@@ -48,7 +49,7 @@ export async function authorizeMember() {
 export async function authorizeVerifiedMember() {
   const result = await authorizeMember();
   if (!result.ok) return result;
-  if (!result.user.emailVerified) {
+  if (!canUseCommunity(result.user)) {
     return { ok: false as const, error: 'กรุณายืนยันอีเมลก่อนใช้งานฟีเจอร์ชุมชน' };
   }
   return result;
