@@ -163,7 +163,8 @@ export function BudgetPlanner({
     defaultValues: {
       usage: 'gaming',
       cpuBrand: '',
-      allowUsed: false,
+      // เว็บนี้เน้นประกอบมือสอง จึงยอมใช้มือสองเป็นค่าเริ่มต้น (ติ๊กออกได้)
+      allowUsed: true,
       usedCategories: [...DEFAULT_USED_CATEGORIES],
       usedGrade: 'B',
     },
@@ -192,6 +193,10 @@ export function BudgetPlanner({
     setValue('budget', quick.replace(/\D/g, ''));
     const usage = params.get('usage');
     if (usage && usage in USAGE_LABELS) setValue('usage', usage as UsageType);
+    // ช่องติ๊ก "ยอมใช้มือสอง" ในหน้าแรกส่ง used=0 เสมอ และ used=1 ต่อท้ายเมื่อติ๊ก จึงใช้ค่าสุดท้าย
+    // ไม่มีค่า used (ลิงก์เก่า) ใช้ค่าเริ่มต้นของฟอร์ม
+    const used = params.getAll('used').at(-1);
+    if (used === '0' || used === '1') setValue('allowUsed', used === '1');
     void handleSubmit(onSubmit)();
     // ทำครั้งเดียวตอนเปิดหน้า
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -249,7 +254,7 @@ export function BudgetPlanner({
         onSubmit={handleSubmit(onSubmit)}
         className="mt-5 rounded-xl border border-border bg-card p-4 sm:p-5"
       >
-        <div className="grid gap-4 xl:grid-cols-[180px_minmax(0,1fr)_200px_auto] xl:items-end sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[180px_minmax(0,1fr)_200px_auto] xl:items-end">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="budget">งบประมาณ (บาท)</Label>
             <Input
@@ -269,7 +274,7 @@ export function BudgetPlanner({
               }}
             />
           </div>
-          <fieldset className="flex min-w-0 flex-col gap-1.5 xl:col-span-1 sm:col-span-2">
+          <fieldset className="flex min-w-0 flex-col gap-1.5 sm:col-span-2 xl:col-span-1">
             <legend className="mb-1.5 text-sm font-medium">ประเภทการใช้งาน</legend>
             <Controller
               control={control}

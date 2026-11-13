@@ -1,6 +1,7 @@
 'use client';
 
-import { AlertTriangle, CheckCircle2, ClipboardList, Info, Scale } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ClipboardList, Info, Megaphone, Scale } from 'lucide-react';
+import Link from 'next/link';
 import { useId, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -211,6 +212,16 @@ export function UsedControls({
           </span>
         </p>
       )}
+      {/* ราคาที่เจอจริงช่วยให้ราคากลางแม่นขึ้น เปิดฟอร์มรายงานที่ใส่รุ่น ราคา และเกรดไว้ให้แล้ว */}
+      {part && item.offeredPrice ? (
+        <Link
+          href={`/used/report?part=${part.id}&price=${item.offeredPrice}&grade=${grade}`}
+          className="inline-flex items-center gap-1.5 self-start text-xs font-medium text-link hover:underline"
+        >
+          <Megaphone aria-hidden className="size-3.5" />
+          รายงานราคานี้ให้ตลาดมือสอง (ช่วยให้ราคากลางแม่นขึ้น)
+        </Link>
+      ) : null}
       {part && (
         <details className="text-sm">
           <summary className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-used-fg">

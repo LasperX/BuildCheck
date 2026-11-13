@@ -2,6 +2,7 @@ import { MailWarning } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { z } from 'zod';
 
 import { UsedReportForm } from '@/components/used/report-form';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,8 +24,11 @@ async function ReportContent({
   searchParams: PageProps<'/used/report'>['searchParams'];
 }) {
   const user = await requireUser();
-  const raw = (await searchParams).part;
-  const partId = Number(Array.isArray(raw) ? raw[0] : raw);
+  const params = await searchParams;
+  const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+  const partId = Number(one(params.part));
+  // ค่าที่ส่งมาจากหน้าจัดสเปกเป็นแค่ค่าตั้งต้นในฟอร์ม ผู้ใช้แก้ได้ และเซิร์ฟเวอร์ตรวจซ้ำตอนส่งรายงาน
+  const prefill = prefillSchema.parse({ price: one(params.price), grade: one(params.grade) });
   const [part] = Number.isInteger(partId) && partId > 0 ? await getEngineParts([partId]) : [];
 
   if (!canUseCommunity(user)) {
@@ -44,6 +48,8 @@ async function ReportContent({
   return (
     <UsedReportForm
       today={todayInThailand()}
+      initialPrice={prefill.price}
+      initialGrade={prefill.grade}
       initialPart={
         part?.isActive
           ? {
@@ -58,6 +64,11 @@ async function ReportContent({
     />
   );
 }
+
+const prefillSchema = z.object({
+  price: z.coerce.number().int().min(1).max(1_000_000).nullable().catch(null).default(null),
+  grade: z.enum(['A', 'B', 'C']).catch('B').default('B'),
+});
 
 export default function UsedReportPage({ searchParams }: PageProps<'/used/report'>) {
   return (

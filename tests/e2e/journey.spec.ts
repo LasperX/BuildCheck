@@ -22,6 +22,8 @@ test('สมัคร จัดสเปก แก้ปัญหา แชร�
   // 1. จัดสเปกครบชุดจากหน้าจัดตามงบ แล้วนำไปแก้ต่อ
   await page.goto('/budget');
   await page.getByLabel('งบประมาณ (บาท)').fill('30000');
+  // ยอมใช้มือสองเป็นค่าเริ่มต้น ปิดไว้ให้ชุดที่ได้เหมือนเดิมทุกครั้ง (ขั้นต่อไปอิงชุดอะไหล่มือหนึ่ง)
+  await page.getByRole('checkbox', { name: /ยอมใช้มือสอง/ }).uncheck();
   await page.getByRole('button', { name: 'จัดให้เลย' }).click();
   await expect(page.getByRole('heading', { name: /[23] ตัวเลือกจากงบ/ })).toBeVisible({
     timeout: 20_000,

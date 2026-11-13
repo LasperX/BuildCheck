@@ -61,11 +61,20 @@ export function BuildCardView({
       </p>
       {/* สเปกที่มีของมือสอง บอกให้เห็นตั้งแต่การ์ด คนหาสเปกมือสองจะเลือกได้ทันที */}
       {build.usedCount > 0 && (
-        <p className="mt-1 flex items-center gap-1 text-xs font-medium text-used-fg">
+        <p className="mt-1 flex flex-wrap items-center gap-x-1 text-xs font-medium text-used-fg">
           <Recycle aria-hidden className="size-3.5" />
           {build.usedCount >= build.itemCount
             ? `มือสองทั้งชุด (${build.itemCount} ชิ้น)`
             : `มือสอง ${build.usedCount} จาก ${build.itemCount} ชิ้น`}
+          {/* ยอดที่ประหยัดได้เทียบซื้อใหม่ทั้งชุด (คิดตอนบันทึกสเปก) */}
+          {build.totalNewPrice > build.totalPrice && (
+            <span className="text-ok-fg">
+              · ประหยัดกว่าซื้อใหม่{' '}
+              <span className="font-mono">
+                {formatBaht(build.totalNewPrice - build.totalPrice)}
+              </span>
+            </span>
+          )}
         </p>
       )}
       <div className="mt-auto flex items-center gap-4 pt-3 text-sm text-muted-foreground">

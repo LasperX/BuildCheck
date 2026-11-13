@@ -1,4 +1,12 @@
-import { ArrowRight, ClipboardCheck, Cpu, MousePointerClick, Share2, Wallet } from 'lucide-react';
+import {
+  ArrowRight,
+  ClipboardCheck,
+  Cpu,
+  MousePointerClick,
+  Recycle,
+  Share2,
+  Wallet,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -60,6 +68,38 @@ async function PopularBuilds() {
         </li>
       ))}
     </ul>
+  );
+}
+
+/** สเปกมือสองที่สมาชิกแชร์ล่าสุด ถ้ายังไม่มีบอกวิธีแชร์ */
+async function UsedBuilds() {
+  const { items, total } = await listCommunityBuilds({ tab: 'new', condition: 'used', page: 1 });
+  if (items.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        ยังไม่มีสเปกมือสองที่แชร์ไว้ จัดสเปกแล้วกด “มือสอง A/B/C” ที่ช่องอะไหล่ แล้วแชร์เป็นสาธารณะ
+        สเปกของคุณจะขึ้นตรงนี้
+      </p>
+    );
+  }
+  return (
+    <>
+      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {items.slice(0, 3).map((build) => (
+          <li key={build.id}>
+            <BuildCardView build={build} />
+          </li>
+        ))}
+      </ul>
+      {total > 3 && (
+        <Link
+          href="/builds?condition=used"
+          className="mt-3 inline-block text-sm font-medium text-link hover:underline"
+        >
+          ดูสเปกมือสองทั้งหมด {total.toLocaleString('th-TH')} สเปก
+        </Link>
+      )}
+    </>
   );
 }
 
@@ -153,6 +193,26 @@ export default function HomePage() {
                 ))}
               </NativeSelect>
             </label>
+            {/* ส่ง used=0 เสมอ ถ้าติ๊กจะมี used=1 ต่อท้าย หน้าจัดตามงบใช้ค่าสุดท้าย */}
+            <input type="hidden" name="used" value="0" />
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="used"
+                value="1"
+                defaultChecked
+                className="mt-0.5 size-4 shrink-0 accent-[var(--used)]"
+              />
+              <span>
+                <span className="flex items-center gap-1 font-medium">
+                  <Recycle aria-hidden className="size-4 text-used-fg" />
+                  ยอมใช้มือสอง
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  ได้สเปกแรงขึ้นในงบเท่าเดิม (ทุกหมวดยกเว้น PSU)
+                </span>
+              </span>
+            </label>
             <Button type="submit">
               ให้ระบบจัดสเปกให้
               <ArrowRight aria-hidden />
@@ -178,6 +238,36 @@ export default function HomePage() {
               </li>
             ))}
           </ol>
+        </section>
+
+        {/* จุดเด่นของเว็บ: ประกอบคอมด้วยของมือสอง วางก่อนสเปกยอดนิยม */}
+        <section
+          aria-labelledby="used-title"
+          className="rounded-2xl border border-used-border bg-used-soft/40 p-5 md:p-6"
+        >
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 id="used-title" className="flex items-center gap-2 t-h2">
+                <Recycle aria-hidden className="size-6 text-used-fg" />
+                ประกอบคอมมือสอง ให้คุ้มกว่าและไม่พลาด
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                ดูราคากลางมือสองทุกรุ่น เช็กว่าราคาที่เจอถูกหรือแพง พร้อมเช็กลิสต์ก่อนซื้อ
+                และจัดสเปกที่ผสมมือหนึ่งกับมือสองได้ในงบเดียว
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild>
+                <Link href="/budget">จัดสเปกมือสองตามงบ</Link>
+              </Button>
+              <Button asChild variant="secondary">
+                <Link href="/used">ดูราคากลางมือสอง</Link>
+              </Button>
+            </div>
+          </div>
+          <Suspense fallback={<Skeleton className="h-40" />}>
+            <UsedBuilds />
+          </Suspense>
         </section>
 
         <section aria-labelledby="popular-title">

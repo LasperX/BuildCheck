@@ -22,9 +22,14 @@ import { type PickedPart, PartSearchField } from './part-search-field';
 export function UsedReportForm({
   initialPart,
   today,
+  initialPrice = null,
+  initialGrade = 'B',
 }: {
   initialPart: PickedPart | null;
   today: string;
+  /** มาจากปุ่ม "รายงานราคานี้" ในหน้าจัดสเปก: ใส่ราคาที่เจอจริงและเกรดไว้ให้ */
+  initialPrice?: number | null;
+  initialGrade?: 'A' | 'B' | 'C';
 }) {
   const [part, setPart] = useState<PickedPart | null>(initialPart);
   const [error, setError] = useState<string | null>(null);
@@ -88,11 +93,18 @@ export function UsedReportForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="price">ราคา (บาท)</Label>
-          <Input id="price" name="price" inputMode="numeric" className="font-mono" required />
+          <Input
+            id="price"
+            name="price"
+            inputMode="numeric"
+            className="font-mono"
+            defaultValue={initialPrice ?? undefined}
+            required
+          />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="grade">เกรดสภาพ</Label>
-          <NativeSelect id="grade" name="grade" defaultValue="B">
+          <NativeSelect id="grade" name="grade" defaultValue={initialGrade}>
             {USED_GRADES.map((grade) => (
               <option key={grade} value={grade}>
                 เกรด {grade} · {GRADE_LABELS[grade].detail}

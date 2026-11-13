@@ -15,6 +15,8 @@ export type BuildCard = {
   title: string;
   usageType: UsageType;
   totalPrice: number;
+  /** ราคาถ้าซื้อใหม่ทั้งชุด ใช้คำนวณยอดที่ประหยัดได้จากการใช้มือสอง */
+  totalNewPrice: number;
   totalWatt: number;
   perfScore: number;
   compatStatus: 'ok' | 'warning' | 'error';
@@ -45,6 +47,7 @@ const cardColumns = {
   title: builds.title,
   usageType: builds.usageType,
   totalPrice: builds.totalPrice,
+  totalNewPrice: builds.totalNewPrice,
   totalWatt: builds.totalWatt,
   perfScore: builds.perfScore,
   compatStatus: builds.compatStatus,
