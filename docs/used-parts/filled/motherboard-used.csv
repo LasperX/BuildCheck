@@ -1,0 +1,51 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,availability,socket,chipset,form_factor,memory_type,memory_slots,max_memory_gb,max_memory_speed,m2_slots,sata_ports,supported_generations,bios_update_generations,wifi
+ASUS,PRIME B760M-A WIFI (DDR5),3790,,,,https://www.asus.com/motherboards-components/motherboards/prime/prime-b760m-a-wifi/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,B760,mATX,DDR5,4,192,7200,2,4,Core 12th Gen|Core 13th Gen|Core 14th Gen,,true
+MSI,PRO B760M-A WIFI DDR4,4020,,,,https://www.msi.com/Motherboard/PRO-B760M-A-WIFI-DDR4/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,B760,mATX,DDR4,4,128,5333,2,4,Core 12th Gen|Core 13th Gen|Core 14th Gen,,true
+Gigabyte,B760M DS3H DDR4,2890,,,,https://www.gigabyte.com/Motherboard/B760M-DS3H-DDR4-rev-1x,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,B760,mATX,DDR4,4,128,3200,2,4,Core 12th Gen|Core 13th Gen|Core 14th Gen,,false
+MSI,PRO B650M-A WIFI,5190,,,,https://www.msi.com/Motherboard/PRO-B650M-A-WIFI/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,AM5,B650,mATX,DDR5,4,256,7200,2,4,Ryzen 7000|Ryzen 8000|Ryzen 9000,,true
+ASUS,TUF GAMING B650-PLUS WIFI,6890,,,,https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-b650-plus-wifi/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,AM5,B650,ATX,DDR5,4,256,7600,3,4,Ryzen 7000|Ryzen 8000|Ryzen 9000,,true
+ASUS,PRIME A320M-K,1490,,,,https://www.asus.com/motherboards-components/motherboards/prime/prime-a320m-k/techspec/,ตรวจแล้ว,มีแต่มือสอง,AM4,A320,mATX,DDR4,2,64,3200,1,4,Ryzen 1000|Ryzen 2000|Ryzen 3000,Ryzen 4000|Ryzen 5000,false
+Gigabyte,A320M-S2H,1450,,,,https://www.gigabyte.com/Motherboard/GA-A320M-S2H-rev-1x,ตรวจแล้ว,มีแต่มือสอง,AM4,A320,mATX,DDR4,2,64,3200,1,4,Ryzen 1000|Ryzen 2000|Ryzen 3000,Ryzen 4000|Ryzen 5000,false
+MSI,B450M MORTAR MAX,2590,,,,https://www.msi.com/Motherboard/B450M-MORTAR-MAX/Specification,ตรวจแล้ว,มีแต่มือสอง,AM4,B450,mATX,DDR4,4,128,4133,2,4,Ryzen 1000|Ryzen 2000|Ryzen 3000,Ryzen 4000|Ryzen 5000,false
+MSI,B450M PRO-VDH MAX,2190,,,,https://www.msi.com/Motherboard/B450M-PRO-VDH-MAX/Specification,ตรวจแล้ว,มีแต่มือสอง,AM4,B450,mATX,DDR4,4,128,3866,1,4,Ryzen 1000|Ryzen 2000|Ryzen 3000,Ryzen 4000|Ryzen 5000,false
+MSI,B450 TOMAHAWK MAX,2890,,,,https://www.msi.com/Motherboard/B450-TOMAHAWK-MAX/Specification,ตรวจแล้ว,มีแต่มือสอง,AM4,B450,ATX,DDR4,4,128,4133,1,6,Ryzen 1000|Ryzen 2000|Ryzen 3000,Ryzen 4000|Ryzen 5000,false
+ASUS,TUF B450M-PLUS GAMING,2490,,,,https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-b450m-plus-gaming/techspec/,ตรวจแล้ว,มีแต่มือสอง,AM4,B450,mATX,DDR4,4,128,4400,1,6,Ryzen 1000|Ryzen 2000|Ryzen 3000,Ryzen 4000|Ryzen 5000,false
+Gigabyte,B450M DS3H,1990,,,,https://www.gigabyte.com/Motherboard/B450M-DS3H-rev-1x,ตรวจแล้ว,มีแต่มือสอง,AM4,B450,mATX,DDR4,4,128,3600,1,4,Ryzen 1000|Ryzen 2000|Ryzen 3000,Ryzen 4000|Ryzen 5000,false
+ASUS,PRIME A520M-K,1620,,,,https://www.asus.com/motherboards-components/motherboards/prime/prime-a520m-k/techspec/,ตรวจแล้ว,มีแต่มือสอง,AM4,A520,mATX,DDR4,2,64,4600,1,4,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+MSI,A520M-A PRO,1630,,,,https://www.msi.com/Motherboard/A520M-A-PRO/Specification,ตรวจแล้ว,มีแต่มือสอง,AM4,A520,mATX,DDR4,2,64,4600,1,4,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+Gigabyte,A520M S2H,1690,,,,https://www.gigabyte.com/Motherboard/A520M-S2H-rev-1x,ตรวจแล้ว,มีแต่มือสอง,AM4,A520,mATX,DDR4,2,64,5100,1,4,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+MSI,B550M PRO-VDH WIFI,3400,,,,https://www.msi.com/Motherboard/B550M-PRO-VDH-WIFI/Specification,ตรวจแล้ว,มีแต่มือสอง,AM4,B550,mATX,DDR4,4,128,4400,2,4,Ryzen 3000|Ryzen 4000|Ryzen 5000,,true
+MSI,MAG B550M MORTAR,4590,,,,https://www.msi.com/Motherboard/MAG-B550M-MORTAR/Specification,ตรวจแล้ว,มีแต่มือสอง,AM4,B550,mATX,DDR4,4,128,4400,2,6,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+MSI,MAG B550 TOMAHAWK,4990,,,,https://www.msi.com/Motherboard/MAG-B550-TOMAHAWK/Specification,ตรวจแล้ว,มีแต่มือสอง,AM4,B550,ATX,DDR4,4,128,5100,2,6,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+ASUS,TUF GAMING B550M-PLUS,3990,,,,https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-b550m-plus/techspec/,ตรวจแล้ว,มีแต่มือสอง,AM4,B550,mATX,DDR4,4,128,4866,2,4,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+ASUS,ROG STRIX B550-F GAMING,5490,,,,https://rog.asus.com/motherboards/rog-strix/rog-strix-b550-f-gaming-model/spec/,ตรวจแล้ว,มีแต่มือสอง,AM4,B550,ATX,DDR4,4,128,4600,2,6,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+Gigabyte,B550M DS3H,2990,,,,https://www.gigabyte.com/Motherboard/B550M-DS3H-rev-1x,ตรวจแล้ว,มีแต่มือสอง,AM4,B550,mATX,DDR4,4,128,4733,2,4,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+Gigabyte,B550 AORUS ELITE V2,4490,,,,https://www.gigabyte.com/Motherboard/B550-AORUS-ELITE-V2-rev-10,ตรวจแล้ว,มีแต่มือสอง,AM4,B550,ATX,DDR4,4,128,4733,2,4,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+ASRock,B550M Pro4,3290,,,,https://www.asrock.com/mb/AMD/B550M%20Pro4/index.asp#Specification,ตรวจแล้ว,มีแต่มือสอง,AM4,B550,mATX,DDR4,4,128,4733,2,6,Ryzen 3000|Ryzen 4000|Ryzen 5000,,false
+MSI,MPG X570 GAMING PLUS,4890,,,,https://www.msi.com/Motherboard/MPG-X570-GAMING-PLUS/Specification,ตรวจแล้ว,มีแต่มือสอง,AM4,X570,ATX,DDR4,4,128,4400,2,6,Ryzen 2000|Ryzen 3000|Ryzen 4000,Ryzen 5000,false
+ASUS,TUF GAMING X570-PLUS,5690,,,,https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-x570-plus/techspec/,ตรวจแล้ว,มีแต่มือสอง,AM4,X570,ATX,DDR4,4,128,4400,2,8,Ryzen 2000|Ryzen 3000|Ryzen 4000,Ryzen 5000,false
+Gigabyte,X570 AORUS ELITE,5590,,,,https://www.gigabyte.com/Motherboard/X570-AORUS-ELITE-rev-10,ตรวจแล้ว,มีแต่มือสอง,AM4,X570,ATX,DDR4,4,128,4000,2,6,Ryzen 2000|Ryzen 3000|Ryzen 4000,Ryzen 5000,false
+Gigabyte,H310M S2,1390,,,,https://www.gigabyte.com/Motherboard/H310M-S2-rev-10,ตรวจแล้ว,มีแต่มือสอง,LGA1151,H310,mATX,DDR4,2,32,2666,0,4,Core 9th Gen,,false
+ASUS,PRIME B360M-A,1890,,,,https://www.asus.com/motherboards-components/motherboards/prime/prime-b360m-a/techspec/,ตรวจแล้ว,มีแต่มือสอง,LGA1151,B360,mATX,DDR4,4,64,2666,2,6,Core 9th Gen,,false
+MSI,B365M PRO-VDH,1990,,,,https://www.msi.com/Motherboard/B365M-PRO-VDH/Specification,ตรวจแล้ว,มีแต่มือสอง,LGA1151,B365,mATX,DDR4,4,64,2666,1,6,Core 9th Gen,,false
+MSI,Z390-A PRO,2990,,,,https://www.msi.com/Motherboard/Z390-A-PRO/Specification,ตรวจแล้ว,มีแต่มือสอง,LGA1151,Z390,ATX,DDR4,4,128,4400,1,6,Core 9th Gen,,false
+Gigabyte,Z390 AORUS PRO,3890,,,,https://www.gigabyte.com/Motherboard/Z390-AORUS-PRO-rev-10,ตรวจแล้ว,มีแต่มือสอง,LGA1151,Z390,ATX,DDR4,4,128,4266,2,6,Core 9th Gen,,false
+Gigabyte,H410M H,1690,,,,https://www.gigabyte.com/Motherboard/H410M-H-rev-1x,ตรวจแล้ว,มีแต่มือสอง,LGA1200,H410,mATX,DDR4,2,64,2933,1,4,Core 10th Gen,,false
+ASUS,PRIME H510M-E,1890,,,,https://www.asus.com/motherboards-components/motherboards/prime/prime-h510m-e/techspec/,ตรวจแล้ว,มีแต่มือสอง,LGA1200,H510,mATX,DDR4,2,64,3200,1,4,Core 10th Gen|Core 11th Gen,,false
+MSI,H510M-A PRO,1890,,,,https://www.msi.com/Motherboard/H510M-A-PRO/Specification,ตรวจแล้ว,มีแต่มือสอง,LGA1200,H510,mATX,DDR4,2,64,3200,1,4,Core 10th Gen|Core 11th Gen,,false
+MSI,MAG B460M MORTAR,2590,,,,https://www.msi.com/Motherboard/MAG-B460M-MORTAR/Specification,ตรวจแล้ว,มีแต่มือสอง,LGA1200,B460,mATX,DDR4,4,128,2933,2,6,Core 10th Gen,,false
+MSI,MAG B560M BAZOOKA,3290,,,,https://www.msi.com/Motherboard/MAG-B560M-BAZOOKA/Specification,ตรวจแล้ว,มีแต่มือสอง,LGA1200,B560,mATX,DDR4,4,128,5066,2,6,Core 10th Gen|Core 11th Gen,,false
+ASUS,TUF GAMING B560M-PLUS WIFI,3890,,,,https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-b560m-plus-wifi/techspec/,ตรวจแล้ว,มีแต่มือสอง,LGA1200,B560,mATX,DDR4,4,128,5000,2,6,Core 10th Gen|Core 11th Gen,,true
+Gigabyte,B560M DS3H,2490,,,,https://www.gigabyte.com/Motherboard/B560M-DS3H-rev-10,ตรวจแล้ว,มีแต่มือสอง,LGA1200,B560,mATX,DDR4,4,128,5333,2,6,Core 10th Gen|Core 11th Gen,,false
+MSI,MAG Z590 TOMAHAWK WIFI,4990,,,,https://www.msi.com/Motherboard/MAG-Z590-TOMAHAWK-WIFI/Specification,ตรวจแล้ว,มีแต่มือสอง,LGA1200,Z590,ATX,DDR4,4,128,5333,3,6,Core 10th Gen|Core 11th Gen,,true
+ASUS,PRIME H610M-E D4,2530,,,,https://www.asus.com/motherboards-components/motherboards/prime/prime-h610m-e-d4/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,H610,mATX,DDR4,2,64,3200,2,4,Core 12th Gen,Core 13th Gen|Core 14th Gen,false
+Gigabyte,H610M S2H DDR4,2390,,,,https://www.gigabyte.com/Motherboard/H610M-S2H-DDR4-rev-10,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,H610,mATX,DDR4,2,64,3200,1,4,Core 12th Gen,Core 13th Gen|Core 14th Gen,false
+MSI,PRO H610M-E DDR4,2190,,,,https://www.msi.com/Motherboard/PRO-H610M-E-DDR4/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,H610,mATX,DDR4,2,64,3200,1,4,Core 12th Gen,Core 13th Gen|Core 14th Gen,false
+MSI,PRO B660M-A DDR4,3890,,,,https://www.msi.com/Motherboard/PRO-B660M-A-DDR4/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,B660,mATX,DDR4,4,128,4800,2,4,Core 12th Gen,Core 13th Gen|Core 14th Gen,false
+Gigabyte,B660M DS3H DDR4,3290,,,,https://www.gigabyte.com/Motherboard/B660M-DS3H-DDR4-rev-10,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,B660,mATX,DDR4,4,128,5333,2,4,Core 12th Gen,Core 13th Gen|Core 14th Gen,false
+ASUS,TUF GAMING B660M-PLUS WIFI D4,4890,,,,https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-b660m-plus-wifi-d4/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,B660,mATX,DDR4,4,128,5333,2,4,Core 12th Gen,Core 13th Gen|Core 14th Gen,true
+MSI,PRO Z690-A DDR4,5990,,,,https://www.msi.com/Motherboard/PRO-Z690-A-DDR4/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,Z690,ATX,DDR4,4,128,5200,4,6,Core 12th Gen,Core 13th Gen|Core 14th Gen,false
+MSI,PRO Z790-P WIFI,7440,,,,https://www.msi.com/Motherboard/PRO-Z790-P-WIFI/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,Z790,ATX,DDR5,4,192,7000,4,6,Core 12th Gen|Core 13th Gen|Core 14th Gen,,true
+ASUS,TUF GAMING Z790-PLUS WIFI,11900,,,,https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-z790-plus-wifi/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1700,Z790,ATX,DDR5,4,192,7200,4,4,Core 12th Gen|Core 13th Gen|Core 14th Gen,,true
+MSI,PRO B860M-A WIFI,4650,,,,https://www.msi.com/Motherboard/PRO-B860M-A-WIFI/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1851,B860,mATX,DDR5,4,256,8600,3,4,Core Ultra 200S,,true
+Gigabyte,Z890 AORUS ELITE WIFI7,8490,,,,https://www.gigabyte.com/Motherboard/Z890-AORUS-ELITE-WIFI7,ตรวจแล้ว,มีขายมือหนึ่ง,LGA1851,Z890,ATX,DDR5,4,256,9200,4,4,Core Ultra 200S,,true
