@@ -1,0 +1,100 @@
+import { describe, expect, it } from 'vitest';
+
+import { surveyForGrade } from '@/lib/compat/used-price';
+import { parseSurveyCsv, surveyMatchKey } from '@/lib/used/survey-csv';
+
+const HEAD = 'brand,model,grade,min_price,max_price,surveyed_at,source_note';
+const TODAY = '2026-11-14';
+
+describe('parseSurveyCsv', () => {
+  it('อ่านแถวที่ถูกต้อง และรับ BOM กับเกรดตัวพิมพ์เล็ก', () => {
+    const result = parseSurveyCsv(
+      `﻿${HEAD}\nMSI,GeForce GTX 1050 Ti GAMING X 4G,b,1500,1700,2026-11-10,กลุ่มซื้อขาย\n`,
+      TODAY,
+    );
+    expect(result).toEqual({
+      ok: true,
+      errors: [],
+      rows: [
+        {
+          row: 2,
+          brand: 'MSI',
+          model: 'GeForce GTX 1050 Ti GAMING X 4G',
+          grade: 'B',
+          minPrice: 1500,
+          maxPrice: 1700,
+          surveyedAt: '2026-11-10',
+          sourceNote: 'กลุ่มซื้อขาย',
+        },
+      ],
+    });
+  });
+
+  it('บอกแถวที่ผิดพร้อมเหตุผล', () => {
+    const result = parseSurveyCsv(
+      [
+        HEAD,
+        'MSI,A,B,2000,1500,2026-11-10,',
+        'MSI,B,D,100,200,2026-11-10,',
+        'MSI,C,A,100,200,2026-12-01,',
+        'MSI,D,A,abc,200,2026-11-10,',
+        'MSI,E,A,100,200,10/11/2026,',
+      ].join('\n'),
+      TODAY,
+    );
+    if (!result.ok) throw new Error(result.error);
+    expect(result.rows).toEqual([]);
+    expect(result.errors).toEqual([
+      { row: 2, message: 'ราคาต่ำสุดต้องไม่เกินราคาสูงสุด' },
+      { row: 3, message: 'เกรดต้องเป็น A, B หรือ C' },
+      { row: 4, message: 'วันที่สำรวจต้องไม่เป็นวันในอนาคต' },
+      { row: 5, message: 'ราคาต้องเป็นตัวเลข' },
+      { row: 6, message: 'วันที่สำรวจต้องเป็นรูปแบบ YYYY-MM-DD' },
+    ]);
+  });
+
+  it('ไม่รับไฟล์ที่ขาดคอลัมน์หรือไม่มีข้อมูล', () => {
+    expect(parseSurveyCsv('brand,model\nMSI,A\n', TODAY)).toEqual({
+      ok: false,
+      error: 'ไฟล์ไม่มีคอลัมน์: grade, min_price, max_price, surveyed_at',
+    });
+    expect(parseSurveyCsv(`${HEAD}\n`, TODAY)).toEqual({ ok: false, error: 'ไฟล์ไม่มีข้อมูล' });
+  });
+
+  it('กุญแจจับคู่ไม่สนตัวพิมพ์และช่องว่างซ้ำ', () => {
+    expect(surveyMatchKey(' MSI ', 'GeForce  GTX 1050 Ti')).toBe(
+      surveyMatchKey('msi', 'geforce gtx 1050 ti'),
+    );
+  });
+});
+
+describe('surveyForGrade', () => {
+  const b = { minPrice: 1400, maxPrice: 1600, surveyedAt: '2026-11-10' };
+
+  it('ใช้ราคาสำรวจของเกรดนั้นเองก่อน', () => {
+    const a = { minPrice: 2000, maxPrice: 2200, surveyedAt: '2026-11-01' };
+    expect(surveyForGrade({ A: a, B: b }, 'A', TODAY)).toBe(a);
+  });
+
+  it('เกรดที่ไม่ได้สำรวจ เทียบจากเกรด B ด้วยตัวคูณเกรด (A 1.00, B 0.90, C 0.75)', () => {
+    // 1,400 × 1.00 ÷ 0.90 = 1,555.6 → 1,550 · 1,600 × 1.00 ÷ 0.90 = 1,777.8 → 1,800
+    expect(surveyForGrade({ B: b }, 'A', TODAY)).toEqual({
+      minPrice: 1550,
+      maxPrice: 1800,
+      surveyedAt: '2026-11-10',
+    });
+    // 1,400 × 0.75 ÷ 0.90 = 1,166.7 → 1,150 · 1,600 × 0.75 ÷ 0.90 = 1,333.3 → 1,350
+    expect(surveyForGrade({ B: b }, 'C', TODAY)).toEqual({
+      minPrice: 1150,
+      maxPrice: 1350,
+      surveyedAt: '2026-11-10',
+    });
+  });
+
+  it('ราคาสำรวจเก่าเกิน 90 วันไม่ใช้ และไม่มีราคาสำรวจเลยคืน null', () => {
+    const old = { minPrice: 1400, maxPrice: 1600, surveyedAt: '2026-08-01' };
+    expect(surveyForGrade({ B: old }, 'A', TODAY)).toBeNull();
+    expect(surveyForGrade({ B: old }, 'B', TODAY)).toBeNull();
+    expect(surveyForGrade({}, 'B', TODAY)).toBeNull();
+  });
+});

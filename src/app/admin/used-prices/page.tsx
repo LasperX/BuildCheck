@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import {
   RecomputeButton,
   ReviewButtons,
+  SurveyCsvImport,
   SurveyForm,
   UsedSettingsForm,
 } from '@/components/admin/used-admin';
@@ -208,6 +209,10 @@ async function UsedAdminContent() {
             ใช้เป็นราคากลางเมื่อรายงานของรุ่นและเกรดนั้นยังไม่ถึง 3 รายการ และสำรวจไว้ไม่เกิน 90 วัน
           </p>
           <SurveyForm today={today} />
+          <h3 className="mt-6 mb-2 border-t border-border pt-4 text-sm font-semibold">
+            นำเข้าหลายรุ่นพร้อมกันจากไฟล์ CSV
+          </h3>
+          <SurveyCsvImport />
         </section>
 
         <section

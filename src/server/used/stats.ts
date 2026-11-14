@@ -12,6 +12,7 @@ import {
 } from '@/db/schema';
 import {
   resolveUsedStat,
+  surveyForGrade,
   USED_GRADES,
   type UsedGrade,
   type UsedReport,
@@ -115,7 +116,17 @@ export async function recomputeUsedStats(
         part: { price: part.price, categorySlug: category, releaseYear: part.releaseYear },
         grade,
         reports: reports.get(key(part.id, grade)) ?? [],
-        survey: surveys.get(key(part.id, grade)) ?? null,
+        // เกรดที่ไม่ได้สำรวจ เทียบจากเกรดที่สำรวจไว้ของรุ่นเดียวกัน
+        survey: surveyForGrade(
+          {
+            A: surveys.get(key(part.id, 'A')),
+            B: surveys.get(key(part.id, 'B')),
+            C: surveys.get(key(part.id, 'C')),
+          },
+          grade,
+          today,
+          settings,
+        ),
         today,
         settings,
       });

@@ -14,6 +14,7 @@ import { GRADE_LABELS } from '@/lib/builder/used-types';
 import { USED_GRADES, type UsedGrade, type UsedSettings } from '@/lib/compat';
 import { CATEGORY_LABELS, CATEGORY_SLUGS } from '@/lib/parts/spec-fields';
 import {
+  importUsedSurveys,
   recomputeAllUsedStats,
   reviewUsedReport,
   saveUsedSettings,
@@ -33,6 +34,61 @@ function Feedback({ message }: { message: Message }) {
     >
       {message.text}
     </FormAlert>
+  );
+}
+
+/** นำเข้าราคาสำรวจทีละหลายรุ่นจากไฟล์ CSV */
+export function SurveyCsvImport() {
+  const router = useRouter();
+  const [message, setMessage] = useState<Message>(null);
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <form
+      noValidate
+      className="flex flex-col gap-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formElement = event.currentTarget;
+        const file = new FormData(formElement).get('file');
+        if (!(file instanceof File) || file.size === 0) {
+          setMessage({ ok: false, text: 'กรุณาเลือกไฟล์ CSV' });
+          return;
+        }
+        startTransition(async () => {
+          const result = await importUsedSurveys({ csv: await file.text() });
+          setMessage(
+            result.ok
+              ? {
+                  ok: true,
+                  text: `นำเข้าราคาสำรวจ ${result.imported ?? 0} แถวแล้ว ระบบคำนวณราคากลางใหม่ให้แล้ว`,
+                }
+              : { ok: false, text: result.error },
+          );
+          if (result.ok) {
+            formElement.reset();
+            router.refresh();
+          }
+        });
+      }}
+    >
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="survey-csv">ไฟล์ CSV ราคาสำรวจ</Label>
+        <Input id="survey-csv" name="file" type="file" accept=".csv,text/csv" />
+        <p className="text-xs text-muted-foreground">
+          คอลัมน์:{' '}
+          <span className="font-mono">
+            brand, model, grade, min_price, max_price, surveyed_at, source_note
+          </span>{' '}
+          · วันที่รูปแบบ YYYY-MM-DD · ต้องถูกทุกแถวจึงบันทึก · เกรดที่ไม่ได้สำรวจ
+          ระบบเทียบจากเกรดที่สำรวจไว้ด้วยตัวคูณเกรด
+        </p>
+      </div>
+      <Feedback message={message} />
+      <Button type="submit" disabled={pending} className="self-start">
+        {pending ? 'กำลังนำเข้า...' : 'นำเข้าราคาสำรวจ'}
+      </Button>
+    </form>
   );
 }
 
@@ -113,7 +169,7 @@ export function SurveyForm({ today }: { today: string }) {
       }}
     >
       <PartSearchField value={part} onChange={setPart} />
-      <div className="grid gap-3 xl:grid-cols-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="survey-grade">เกรด</Label>
           <NativeSelect

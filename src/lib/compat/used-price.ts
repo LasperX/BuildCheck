@@ -216,6 +216,41 @@ export function estimateUsedPrice(
   return roundTo50(newPrice * rate ** years * factor);
 }
 
+const isFreshSurvey = (survey: UsedSurvey, today: string) => {
+  const age = daysBetween(survey.surveyedAt, today);
+  return age >= 0 && age <= SURVEY_MAX_AGE_DAYS;
+};
+
+/**
+ * ราคาสำรวจที่ใช้กับเกรดหนึ่ง
+ * - เกรดนั้นมีราคาสำรวจที่ยังไม่เก่า → ใช้ตามนั้น
+ * - ไม่มี แต่เกรดอื่นของรุ่นเดียวกันมี → เทียบจากเกรดนั้นด้วยตัวคูณเกรด
+ *     P_เกรดนี้ = P_เกรดที่สำรวจ × k_เกรดนี้ ÷ k_เกรดที่สำรวจ   (ปัดหลัก 50)
+ *   เช่นสำรวจเกรด B ได้ 1,400 บาท (k = 0.90) เกรด A (k = 1.00) = 1,400 × 1.00 ÷ 0.90 ≈ 1,550 บาท
+ *   ถ้าไม่ทำแบบนี้ เกรดที่ไม่ได้สำรวจจะตกไปใช้สูตรค่าเสื่อม ซึ่งรุ่นเก่ามากได้ราคาต่ำกว่าเกรดที่แย่กว่า
+ * เลือกเกรดต้นทางตามลำดับ B → A → C (B คือสภาพทั่วไป สำรวจบ่อยที่สุด)
+ */
+export function surveyForGrade(
+  surveys: Partial<Record<UsedGrade, UsedSurvey>>,
+  grade: UsedGrade,
+  today: string,
+  settings: UsedSettings = DEFAULT_USED_SETTINGS,
+): UsedSurvey | null {
+  const own = surveys[grade];
+  if (own && isFreshSurvey(own, today)) return own;
+  for (const from of ['B', 'A', 'C'] as const) {
+    const base = surveys[from];
+    if (from === grade || !base || !isFreshSurvey(base, today)) continue;
+    const ratio = settings.gradeFactors[grade] / settings.gradeFactors[from];
+    return {
+      minPrice: roundTo50(base.minPrice * ratio),
+      maxPrice: roundTo50(base.maxPrice * ratio),
+      surveyedAt: base.surveyedAt,
+    };
+  }
+  return null;
+}
+
 export type UsedPriceInput = {
   part: { price: number; categorySlug: CategorySlug; releaseYear: number | null };
   grade: UsedGrade;

@@ -1,10 +1,11 @@
 'use server';
 
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { updateTag } from 'next/cache';
 
 import {
   adminLogs,
+  brands,
   partUsedPrices,
   parts,
   priceAlerts,
@@ -21,6 +22,7 @@ import {
   authorizeVerifiedMember,
 } from '@/lib/session';
 import { uploadImage } from '@/lib/storage';
+import { parseSurveyCsv, surveyMatchKey } from '@/lib/used/survey-csv';
 import {
   priceAlertSchema,
   reviewSchema,
@@ -31,6 +33,7 @@ import {
 import { SETTING_KEYS, getSystemConfig } from '@/server/queries/settings';
 import { recomputeUsedStats, todayInThailand } from '@/server/used/stats';
 import { headers } from 'next/headers';
+import { z } from 'zod';
 
 // Server Actions ส่วนมือสอง ทุกฟังก์ชันตรวจสิทธิ์ก่อน แล้วตรวจข้อมูลด้วย Zod
 
@@ -188,6 +191,69 @@ export async function saveUsedSurvey(raw: unknown): Promise<ActionResult> {
   });
   await refreshStats([input.partId]);
   return { ok: true };
+}
+
+const surveyCsvSchema = z.object({
+  csv: z.string().min(1, { error: 'ไฟล์ว่าง' }).max(500_000, { error: 'ไฟล์ใหญ่เกินไป' }),
+});
+
+/**
+ * แอดมินนำเข้าราคาสำรวจทีละหลายรุ่นจาก CSV (brand, model, grade, min_price, max_price, surveyed_at, source_note)
+ * ทั้งไฟล์ต้องถูกทุกแถวและจับคู่รุ่นได้ครบ จึงบันทึก ไม่บันทึกครึ่งเดียว
+ */
+export async function importUsedSurveys(
+  raw: unknown,
+): Promise<ActionResult & { imported?: number }> {
+  const auth = await authorizeAdmin();
+  if (!auth.ok) return auth;
+  const input = surveyCsvSchema.safeParse(raw);
+  if (!input.success) return { ok: false, error: firstError(input.error.issues) };
+
+  const parsed = parseSurveyCsv(input.data.csv, todayInThailand());
+  if (!parsed.ok) return parsed;
+  const describe = (errors: { row: number; message: string }[]) =>
+    errors
+      .slice(0, 5)
+      .map((error) => `แถว ${error.row}: ${error.message}`)
+      .join(' · ') + (errors.length > 5 ? ` และอีก ${errors.length - 5} แถว` : '');
+  if (parsed.errors.length > 0) return { ok: false, error: describe(parsed.errors) };
+
+  // จับคู่ยี่ห้อ + ชื่อรุ่นกับอะไหล่ในระบบ (ไม่สนตัวพิมพ์เล็กใหญ่)
+  const models = [...new Set(parsed.rows.map((row) => row.model.trim().toLowerCase()))];
+  const partRows = await db
+    .select({ id: parts.id, model: parts.model, brand: brands.name })
+    .from(parts)
+    .innerJoin(brands, eq(parts.brandId, brands.id))
+    .where(inArray(sql`lower(${parts.model})`, models));
+  const idByKey = new Map(
+    partRows.map((part) => [surveyMatchKey(part.brand, part.model), part.id]),
+  );
+  const unmatched = parsed.rows
+    .filter((row) => !idByKey.has(surveyMatchKey(row.brand, row.model)))
+    .map((row) => ({ row: row.row, message: `ไม่พบ ${row.brand} ${row.model} ในระบบ` }));
+  if (unmatched.length > 0) return { ok: false, error: describe(unmatched) };
+
+  const values = parsed.rows.map((row) => ({
+    partId: idByKey.get(surveyMatchKey(row.brand, row.model)) as number,
+    grade: row.grade,
+    minPrice: row.minPrice,
+    maxPrice: row.maxPrice,
+    surveyedAt: row.surveyedAt,
+    sourceNote: row.sourceNote || null,
+    updatedBy: auth.user.id,
+  }));
+  await db.transaction(async (tx) => {
+    await tx.insert(partUsedPrices).values(values);
+    await tx.insert(adminLogs).values({
+      adminId: auth.user.id,
+      action: 'used_survey.import',
+      targetType: 'part',
+      targetId: 'csv',
+      changes: { after: { rows: values.length } },
+    });
+  });
+  await refreshStats([...new Set(values.map((value) => value.partId))]);
+  return { ok: true, imported: values.length };
 }
 
 /** ค่าเสื่อมต่อหมวด ตัวคูณเกรด และ Socket ที่เลิกผลิต แก้แล้วคำนวณราคากลางใหม่ทั้งหมด */
