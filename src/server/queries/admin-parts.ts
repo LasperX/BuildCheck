@@ -1,6 +1,18 @@
 import 'server-only';
 
-import { and, asc, count, desc, eq, ilike, or, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  isNotNull,
+  isNull,
+  or,
+  type SQL,
+  sql,
+} from 'drizzle-orm';
 
 import { brands, categories, partPriceHistory, parts } from '@/db/schema';
 import { db } from '@/lib/db';
@@ -25,11 +37,25 @@ const STATUS_CONDITION: Record<AdminPartStatus, SQL> = {
   unverified: eq(parts.specVerified, false),
 };
 
+/** กรองตามรูป: missing = ยังไม่มีรูป, has = มีรูปแล้ว */
+export const ADMIN_IMAGE_FILTERS = ['missing', 'has'] as const;
+export type AdminImageFilter = (typeof ADMIN_IMAGE_FILTERS)[number];
+export const isAdminImageFilter = (value: unknown): value is AdminImageFilter =>
+  typeof value === 'string' && (ADMIN_IMAGE_FILTERS as readonly string[]).includes(value);
+
+// รูปว่าง ('') นับเป็นไม่มีรูปด้วย เผื่อข้อมูลเก่าที่บันทึกช่องว่างไว้
+const NO_IMAGE = or(isNull(parts.imageUrl), eq(parts.imageUrl, ''));
+const IMAGE_CONDITION: Record<AdminImageFilter, SQL | undefined> = {
+  missing: NO_IMAGE,
+  has: and(isNotNull(parts.imageUrl), sql`${parts.imageUrl} <> ''`),
+};
+
 export async function listAdminParts(filters: {
   q?: string | undefined;
   category?: string | undefined;
   brandId?: number | undefined;
   status?: string | undefined;
+  image?: string | undefined;
   page: number;
 }) {
   const conditions: (SQL | undefined)[] = [];
@@ -41,6 +67,7 @@ export async function listAdminParts(filters: {
   if (isCategorySlug(filters.category)) conditions.push(eq(categories.slug, filters.category));
   if (filters.brandId) conditions.push(eq(parts.brandId, filters.brandId));
   if (isAdminPartStatus(filters.status)) conditions.push(STATUS_CONDITION[filters.status]);
+  if (isAdminImageFilter(filters.image)) conditions.push(IMAGE_CONDITION[filters.image]);
   const where = and(...conditions);
 
   const [rows, total] = await Promise.all([
@@ -50,6 +77,7 @@ export async function listAdminParts(filters: {
         model: parts.model,
         slug: parts.slug,
         price: parts.price,
+        imageUrl: parts.imageUrl,
         isActive: parts.isActive,
         availability: parts.availability,
         specVerified: parts.specVerified,
@@ -79,8 +107,8 @@ export async function listAdminParts(filters: {
  * ตัวเลขบนแท็บหมวดและปุ่มยี่ห้อ: จำนวนอะไหล่ต่อหมวด และต่อยี่ห้อในหมวดที่เลือก
  * แสดงเฉพาะยี่ห้อที่มีอะไหล่ในหมวดนั้นจริง ไม่ต้องไล่ดูยี่ห้อที่ไม่เกี่ยว
  */
-export async function getAdminPartFacets(category: string | undefined) {
-  const [byCategory, byBrand] = await Promise.all([
+export async function getAdminPartFacets(category: string | undefined, brandId?: number) {
+  const [byCategory, byBrand, missing] = await Promise.all([
     db
       .select({ slug: categories.slug, value: count() })
       .from(parts)
@@ -96,9 +124,21 @@ export async function getAdminPartFacets(category: string | undefined) {
           .groupBy(brands.id, brands.name)
           .orderBy(asc(brands.name))
       : Promise.resolve([]),
+    // จำนวนที่ยังไม่มีรูป ในหมวดและยี่ห้อที่เลือกอยู่ (ไม่สนตัวกรองสถานะและคำค้น)
+    db
+      .select({ value: count() })
+      .from(parts)
+      .innerJoin(categories, eq(parts.categoryId, categories.id))
+      .where(
+        and(
+          NO_IMAGE,
+          isCategorySlug(category) ? eq(categories.slug, category) : undefined,
+          brandId ? eq(parts.brandId, brandId) : undefined,
+        ),
+      ),
   ]);
   const categoryCounts = Object.fromEntries(byCategory.map((row) => [row.slug, row.value]));
-  return { categoryCounts, brands: byBrand };
+  return { categoryCounts, brands: byBrand, missingImages: missing[0]?.value ?? 0 };
 }
 
 export function listBrands() {

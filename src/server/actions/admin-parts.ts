@@ -364,3 +364,42 @@ export async function createBrand(input: unknown): Promise<ActionResult & { name
   revalidateParts();
   return { ok: true, name };
 }
+
+const partIdSchema = z.coerce.number().int().positive({ error: 'ไม่พบอะไหล่' });
+
+/**
+ * อัปโหลดรูปแล้วตั้งเป็นรูปของอะไหล่ชิ้นนั้นทันที (ใช้จากตารางในหน้าจัดการอะไหล่)
+ * ต่างจาก uploadPartImage ที่แค่อัปโหลดแล้วคืน URL ให้ฟอร์มแก้ไขเก็บไว้ก่อนกดบันทึก
+ */
+export async function setPartImage(
+  formData: FormData,
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  const authz = await authorizeAdmin();
+  if (!authz.ok) return authz;
+  const id = partIdSchema.safeParse(formData.get('id'));
+  if (!id.success) return { ok: false, error: 'ไม่พบอะไหล่' };
+  const file = formData.get('file');
+  if (!(file instanceof File)) return { ok: false, error: 'ไม่พบไฟล์รูป' };
+
+  const [part] = await db
+    .select({ imageUrl: parts.imageUrl })
+    .from(parts)
+    .where(eq(parts.id, id.data));
+  if (!part) return { ok: false, error: 'ไม่พบอะไหล่' };
+
+  const uploaded = await uploadImage(file, 'parts');
+  if (!uploaded.ok) return uploaded;
+
+  await db.transaction(async (tx) => {
+    await tx.update(parts).set({ imageUrl: uploaded.url }).where(eq(parts.id, id.data));
+    await tx.insert(adminLogs).values({
+      adminId: authz.user.id,
+      action: 'part.image',
+      targetType: 'part',
+      targetId: String(id.data),
+      changes: { before: { imageUrl: part.imageUrl }, after: { imageUrl: uploaded.url } },
+    });
+  });
+  revalidateParts();
+  return { ok: true, url: uploaded.url };
+}

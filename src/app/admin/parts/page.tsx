@@ -1,8 +1,9 @@
-import { CircleCheck, ClipboardCheck, Clock, FileUp, Plus, Search } from 'lucide-react';
+import { CircleCheck, ClipboardCheck, Clock, FileUp, ImageOff, Plus, Search } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
+import { PartImageCell } from '@/components/admin/part-image-cell';
 import { PartRowActions } from '@/components/admin/part-row-actions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import {
   ADMIN_PART_STATUSES,
   type AdminPartStatus,
   getAdminPartFacets,
+  isAdminImageFilter,
   isAdminPartStatus,
   listAdminParts,
 } from '@/server/queries/admin-parts';
@@ -55,10 +57,12 @@ async function PartsContent({
   const brandId = category ? Number(one(params.brand)) || undefined : undefined;
   const rawStatus = one(params.status);
   const status = isAdminPartStatus(rawStatus) ? rawStatus : undefined;
+  const rawImage = one(params.image);
+  const image = isAdminImageFilter(rawImage) ? rawImage : undefined;
   const page = Math.max(1, Number(one(params.page)) || 1);
   const [{ rows, total }, facets] = await Promise.all([
-    listAdminParts({ q, category, brandId, status, page }),
-    getAdminPartFacets(category),
+    listAdminParts({ q, category, brandId, status, image, page }),
+    getAdminPartFacets(category, brandId),
   ]);
   const pages = Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
   const allCount = Object.values(facets.categoryCounts).reduce((sum, n) => sum + n, 0);
@@ -71,6 +75,7 @@ async function PartsContent({
       category,
       brand: brandId,
       status,
+      image,
       page: undefined,
       ...patch,
     };
@@ -155,10 +160,22 @@ async function PartsContent({
           ))}
         </nav>
 
+        {/* กรองชิ้นที่ยังไม่มีรูป ใช้ร่วมกับหมวด ยี่ห้อ และสถานะได้ กดซ้ำเพื่อเอาออก */}
+        <Link
+          href={hrefWith({ image: image === 'missing' ? undefined : 'missing' })}
+          aria-current={image === 'missing' ? 'page' : undefined}
+          className={CHIP}
+        >
+          <ImageOff aria-hidden className="size-4" />
+          ไม่มีรูป
+          <span className="text-xs opacity-70">{facets.missingImages}</span>
+        </Link>
+
         <form className="flex min-w-64 flex-1 gap-2" role="search">
           {category ? <input type="hidden" name="category" value={category} /> : null}
           {brandId ? <input type="hidden" name="brand" value={brandId} /> : null}
           {status ? <input type="hidden" name="status" value={status} /> : null}
+          {image ? <input type="hidden" name="image" value={image} /> : null}
           <div className="relative flex-1">
             <Search
               aria-hidden
@@ -185,12 +202,14 @@ async function PartsContent({
         ทั้งหมด {total.toLocaleString('en-US')} รายการ
       </p>
 
-      <div className="mt-2 overflow-hidden rounded-lg border border-border bg-surface">
+      <div className="mt-2 overflow-x-auto rounded-lg border border-border bg-surface">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-14">
+                <span className="sr-only">รูป</span>
+              </TableHead>
               <TableHead>รุ่น</TableHead>
-              <TableHead>หมวด</TableHead>
               <TableHead>ข้อมูลสเปก</TableHead>
               <TableHead>ราคา (บาท)</TableHead>
               <TableHead className="text-right">จัดการ</TableHead>
@@ -200,23 +219,34 @@ async function PartsContent({
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                  ยังไม่มีอะไหล่ที่ตรงเงื่อนไข
+                  {image === 'missing'
+                    ? 'ทุกชิ้นในตัวกรองนี้มีรูปครบแล้ว'
+                    : 'ยังไม่มีอะไหล่ที่ตรงเงื่อนไข'}
                 </TableCell>
               </TableRow>
             ) : (
               rows.map((row) => (
                 <TableRow key={row.id} className={row.isActive ? undefined : 'opacity-60'}>
+                  {isCategorySlug(row.categorySlug) ? (
+                    <PartImageCell
+                      id={row.id}
+                      model={row.model}
+                      imageUrl={row.imageUrl}
+                      category={row.categorySlug}
+                    />
+                  ) : (
+                    <TableCell />
+                  )}
                   <TableCell>
                     <Link href={`/admin/parts/${row.id}`} className="font-medium hover:underline">
                       {row.model}
                     </Link>
                     <div className="text-xs text-muted-foreground">
-                      {row.brandName}
+                      {row.brandName} · {row.categoryName}
                       {row.isActive ? '' : ' · ซ่อนอยู่'}
                       {row.availability === 'used_only' ? ' · มีแต่มือสอง' : ''}
                     </div>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">{row.categoryName}</TableCell>
                   <TableCell>
                     {row.specVerified ? (
                       <Badge variant="ok">
