@@ -1,0 +1,30 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,availability,type,interface,capacity_gb,read_mbps,write_mbps
+Lexar,NS100 256GB (LNS100-256RBAP),1470,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,256,,
+ADATA,Ultimate SU650 256GB (ASU650SS-256GT-R),1470,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,256,,
+Kingston,A400 240GB (SA400S37/240G),2710,,,,https://www.kingston.com/datasheets/SA400S37_en.pdf,ตรวจแล้ว,มีขายมือหนึ่ง,SATA_SSD,SATA,240,500,350
+Kingston,KC600 256GB (SKC600/256G),3340,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,256,,
+Lexar,NS100 512GB (LNS100-512RBAP),2220,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,512,,
+ADATA,Ultimate SU650 512GB (ASU650SS-512GT-R),2260,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,512,,
+Kingston,A400 480GB (SA400S37/480G),4230,,,,https://www.kingston.com/datasheets/SA400S37_en.pdf,ตรวจแล้ว,มีขายมือหนึ่ง,SATA_SSD,SATA,480,500,450
+Samsung,870 EVO 500GB (MZ-77E500BW),6590,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,500,,
+ADATA,Ultimate SU650 1TB (ASU650SS-1TT-R),4720,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,1000,,
+Samsung,870 EVO 2TB (MZ-77E2T0BW),24910,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,2000,,
+Western Digital,WD Red SA500 2TB (WDS200T2R0A),25510,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,2000,,
+Samsung,870 EVO 4TB (MZ-77E4T0BW),50200,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,SATA_SSD,SATA,4000,,
+Lexar,NM620 256GB (LNM620X256G-RNNNG),2120,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,256,,
+Lexar,NM620 512GB,3140,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,512,,
+ADATA,LEGEND 860 500GB (SLEG-860-500GCS),3240,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,500,,
+Kingston,NV3 500GB (SNV3S/500G),3540,,,,https://www.kingston.com/datasheets/SNV3S_en.pdf,ตรวจแล้ว,มีขายมือหนึ่ง,NVMe,M2,500,5000,3000
+Western Digital,WD Blue SN5000 500GB (WDS500G4B0E),3930,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,500,,
+Western Digital,WD Green SN3000 1TB (WDS100T5G0E),5410,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,1000,,
+Western Digital,WD_BLACK SN850X 1TB (WDS100T2X0E),6490,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,1000,,
+Samsung,990 EVO Plus 1TB (MZ-V9S1T0BW),7180,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,1000,,
+Western Digital,WD Blue SN5000 2TB (WDS200T4B0E),8460,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,2000,,
+Kingston,NV3 2TB (SNV3S/2000G),9250,,,,https://www.kingston.com/datasheets/SNV3S_en.pdf,ตรวจแล้ว,มีขายมือหนึ่ง,NVMe,M2,2000,6000,5000
+Samsung,990 EVO Plus 2TB (MZ-V9S2T0BW),16640,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,2000,,
+Samsung,990 PRO 2TB (MZ-V9P2T0BW),18120,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,2000,,
+Samsung,990 EVO Plus 4TB (MZ-V9S4T0BW),30400,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,4000,,
+Samsung,990 PRO 4TB (MZ-V9P4T0BW),31400,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,4000,,
+Samsung,9100 PRO 4TB (MZ-VAP4T0BW),38900,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,NVMe,M2,4000,,
+Western Digital,WD Blue 1TB (WD10EARZ),3540,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,HDD,SATA,1000,,
+Western Digital,WD Blue 4TB (WD40EZZX),6800,,,,,รอตรวจสอบ,มีขายมือหนึ่ง,HDD,SATA,4000,,
