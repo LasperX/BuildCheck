@@ -1,6 +1,6 @@
 'use server';
 
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import { revalidatePath, updateTag } from 'next/cache';
 
 import { writePart } from '@/db/parts-write';
@@ -11,6 +11,7 @@ import { type CategorySlug, isCategorySlug } from '@/lib/parts/spec-fields';
 import { type ActionResult, authorizeAdmin } from '@/lib/session';
 import { uploadImage } from '@/lib/storage';
 import { notifyPriceChange } from '@/server/notify';
+import { z } from 'zod';
 import { partInputSchema, partVerifySchema, priceUpdateSchema } from '@/lib/validators/parts';
 
 // ทุกฟังก์ชันในไฟล์นี้เรียกจากเบราว์เซอร์ได้ตรงๆ จึงต้องขึ้นต้นด้วย authorizeAdmin() เสมอ
@@ -321,4 +322,45 @@ export async function importPartsCsv(
     created: parsed.createCount ?? 0,
     updated: parsed.updateCount ?? 0,
   };
+}
+
+const brandSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: 'กรุณากรอกชื่อยี่ห้อ' })
+    .max(60, { error: 'ชื่อยี่ห้อยาวเกิน 60 ตัวอักษร' }),
+});
+
+/**
+ * แอดมินเพิ่มยี่ห้อใหม่ ใช้ก่อนนำเข้า CSV ที่มียี่ห้อซึ่งยังไม่มีในระบบ
+ * ชื่อซ้ำกับที่มีอยู่ (ไม่สนตัวพิมพ์เล็กใหญ่) ไม่เพิ่ม กันยี่ห้อเดียวกันมีสองชื่อ
+ */
+export async function createBrand(input: unknown): Promise<ActionResult & { name?: string }> {
+  const auth = await authorizeAdmin();
+  if (!auth.ok) return auth;
+  const parsed = brandSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'ข้อมูลไม่ถูกต้อง' };
+  }
+  const { name } = parsed.data;
+
+  const [existing] = await db
+    .select({ name: brands.name })
+    .from(brands)
+    .where(eq(sql`lower(${brands.name})`, name.toLowerCase()));
+  if (existing) return { ok: false, error: `มียี่ห้อ ${existing.name} ในระบบอยู่แล้ว` };
+
+  await db.transaction(async (tx) => {
+    const [row] = await tx.insert(brands).values({ name }).returning({ id: brands.id });
+    await tx.insert(adminLogs).values({
+      adminId: auth.user.id,
+      action: 'brand.create',
+      targetType: 'brand',
+      targetId: String(row?.id),
+      changes: { after: { name } },
+    });
+  });
+  revalidateParts();
+  return { ok: true, name };
 }
