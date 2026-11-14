@@ -174,16 +174,15 @@ export function PartCatalog({
             {facets.spec
               .filter((group) => group.values.length > 0)
               .map((group) => (
-                <FilterGroup key={group.key} title={group.label}>
-                  {group.values.map((value) => (
-                    <FilterCheck
-                      key={value}
-                      label={value}
-                      checked={params.getAll(`spec.${group.key}`).includes(value)}
-                      onChange={() => toggleIn(`spec.${group.key}`, value)}
-                    />
-                  ))}
-                </FilterGroup>
+                <SpecFilterGroup
+                  key={group.key}
+                  group={group}
+                  selected={params.getAll(`spec.${group.key}`)}
+                  selectedBrands={facets.brands
+                    .filter((brand) => params.getAll('brand').includes(String(brand.id)))
+                    .map((brand) => brand.name)}
+                  onToggle={(value) => toggleIn(`spec.${group.key}`, value)}
+                />
               ))}
           </div>
         </aside>
@@ -261,7 +260,7 @@ export function PartCatalog({
             </FormAlert>
           ) : isPending ? (
             <div
-              className="grid grid-cols-2 gap-3 xl:grid-cols-4 md:grid-cols-3"
+              className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4"
               aria-label="กำลังโหลด"
             >
               {/* โครงเดียวกับการ์ดจริง ความสูงใกล้กัน หน้าไม่กระตุกตอนรายการโหลดเสร็จ */}
@@ -274,7 +273,7 @@ export function PartCatalog({
               ไม่พบอะไหล่ที่ตรงเงื่อนไข ลองลดตัวกรองหรือเปลี่ยนคำค้น
             </p>
           ) : view === 'cards' ? (
-            <ul className="grid grid-cols-2 gap-3 xl:grid-cols-4 md:grid-cols-3">
+            <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
               {data.items.map((part, index) => (
                 <li key={part.id}>
                   {/* แถวแรกเห็นทันทีตอนเปิดหน้า โหลดรูปก่อน */}
@@ -321,6 +320,88 @@ function FilterGroup({ title, children }: { title: string; children: React.React
       <legend className="mb-1 text-xs font-semibold">{title}</legend>
       {children}
     </fieldset>
+  );
+}
+
+// รุ่น CPU แบ่งตามยี่ห้อ รายการยาวจะได้หาง่าย
+const GENERATION_BRANDS = [
+  { brand: 'AMD', match: (value: string) => value.startsWith('Ryzen') },
+  { brand: 'Intel', match: (value: string) => value.startsWith('Core') },
+] as const;
+const COLLAPSED_COUNT = 8;
+
+/**
+ * ตัวกรองสเปกหนึ่งกลุ่ม
+ * - รุ่น (Generation): แบ่งหัวข้อย่อยตามยี่ห้อ ถ้าติ๊กยี่ห้อไว้ แสดงเฉพาะรุ่นของยี่ห้อนั้น
+ * - กลุ่มที่ยาวเกิน 8 ตัวเลือก: ย่อไว้ก่อน กด "แสดงทั้งหมด" เพื่อดูที่เหลือ (ตัวที่ติ๊กอยู่แสดงเสมอ)
+ */
+function SpecFilterGroup({
+  group,
+  selected,
+  selectedBrands,
+  onToggle,
+}: {
+  group: PartFacets['spec'][number];
+  selected: string[];
+  selectedBrands: string[];
+  onToggle: (value: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const check = (value: string) => (
+    <FilterCheck
+      key={value}
+      label={value}
+      checked={selected.includes(value)}
+      onChange={() => onToggle(value)}
+    />
+  );
+
+  if (group.key === 'generation') {
+    const sections = GENERATION_BRANDS.map(({ brand, match }) => ({
+      brand,
+      values: group.values.filter(match),
+    })).filter(
+      (section) =>
+        section.values.length > 0 &&
+        (selectedBrands.length === 0 ||
+          selectedBrands.includes(section.brand) ||
+          section.values.some((value) => selected.includes(value))),
+    );
+    const other = group.values.filter(
+      (value) => !GENERATION_BRANDS.some(({ match }) => match(value)),
+    );
+    return (
+      <FilterGroup title={group.label}>
+        {sections.map((section) => (
+          <div key={section.brand} className="flex flex-col gap-1">
+            <span className="mt-1 text-2xs font-medium text-muted-foreground">{section.brand}</span>
+            {section.values.map(check)}
+          </div>
+        ))}
+        {other.map(check)}
+      </FilterGroup>
+    );
+  }
+
+  const long = group.values.length > COLLAPSED_COUNT;
+  const visible =
+    long && !expanded
+      ? group.values.filter((value, index) => index < COLLAPSED_COUNT || selected.includes(value))
+      : group.values;
+  return (
+    <FilterGroup title={group.label}>
+      {visible.map(check)}
+      {long ? (
+        <button
+          type="button"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((open) => !open)}
+          className="mt-1 self-start text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        >
+          {expanded ? 'แสดงน้อยลง' : `แสดงทั้งหมด (${group.values.length})`}
+        </button>
+      ) : null}
+    </FilterGroup>
   );
 }
 
@@ -382,8 +463,30 @@ function UsedOnlyBadge({ availability }: { availability: PartListItem['availabil
   );
 }
 
+const USED_SOURCE_LABELS = {
+  reports: 'จากรายงานผู้ใช้',
+  survey: 'จากราคาสำรวจ',
+  estimate: 'ประมาณการ',
+} as const;
+
 /** รุ่นที่มีแต่มือสอง: ราคาในระบบคือราคาตอนเปิดตัว ไม่ใช่ราคาที่ซื้อได้ จึงบอกให้ชัด */
 function PriceLabel({ part, className }: { part: PartListItem; className?: string }) {
+  if (part.availability === 'used_only' && part.usedPrice) {
+    // ราคาที่คนอยากรู้คือราคามือสอง ราคาเปิดตัวเป็นข้อมูลประกอบ
+    return (
+      <span className={cn('flex flex-col', className)}>
+        <span className="font-mono text-sm font-semibold">
+          <span className="font-sans text-xs font-normal text-muted-foreground">มือสอง </span>
+          {part.usedPrice.source === 'estimate' ? '~' : ''}
+          {formatBaht(part.usedPrice.median)}
+        </span>
+        <span className="text-2xs text-muted-foreground">
+          เกรด B · {USED_SOURCE_LABELS[part.usedPrice.source]} · เปิดตัว{' '}
+          <span className="font-mono">{formatBaht(part.price)}</span>
+        </span>
+      </span>
+    );
+  }
   if (part.availability === 'used_only') {
     return (
       <span className={cn('text-xs text-muted-foreground', className)}>
@@ -431,6 +534,8 @@ function PartCard({ part, eager = false }: { part: PartListItem; eager?: boolean
           category={part.categorySlug}
           size={280}
           eager={eager}
+          label={part.model}
+          brand={part.brandName}
           className="aspect-[4/3] h-auto w-full"
         />
         <span className="mt-3 text-xs text-muted-foreground">{part.brandName}</span>

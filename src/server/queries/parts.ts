@@ -17,6 +17,8 @@ import {
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 import { cacheLife, cacheTag } from 'next/cache';
 
+import { getUsedPriceSets } from '@/server/queries/used';
+
 import {
   brands,
   buildItems,
@@ -154,11 +156,22 @@ export async function getParts(query: PartsQuery): Promise<PartsResponse> {
   ]);
 
   return {
-    items: await withChips(rows),
+    items: await withUsedPrices(await withChips(rows)),
     total: totalRows[0]?.value ?? 0,
     page,
     pageSize: PARTS_PAGE_SIZE,
   };
+}
+
+/** รุ่นที่มีแต่มือสอง: แนบราคากลางมือสองเกรด B ไว้แสดงบนการ์ดแทนราคาเปิดตัว */
+async function withUsedPrices(items: PartListItem[]): Promise<PartListItem[]> {
+  const ids = items.filter((item) => item.availability === 'used_only').map((item) => item.id);
+  if (ids.length === 0) return items;
+  const sets = await getUsedPriceSets(ids);
+  return items.map((item) => {
+    const stat = item.availability === 'used_only' ? sets[item.id]?.B : undefined;
+    return stat ? { ...item, usedPrice: { median: stat.median, source: stat.source } } : item;
+  });
 }
 
 type RawRow = Omit<PartListItem, 'chips' | 'categorySlug'> & { categorySlug: string };
@@ -201,7 +214,7 @@ async function withChips(rows: RawRow[]): Promise<PartListItem[]> {
  */
 export async function getDefaultParts(category?: CategorySlug): Promise<PartsResponse> {
   'use cache';
-  cacheTag('parts');
+  cacheTag('parts', 'used-prices');
   cacheLife('minutes');
 
   return getParts({ category, brand: [], sort: 'popular', page: 1, spec: {} });

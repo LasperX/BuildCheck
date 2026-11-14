@@ -78,6 +78,8 @@ export type PartListItem = {
   specVerified: boolean;
   availability: 'new' | 'used_only';
   chips: string[];
+  /** ราคากลางมือสองเกรด B ของรุ่นที่มีแต่มือสอง (รุ่นที่ยังขายมือหนึ่งไม่ส่งมา) */
+  usedPrice?: { median: number; source: 'reports' | 'survey' | 'estimate' };
 };
 
 export type PartsResponse = {

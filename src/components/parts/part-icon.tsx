@@ -24,6 +24,18 @@ export const CATEGORY_ICONS: Record<CategorySlug, LucideIcon> = {
   cooler: Fan,
 };
 
+// สีป้ายแทนรูปตามยี่ห้อ (โทนเข้ม ตัวอักษรขาว อ่านได้ทั้งโหมดสว่างและมืด)
+const BRAND_TINTS: Record<string, string> = {
+  amd: 'from-[#b3261e] to-[#5c1410]',
+  intel: 'from-[#0b5cad] to-[#083566]',
+  nvidia: 'from-[#3f7d0c] to-[#1f4206]',
+  asus: 'from-[#1f3a5f] to-[#101d30]',
+  msi: 'from-[#8a1c1c] to-[#3d0d0d]',
+  gigabyte: 'from-[#b4530a] to-[#5e2b05]',
+  asrock: 'from-[#0f5e5a] to-[#08302e]',
+};
+const DEFAULT_TINT = 'from-[#475569] to-[#1e293b]';
+
 /**
  * ย่อรูปผ่าน Next.js ได้เฉพาะไฟล์ในเว็บเอง (/uploads ตอนพัฒนา) และที่เก็บรูปของเรา (ตั้งใน next.config.ts)
  * ลิงก์รูปจากเว็บอื่นที่นำเข้าผ่าน CSV แสดงตรงตามเดิม เพราะไม่ได้อนุญาตให้ Next.js ไปดึงมาย่อ
@@ -47,6 +59,8 @@ export function PartImage({
   className = '',
   zoom = false,
   eager = false,
+  label,
+  brand,
 }: {
   src: string | null;
   alt: string;
@@ -58,6 +72,10 @@ export function PartImage({
   zoom?: boolean;
   /** รูปที่เห็นทันทีตอนเปิดหน้า (แถวแรก) โหลดก่อน ไม่รอเลื่อนถึง */
   eager?: boolean;
+  /** ชื่อรุ่น ใช้ทำป้ายแทนรูปเมื่อยังไม่มีรูป (เฉพาะช่องใหญ่อย่างการ์ดในคลังอะไหล่) */
+  label?: string;
+  /** ยี่ห้อ ใช้เลือกสีของป้ายแทนรูป */
+  brand?: string;
 }) {
   if (src) {
     const unoptimized = !canOptimize(src);
@@ -94,6 +112,27 @@ export function PartImage({
     );
   }
   const Icon = CATEGORY_ICONS[category];
+  if (label) {
+    // ยังไม่มีรูป: ป้ายชื่อรุ่นตัวใหญ่ สีตามยี่ห้อ หน้ารายการจึงไม่เป็นไอคอนเทาซ้ำกันทั้งหน้า
+    const tint = BRAND_TINTS[brand?.toLowerCase() ?? ''] ?? DEFAULT_TINT;
+    return (
+      <span
+        className={`relative flex flex-col justify-between overflow-hidden rounded-md bg-linear-to-br p-3 text-white ring-1 ring-black/5 ${tint} ${className}`}
+      >
+        <span className="flex items-center justify-between gap-2 text-2xs font-semibold tracking-wide uppercase opacity-80">
+          <span className="truncate">{brand}</span>
+          <Icon aria-hidden className="size-4 shrink-0" />
+        </span>
+        <span className="line-clamp-3 text-base leading-tight font-bold break-words md:text-lg">
+          {label}
+        </span>
+        <Icon
+          aria-hidden
+          className="pointer-events-none absolute -right-5 -bottom-5 size-24 opacity-10"
+        />
+      </span>
+    );
+  }
   return (
     <span className={`grid place-items-center rounded-md bg-surface-2 text-subtle ${className}`}>
       <Icon aria-hidden style={{ width: size * 0.4, height: size * 0.4 }} />
