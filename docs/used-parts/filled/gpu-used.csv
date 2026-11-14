@@ -1,0 +1,79 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,availability,chipset,vram_gb,length_mm,slot_width,tbp_watt,power_connectors,perf_score
+Gigabyte,GeForce GTX 1050 Ti OC 4G,4870,2016,,,https://www.gigabyte.com/Graphics-Card/GV-N105TOC-4GD/sp,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1050 Ti,4,191,2,75,none:0,10
+MSI,GeForce GTX 1050 Ti GAMING X 4G,4870,2016,,,https://www.msi.com/Graphics-Card/GeForce-GTX-1050-Ti-GAMING-X-4G/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1050 Ti,4,229,2,75,6pin:1,10
+MSI,GeForce GTX 1060 GAMING X 6G,8720,2016,,,https://www.msi.com/Graphics-Card/GeForce-GTX-1060-GAMING-X-6G/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1060 6GB,6,277,2,120,8pin:1,18
+Gigabyte,GeForce GTX 1060 WINDFORCE OC 6G,8720,2016,,,https://www.gigabyte.com/Graphics-Card/GV-N1060WF2OC-6GD-rev-10-11/sp,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1060 6GB,6,223,2,120,6pin:1,18
+ASUS,DUAL GeForce GTX 1070 OC 8GB,13270,2016,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-gtx1070-o8g/techspec/,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1070,8,240,2,150,8pin:1,26
+MSI,GeForce GTX 1070 GAMING X 8G,13270,2016,,,https://www.msi.com/Graphics-Card/GEFORCE-GTX-1070-GAMING-X-8G/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1070,8,279,2,150,8pin:1|6pin:1,26
+ASUS,Dual GeForce GTX 1650 OC Edition 4GB GDDR6,5220,2020,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-gtx1650-o4gd6-p/techspec/,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1650,4,212,2,75,none:0,13
+MSI,GeForce GTX 1650 D6 VENTUS XS OCV1,5220,2020,,,https://www.msi.com/Graphics-Card/GeForce-GTX-1650-D6-VENTUS-XS-OCV1/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1650,4,179,2,75,6pin:1,13
+MSI,GeForce GTX 1660 SUPER VENTUS XS OC,8020,2019,,,https://www.msi.com/Graphics-Card/GeForce-GTX-1660-SUPER-VENTUS-XS-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1660 Super,6,204,2,125,8pin:1,24
+Gigabyte,GeForce GTX 1660 SUPER OC 6G,8020,2019,,,https://www.gigabyte.com/Graphics-Card/GV-N166SOC-6GD/sp,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1660 Super,6,226,2,125,8pin:1,24
+ASUS,TUF Gaming GeForce GTX 1660 Ti EVO OC 6GB,9770,2019,,,https://www.asus.com/motherboards-components/graphics-cards/tuf-gaming/tuf-gtx1660ti-o6g-evo-gaming/techspec/,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1660 Ti,6,206,2.3,120,8pin:1,24
+MSI,GeForce GTX 1660 Ti GAMING X 6G,9770,2019,,,https://www.msi.com/Graphics-Card/GeForce-GTX-1660-Ti-GAMING-X-6G/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce GTX 1660 Ti,6,247,2,130,8pin:1,24
+MSI,GeForce RTX 2060 VENTUS GP OC,12220,2019,,,https://www.msi.com/Graphics-Card/GeForce-RTX-2060-VENTUS-GP-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 2060,6,231,2,160,8pin:1,28
+ASUS,Dual GeForce RTX 2060 OC EVO 6GB,12220,2019,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rtx2060-o6g-evo/techspec/,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 2060,6,242,2.7,160,8pin:1,28
+Gigabyte,GeForce RTX 2060 SUPER WINDFORCE OC 8G,13970,2019,,,https://www.gigabyte.com/Graphics-Card/GV-N206SWF2OC-8GD-rev-10-11/sp,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 2060 Super,8,265,2,175,8pin:1,34
+MSI,GeForce RTX 2060 SUPER GAMING X,13970,2019,,,https://www.msi.com/Graphics-Card/GeForce-RTX-2060-SUPER-GAMING-X/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 2060 Super,8,248,2.5,175,8pin:1,34
+Gigabyte,GeForce RTX 2070 SUPER GAMING OC 3X 8G,17470,2019,,,https://www.gigabyte.com/Graphics-Card/GV-N207SGAMING-OC-8GD/sp,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 2070 Super,8,286,2.5,215,8pin:1|6pin:1,39
+MSI,GeForce RTX 2070 SUPER VENTUS GP OC,17470,2019,,,https://www.msi.com/Graphics-Card/GeForce-RTX-2070-SUPER-VENTUS-GP-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 2070 Super,8,258,2,215,8pin:1|6pin:1,39
+ASUS,ROG Strix GeForce RTX 2080 SUPER OC 8GB,24470,2019,,,https://rog.asus.com/graphics-cards/graphics-cards/rog-strix/rog-strix-rtx2080s-o8g-gaming-model/spec/,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 2080 Super,8,300,2.7,250,8pin:2,43
+MSI,GeForce RTX 2080 SUPER VENTUS XS OC,24470,2019,,,https://www.msi.com/Graphics-Card/GeForce-RTX-2080-SUPER-VENTUS-XS-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 2080 Super,8,257,2.5,250,8pin:1|6pin:1,43
+MSI,GeForce RTX 3050 VENTUS 2X 8G OC,6290,2022,,,https://www.msi.com/Graphics-Card/GeForce-RTX-3050-VENTUS-2X-8G-OC/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 3050,8,235,2,130,8pin:1,24
+ASUS,Dual GeForce RTX 3050 OC Edition 8GB,6590,2022,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rtx3050-o8g/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 3050,8,200,2,130,8pin:1,24
+MSI,GeForce RTX 3060 VENTUS 2X 12G OC,8990,2021,,,https://www.msi.com/Graphics-Card/GeForce-RTX-3060-VENTUS-2X-12G-OC/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 3060 12GB,12,235,2,170,8pin:1,35
+Gigabyte,GeForce RTX 3060 GAMING OC 12G,9490,2021,,,https://www.gigabyte.com/Graphics-Card/GV-N3060GAMING-OC-12GD-rev-20/sp,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 3060 12GB,12,282,2,170,8pin:1,35
+ASUS,Dual GeForce RTX 3060 Ti OC Edition 8GB V2,13970,2021,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rtx3060ti-o8g-v2/techspec/,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 3060 Ti,8,269,2.7,200,8pin:1,45
+MSI,GeForce RTX 3060 Ti GAMING X 8G LHR,13970,2021,,,https://www.msi.com/Graphics-Card/GeForce-RTX-3060-Ti-GAMING-X-8G-LHR/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 3060 Ti,8,278,2.5,220,8pin:2,45
+MSI,GeForce RTX 3070 VENTUS 2X OC,17470,2020,,,https://www.msi.com/Graphics-Card/GeForce-RTX-3070-VENTUS-2X-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 3070,8,232,2.5,220,8pin:2,51
+ASUS,TUF Gaming GeForce RTX 3070 OC Edition 8GB,17470,2020,,,https://www.asus.com/motherboards-components/graphics-cards/tuf-gaming/tuf-rtx3070-o8g-gaming/techspec/,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 3070,8,300,2.7,240,8pin:2,51
+MSI,GeForce RTX 3070 Ti VENTUS 3X 8G OC,20970,2021,,,https://www.msi.com/Graphics-Card/GeForce-RTX-3070-Ti-VENTUS-3X-8G-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 3070 Ti,8,305,2.5,290,8pin:2,54
+Gigabyte,GeForce RTX 3070 Ti GAMING OC 8G,20970,2021,,,https://www.gigabyte.com/Graphics-Card/GV-N307TGAMING-OC-8GD/sp,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 3070 Ti,8,320,2.7,290,8pin:2,54
+ASUS,TUF Gaming GeForce RTX 3080 OC Edition 10GB,24470,2020,,,https://www.asus.com/motherboards-components/graphics-cards/tuf-gaming/tuf-rtx3080-o10g-gaming/techspec/,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 3080,10,300,2.7,320,8pin:2,60
+MSI,GeForce RTX 3080 GAMING Z TRIO 10G LHR,24470,2021,,,https://www.msi.com/Graphics-Card/GeForce-RTX-3080-GAMING-Z-TRIO-10G-LHR/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 3080,10,323,2.7,340,8pin:3,60
+ASUS,Dual GeForce RTX 4060 OC Edition 8GB,9900,2023,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rtx4060-o8g/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 4060,8,227,2.5,115,8pin:1,43
+MSI,GeForce RTX 4060 VENTUS 2X BLACK 8G OC,9790,2023,,,https://www.msi.com/Graphics-Card/GeForce-RTX-4060-VENTUS-2X-BLACK-8G-OC/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 4060,8,199,2,115,8pin:1,43
+ASUS,Dual GeForce RTX 4060 Ti OC Edition 8GB,13500,2023,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rtx4060ti-o8g/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 4060 Ti,8,227,2.5,160,8pin:1,53
+Gigabyte,GeForce RTX 4060 Ti EAGLE OC 8G,13200,2023,,,https://www.gigabyte.com/Graphics-Card/GV-N406TEAGLE-OC-8GD/sp,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 4060 Ti,8,272,2,160,8pin:1,53
+ASUS,Dual GeForce RTX 4070 OC Edition 12GB,18900,2023,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rtx4070-o12g/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 4070,12,267,2.5,200,8pin:1,66
+Gigabyte,GeForce RTX 4070 WINDFORCE OC 12G,18500,2023,,,https://www.gigabyte.com/Graphics-Card/GV-N4070WF3OC-12GD/sp,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 4070,12,261,2.5,200,8pin:1,66
+MSI,GeForce RTX 4070 SUPER 12G VENTUS 2X OC,20970,2024,,,https://www.msi.com/Graphics-Card/GeForce-RTX-4070-SUPER-12G-VENTUS-2X-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 4070 Super,12,242,2.1,220,16pin:1,77
+ASUS,Dual GeForce RTX 4070 SUPER OC Edition 12GB,20970,2024,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rtx4070s-o12g/techspec/,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 4070 Super,12,267,2.5,220,16pin:1,77
+MSI,GeForce RTX 4070 Ti SUPER 16G VENTUS 2X OC,27970,2024,,,https://www.msi.com/Graphics-Card/GeForce-RTX-4070-Ti-SUPER-16G-VENTUS-2X-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 4070 Ti Super,16,242,2.5,285,16pin:1,83
+ASUS,TUF Gaming GeForce RTX 4070 Ti SUPER OC 16GB,27970,2024,,,https://www.asus.com/motherboards-components/graphics-cards/tuf-gaming/tuf-rtx4070tis-o16g-gaming/techspec/,ตรวจแล้ว,มีแต่มือสอง,GeForce RTX 4070 Ti Super,16,305,3.2,285,16pin:1,83
+MSI,GeForce RTX 4080 SUPER 16G VENTUS 3X OC,35900,2024,,,https://www.msi.com/Graphics-Card/GeForce-RTX-4080-SUPER-16G-VENTUS-3X-OC/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 4080 Super,16,322,3,320,16pin:1,92
+ASUS,TUF Gaming GeForce RTX 4080 SUPER OC 16GB,38900,2024,,,https://www.asus.com/motherboards-components/graphics-cards/tuf-gaming/tuf-rtx4080s-o16g-gaming/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,GeForce RTX 4080 Super,16,348,3.6,320,16pin:1,92
+Sapphire,PULSE Radeon RX 570 4G G5,5920,2017,,,https://www.sapphiretech.com/en/consumer/pulse-rx-570-4g-g5,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 570,4,230,2,150,8pin:1,13
+MSI,Radeon RX 570 ARMOR 4G OC,5920,2017,,,https://www.msi.com/Graphics-Card/Radeon-RX-570-ARMOR-4G-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 570,4,246,2,150,8pin:1,13
+Sapphire,PULSE Radeon RX 580 8G G5,8020,2017,,,https://www.sapphiretech.com/en/consumer/pulse-rx-580-8g-g5,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 580 8GB,8,230,2,185,8pin:1,15
+Sapphire,NITRO+ Radeon RX 580 8G G5,8020,2017,,,https://www.sapphiretech.com/en/consumer/nitro-rx-580-8g-g5,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 580 8GB,8,260,2.2,225,8pin:1|6pin:1,15
+Sapphire,PULSE Radeon RX 5600 XT 6G GDDR6,9770,2020,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-5600-xt-6g-gddr6,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 5600 XT,6,254,2.3,160,8pin:1,26
+Gigabyte,Radeon RX 5600 XT GAMING OC 6G,9770,2020,,,https://www.gigabyte.com/Graphics-Card/GV-R56XTGAMING-OC-6GD-rev-10/sp,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 5600 XT,6,280,2.5,160,8pin:1,26
+Sapphire,PULSE Radeon RX 5700 XT 8G GDDR6,13970,2019,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-5700-xt-8g-gddr6,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 5700 XT,8,254,2.3,225,8pin:1|6pin:1,33
+Gigabyte,Radeon RX 5700 XT GAMING OC 8G,13970,2019,,,https://www.gigabyte.com/Graphics-Card/GV-R57XTGAMING-OC-8GD-rev-10/sp,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 5700 XT,8,280,2.5,225,8pin:1|6pin:1,33
+Sapphire,PULSE AMD Radeon RX 6500 XT 4GB,6970,2022,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-6500-xt-4g-gddr6,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6500 XT,4,194,2,107,6pin:1,17
+ASUS,Dual Radeon RX 6500 XT OC Edition 4GB,6970,2022,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rx6500xt-o4g/techspec/,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6500 XT,4,201,2,107,6pin:1,17
+Sapphire,PULSE AMD Radeon RX 6600 8GB,11520,2021,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-6600-8g-gddr6,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6600,8,193,2,132,8pin:1,30
+Gigabyte,Radeon RX 6600 EAGLE 8G,11520,2021,,,https://www.gigabyte.com/Graphics-Card/GV-R66EAGLE-8GD/sp,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6600,8,282,2,132,8pin:1,30
+MSI,Radeon RX 6650 XT MECH 2X 8G OC,13970,2022,,,https://www.msi.com/Graphics-Card/Radeon-RX-6650-XT-MECH-2X-8G-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6650 XT,8,235,2,175,8pin:1,36
+ASUS,Dual Radeon RX 6650 XT OC Edition 8GB,13970,2022,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rx6650xt-o8g/techspec/,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6650 XT,8,243,2.5,176,8pin:1,36
+Sapphire,PULSE AMD Radeon RX 6700 XT 12GB,16770,2021,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-6700-xt-12g-gddr6,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6700 XT,12,260,2.2,230,8pin:1|6pin:1,44
+ASUS,Dual Radeon RX 6700 XT 12GB,16770,2021,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rx6700xt-12g/techspec/,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6700 XT,12,295,2.7,230,8pin:2,44
+MSI,Radeon RX 6750 XT MECH 2X 12G OC,19220,2022,,,https://www.msi.com/Graphics-Card/Radeon-RX-6750-XT-MECH-2X-12G-OC/Specification,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6750 XT,12,249,2.5,250,8pin:2,47
+ASUS,Dual Radeon RX 6750 XT OC Edition 12GB,19220,2022,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rx6750xt-o12g/techspec/,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6750 XT,12,295,2.7,250,8pin:2,47
+Sapphire,PULSE AMD Radeon RX 6800 16GB,20270,2020,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-6800-16g-gddr6,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6800,16,303,2.5,250,8pin:2,51
+Gigabyte,Radeon RX 6800 GAMING OC 16G,20270,2020,,,https://www.gigabyte.com/Graphics-Card/GV-R68GAMING-OC-16GD/sp,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6800,16,286,2.9,250,8pin:2,51
+Sapphire,PULSE AMD Radeon RX 6800 XT 16GB,22720,2020,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-6800-xt-16g-gddr6,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6800 XT,16,313,2.7,300,8pin:2,61
+ASUS,TUF Gaming Radeon RX 6800 XT OC 16GB,22720,2020,,,https://www.asus.com/motherboards-components/graphics-cards/tuf-gaming/tuf-rx6800xt-o16g-gaming/techspec/,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 6800 XT,16,320,2.9,300,8pin:2,61
+Gigabyte,Radeon RX 7600 GAMING OC 8G,9420,2023,,,https://www.gigabyte.com/Graphics-Card/GV-R76GAMING-OC-8GD/sp,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 7600,8,282,2.5,165,8pin:1,34
+ASUS,Dual Radeon RX 7600 OC Edition 8GB,9420,2023,,,https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rx7600-o8g/techspec/,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 7600,8,245,2.5,165,8pin:1,34
+Sapphire,PULSE AMD Radeon RX 7700 XT 12GB,15800,2023,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-7700-xt-12g-gddr6,ตรวจแล้ว,มีขายมือหนึ่ง,Radeon RX 7700 XT,12,280,2.5,230,8pin:2,53
+Gigabyte,Radeon RX 7700 XT GAMING OC 12G,16200,2023,,,https://www.gigabyte.com/Graphics-Card/GV-R77XTGAMING-OC-12GD/sp,ตรวจแล้ว,มีขายมือหนึ่ง,Radeon RX 7700 XT,12,302,2.8,245,8pin:2,53
+Sapphire,PULSE AMD Radeon RX 7800 XT 16GB,17700,2023,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-7800-xt-16g-gddr6,ตรวจแล้ว,มีขายมือหนึ่ง,Radeon RX 7800 XT,16,280,2.5,263,8pin:2,59
+ASUS,TUF Gaming Radeon RX 7800 XT OC Edition 16GB,19500,2023,,,https://www.asus.com/motherboards-components/graphics-cards/tuf-gaming/tuf-rx7800xt-o16g-gaming/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,Radeon RX 7800 XT,16,320,3,263,8pin:2,59
+Sapphire,PULSE AMD Radeon RX 7900 GRE 16GB,19220,2024,,,https://www.sapphiretech.com/en/consumer/pulse-radeon-rx-7900-gre-16g-gddr6,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 7900 GRE,16,320,2.5,260,8pin:2,68
+Gigabyte,Radeon RX 7900 GRE GAMING OC 16G,19220,2024,,,https://www.gigabyte.com/Graphics-Card/GV-R79GREGAMING-OC-16GD/sp,ตรวจแล้ว,มีแต่มือสอง,Radeon RX 7900 GRE,16,302,2.5,260,8pin:2,68
+Intel,Arc A750 Limited Edition 8GB,10120,2022,,,https://www.intel.com/content/www/us/en/products/sku/227954/intel-arc-a750-graphics/specifications.html,ตรวจแล้ว,มีแต่มือสอง,Intel Arc A750,8,280,2,225,8pin:1|6pin:1,24
+ASRock,Intel Arc A750 Challenger D 8GB OC,10120,2022,,,https://www.asrock.com/Graphics-Card/Intel/Intel%20Arc%20A750%20Challenger%20D%208GB%20OC/#Specification,ตรวจแล้ว,มีแต่มือสอง,Intel Arc A750,8,271,2,225,8pin:2,24
+Intel,Arc B580 Limited Edition 12GB,9490,2024,,,https://www.intel.com/content/www/us/en/products/sku/241598/intel-arc-b580-graphics/specifications.html,ตรวจแล้ว,มีขายมือหนึ่ง,Intel Arc B580,12,272,2,190,8pin:1,33
+ASRock,Intel Arc B580 Challenger 12GB OC,9790,2024,,,https://www.asrock.com/Graphics-Card/Intel/Intel%20Arc%20B580%20Challenger%2012GB%20OC/#Specification,ตรวจแล้ว,มีขายมือหนึ่ง,Intel Arc B580,12,249,2,190,8pin:1,33
