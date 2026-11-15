@@ -11,12 +11,24 @@ import { type CategorySlug, isCategorySlug } from '@/lib/parts/spec-fields';
 import { type ActionResult, authorizeAdmin } from '@/lib/session';
 import { uploadImage } from '@/lib/storage';
 import { notifyPriceChange } from '@/server/notify';
+import { getSystemConfig } from '@/server/queries/settings';
+import { recomputeUsedStats } from '@/server/used/stats';
 import { z } from 'zod';
 import { partInputSchema, partVerifySchema, priceUpdateSchema } from '@/lib/validators/parts';
 
 // ทุกฟังก์ชันในไฟล์นี้เรียกจากเบราว์เซอร์ได้ตรงๆ จึงต้องขึ้นต้นด้วย authorizeAdmin() เสมอ
 
 const MAX_CSV_BYTES = 2 * 1024 * 1024;
+
+/**
+ * ราคามือสองประมาณการคิดจากราคาและสถานะการขายของอะไหล่ และรุ่นที่ยังขายมือหนึ่งเป็นตัวเทียบของรุ่นอื่น
+ * เมื่อเพิ่ม แก้ราคา หรือนำเข้าอะไหล่ จึงคำนวณราคากลางใหม่ทั้งหมด
+ */
+async function refreshUsedPrices() {
+  const { used } = await getSystemConfig();
+  await recomputeUsedStats(used);
+  updateTag('used-prices');
+}
 
 function revalidateParts() {
   revalidatePath('/admin/parts');
@@ -64,6 +76,7 @@ export async function upsertPart(input: unknown): Promise<ActionResult & { id?: 
       return written;
     });
     revalidateParts();
+    await refreshUsedPrices();
     return { ok: true, id: result.id };
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
@@ -102,6 +115,7 @@ export async function updatePartPrice(input: unknown): Promise<ActionResult> {
   });
   if (changed === null) return { ok: false, error: 'ไม่พบอะไหล่' };
   revalidateParts();
+  await refreshUsedPrices();
   return { ok: true };
 }
 
@@ -125,6 +139,7 @@ export async function setPartActive(input: {
     });
   });
   revalidateParts();
+  await refreshUsedPrices();
   return { ok: true };
 }
 
@@ -192,6 +207,7 @@ export async function deletePart(id: number): Promise<ActionResult> {
     return { ok: false, error: 'ลบไม่สำเร็จ' };
   }
   revalidateParts();
+  await refreshUsedPrices();
   return { ok: true };
 }
 
@@ -316,6 +332,7 @@ export async function importPartsCsv(
     return { ok: false, error: 'นำเข้าไม่สำเร็จ ไม่มีข้อมูลถูกเพิ่ม' };
   }
   revalidateParts();
+  await refreshUsedPrices();
   return {
     ok: true,
     imported: parsed.rows.length,

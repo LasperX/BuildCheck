@@ -54,6 +54,7 @@ export async function getUsedPriceSets(ids: number[]): Promise<Record<number, Us
         id: parts.id,
         price: parts.price,
         releaseYear: parts.releaseYear,
+        availability: parts.availability,
         categorySlug: categories.slug,
       })
       .from(parts)
@@ -83,7 +84,12 @@ export async function getUsedPriceSets(ids: number[]): Promise<Record<number, Us
         };
       }
       const stat = resolveUsedStat({
-        part: { price: part.price, categorySlug: category, releaseYear: part.releaseYear },
+        part: {
+          price: part.price,
+          categorySlug: category,
+          releaseYear: part.releaseYear,
+          availability: part.availability,
+        },
         grade,
         reports: [],
         survey: null,

@@ -251,8 +251,38 @@ export function surveyForGrade(
   return null;
 }
 
+export type PerfAnchor = { perf: number; price: number };
+
+/**
+ * กรอบราคาประมาณการของรุ่นที่มีแต่มือสอง (เฉพาะหมวดที่มีคะแนนประสิทธิภาพ: CPU และการ์ดจอ)
+ * เทียบกับราคามือสองของรุ่นที่ยังขายมือหนึ่งในหมวดเดียวกันและเกรดเดียวกัน (anchors)
+ *
+ *   ขั้นต่ำ = ราคาสูงสุดของรุ่นที่ยังขายมือหนึ่งซึ่งคะแนน ≤ รุ่นนี้   (รุ่นที่แรงกว่า ไม่ควรถูกกว่า)
+ *   เพดาน  = ราคาต่ำสุดของรุ่นที่ยังขายมือหนึ่งซึ่งคะแนน ≥ รุ่นนี้   (รุ่นที่ช้ากว่า ไม่ควรแพงกว่า)
+ *
+ * ถ้าขั้นต่ำสูงกว่าเพดาน (ราคารุ่นมือหนึ่งไม่ได้เรียงตามคะแนนพอดี) ใช้เพดานเป็นหลัก
+ * ไม่มีรุ่นให้เทียบฝั่งไหน ฝั่งนั้นไม่จำกัด
+ */
+export function clampToPerfAnchors(
+  estimate: number,
+  perf: number,
+  anchors: readonly PerfAnchor[],
+): number {
+  const slower = anchors.filter((anchor) => anchor.perf <= perf).map((anchor) => anchor.price);
+  const faster = anchors.filter((anchor) => anchor.perf >= perf).map((anchor) => anchor.price);
+  const cap = faster.length ? Math.min(...faster) : Infinity;
+  const floor = Math.min(slower.length ? Math.max(...slower) : 0, cap);
+  return Math.min(Math.max(estimate, floor), cap);
+}
+
 export type UsedPriceInput = {
-  part: { price: number; categorySlug: CategorySlug; releaseYear: number | null };
+  part: {
+    price: number;
+    categorySlug: CategorySlug;
+    releaseYear: number | null;
+    /** ไม่ระบุ = ยังขายมือหนึ่ง */
+    availability?: 'new' | 'used_only' | undefined;
+  };
   grade: UsedGrade;
   /** รายงานที่อนุมัติแล้วของรุ่นและเกรดนี้ */
   reports: readonly UsedReport[];
@@ -303,7 +333,9 @@ export function resolveUsedStat(input: UsedPriceInput): UsedStat {
     median: estimateUsedPrice(
       input.part.price,
       input.part.categorySlug,
-      input.part.releaseYear,
+      // รุ่นที่ยังขายมือหนึ่ง: ราคาในระบบคือราคาร้านวันนี้ ซึ่งลดลงตามอายุมาแล้ว
+      // จึงไม่หักตามปีวางขายซ้ำอีก ใช้ t = 1 เสมอ (ส่ง null = ไม่ทราบปี)
+      input.part.availability === 'used_only' ? input.part.releaseYear : null,
       grade,
       currentYear,
       settings,

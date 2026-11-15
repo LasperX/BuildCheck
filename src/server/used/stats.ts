@@ -1,9 +1,11 @@
 import 'server-only';
 
-import { and, desc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from 'drizzle-orm';
 
 import {
   categories,
+  cpuSpecs,
+  gpuSpecs,
   partUsedPrices,
   partUsedStats,
   parts,
@@ -11,6 +13,8 @@ import {
   usedPriceReports,
 } from '@/db/schema';
 import {
+  clampToPerfAnchors,
+  type PerfAnchor,
   resolveUsedStat,
   surveyForGrade,
   USED_GRADES,
@@ -55,11 +59,28 @@ export async function recomputeUsedStats(
       id: parts.id,
       price: parts.price,
       releaseYear: parts.releaseYear,
+      availability: parts.availability,
       categorySlug: categories.slug,
+      // คะแนนประสิทธิภาพ มีเฉพาะ CPU และการ์ดจอ
+      perf: sql<number | null>`coalesce(${cpuSpecs.perfScore}, ${gpuSpecs.perfScore})`,
     })
     .from(parts)
     .innerJoin(categories, eq(parts.categoryId, categories.id))
-    .where(partIds ? inArray(parts.id, partIds) : eq(parts.isActive, true));
+    .leftJoin(cpuSpecs, eq(cpuSpecs.partId, parts.id))
+    .leftJoin(gpuSpecs, eq(gpuSpecs.partId, parts.id))
+    .where(
+      partIds
+        ? or(
+            inArray(parts.id, partIds),
+            // รุ่นที่ยังขายมือหนึ่งของ CPU และการ์ดจอ ใช้เป็นตัวเทียบของรุ่นที่มีแต่มือสอง จึงคำนวณด้วยเสมอ
+            and(
+              eq(parts.isActive, true),
+              eq(parts.availability, 'new'),
+              inArray(categories.slug, ['cpu', 'gpu']),
+            ),
+          )
+        : eq(parts.isActive, true),
+    );
   if (partRows.length === 0) return { parts: 0, rows: 0, alerts: 0 };
   const ids = partRows.map((row) => row.id);
 
@@ -113,7 +134,12 @@ export async function recomputeUsedStats(
     const category = part.categorySlug;
     return USED_GRADES.map((grade) => {
       const stat = resolveUsedStat({
-        part: { price: part.price, categorySlug: category, releaseYear: part.releaseYear },
+        part: {
+          price: part.price,
+          categorySlug: category,
+          releaseYear: part.releaseYear,
+          availability: part.availability,
+        },
         grade,
         reports: reports.get(key(part.id, grade)) ?? [],
         // เกรดที่ไม่ได้สำรวจ เทียบจากเกรดที่สำรวจไว้ของรุ่นเดียวกัน
@@ -143,6 +169,27 @@ export async function recomputeUsedStats(
       };
     });
   });
+
+  // รุ่นที่มีแต่มือสองซึ่งยังใช้ราคาประมาณการ: จำกัดให้อยู่ในกรอบของรุ่นที่ยังขายมือหนึ่งที่คะแนนใกล้กัน
+  // (รุ่นที่แรงกว่าไม่ถูกกว่า รุ่นที่ช้ากว่าไม่แพงกว่า) ดู clampToPerfAnchors
+  const partById = new Map(partRows.map((part) => [part.id, part]));
+  const anchors = new Map<string, PerfAnchor[]>();
+  for (const value of values) {
+    const part = partById.get(value.partId);
+    if (!part || part.availability !== 'new' || part.perf === null) continue;
+    const k = `${part.categorySlug}:${value.grade}`;
+    anchors.set(k, [...(anchors.get(k) ?? []), { perf: part.perf, price: value.medianPrice }]);
+  }
+  for (const value of values) {
+    const part = partById.get(value.partId);
+    if (!part || part.availability !== 'used_only' || part.perf === null) continue;
+    if (value.source !== 'estimate') continue;
+    value.medianPrice = clampToPerfAnchors(
+      value.medianPrice,
+      part.perf,
+      anchors.get(`${part.categorySlug}:${value.grade}`) ?? [],
+    );
+  }
 
   // เขียนเป็นชุดละ 500 แถว ไม่ให้คำสั่งเดียวใหญ่เกินไป
   for (let i = 0; i < values.length; i += 500) {

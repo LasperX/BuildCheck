@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   assessOffer,
   checkBuild,
+  clampToPerfAnchors,
   daysBetween,
   estimateUsedPrice,
   iqrBounds,
@@ -195,8 +196,9 @@ describe('เลือกแหล่งราคากลาง', () => {
   });
 
   it('ราคาสำรวจเก่ากว่า 90 วัน ใช้สูตรประมาณการ', () => {
+    // รุ่นที่มีแต่มือสอง: หักตามอายุ 2 ปี → 12,000 × 0.75² × 0.90 = 6,075 → 6,100
     const stat = resolveUsedStat({
-      part,
+      part: { ...part, availability: 'used_only' },
       grade: 'B',
       reports: [],
       survey: { minPrice: 6500, maxPrice: 7500, surveyedAt: '2026-01-01' },
@@ -208,6 +210,61 @@ describe('เลือกแหล่งราคากลาง', () => {
       median: 6100,
       p25: null,
     });
+  });
+
+  it('รุ่นที่ยังขายมือหนึ่ง ไม่หักตามปีวางขายซ้ำ (t = 1 เสมอ)', () => {
+    // ราคาร้านวันนี้ลดตามอายุมาแล้ว: 12,000 × 0.75¹ × 0.90 = 8,100 ไม่ว่าวางขายปีไหน
+    for (const releaseYear of [2019, 2024, null]) {
+      const stat = resolveUsedStat({
+        part: { price: 12000, categorySlug: 'gpu', releaseYear, availability: 'new' },
+        grade: 'B',
+        reports: [],
+        survey: null,
+        today: TODAY,
+      });
+      expect(stat.median).toBe(8100);
+    }
+  });
+});
+
+describe('กรอบราคาตามคะแนนประสิทธิภาพ (รุ่นที่มีแต่มือสอง)', () => {
+  // ราคามือสองของรุ่นที่ยังขายมือหนึ่ง: คะแนน 40 = 3,000 · คะแนน 50 = 4,000 · คะแนน 60 = 6,000
+  const anchors = [
+    { perf: 40, price: 3000 },
+    { perf: 50, price: 4000 },
+    { perf: 60, price: 6000 },
+  ];
+
+  it('อยู่ในกรอบอยู่แล้ว ไม่เปลี่ยน', () => {
+    expect(clampToPerfAnchors(3500, 45, anchors)).toBe(3500);
+  });
+
+  it('แรงกว่ารุ่นที่ยังขายอยู่ ต้องไม่ถูกกว่ารุ่นนั้น', () => {
+    // คะแนน 55 แรงกว่ารุ่นคะแนน 50 (4,000) จึงไม่ต่ำกว่า 4,000
+    expect(clampToPerfAnchors(2500, 55, anchors)).toBe(4000);
+  });
+
+  it('ช้ากว่ารุ่นที่ยังขายอยู่ ต้องไม่แพงกว่ารุ่นนั้น', () => {
+    // คะแนน 45 ช้ากว่ารุ่นคะแนน 50 (4,000) จึงไม่เกิน 4,000
+    expect(clampToPerfAnchors(5200, 45, anchors)).toBe(4000);
+  });
+
+  it('ช้ากว่าทุกรุ่น มีแต่เพดาน · แรงกว่าทุกรุ่น มีแต่ขั้นต่ำ', () => {
+    expect(clampToPerfAnchors(900, 20, anchors)).toBe(900);
+    expect(clampToPerfAnchors(3500, 20, anchors)).toBe(3000);
+    expect(clampToPerfAnchors(9000, 80, anchors)).toBe(9000);
+    expect(clampToPerfAnchors(5000, 80, anchors)).toBe(6000);
+  });
+
+  it('ราคารุ่นมือหนึ่งไม่เรียงตามคะแนน ใช้เพดานเป็นหลัก · ไม่มีรุ่นให้เทียบ ไม่เปลี่ยน', () => {
+    // รุ่นคะแนน 40 ราคา 5,000 แพงกว่ารุ่นคะแนน 50 ราคา 4,000: รุ่นคะแนน 45 ได้ไม่เกิน 4,000
+    const odd = [
+      { perf: 40, price: 5000 },
+      { perf: 50, price: 4000 },
+    ];
+    expect(clampToPerfAnchors(4500, 45, odd)).toBe(4000);
+    expect(clampToPerfAnchors(2000, 45, odd)).toBe(4000);
+    expect(clampToPerfAnchors(2000, 45, [])).toBe(2000);
   });
 });
 
