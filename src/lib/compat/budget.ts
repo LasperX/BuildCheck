@@ -19,6 +19,8 @@ import { isUsedOnly } from './availability';
 import { checkBuild } from './index';
 import { buildContext } from './context';
 import { calculatePower, recommendedPsuWatt } from './power';
+import { norm } from './rules/helpers';
+import { missingGpuConnectors } from './rules/r14-r16-psu';
 import { resolveSettings } from './settings';
 import type { UsedGrade } from './used-price';
 import type {
@@ -83,6 +85,19 @@ export const MIN_RAM_GB: Record<UsageType, { min: number; preferred: number }> =
   gaming: { min: 16, preferred: 32 },
   creator: { min: 32, preferred: 32 },
   streaming: { min: 32, preferred: 32 },
+};
+
+/**
+ * ความจุที่เก็บข้อมูลขั้นต่ำ (GB) ตามประเภทการใช้งาน
+ * เกมหนึ่งเกมใช้พื้นที่หลายสิบถึงร้อยกว่า GB จึงไม่จัด SSD 128–256 GB ให้เครื่องเล่นเกม
+ * ใช้ 480 / 960 เพื่อรวมรุ่นที่ขายในชื่อ 480 GB / 500 GB / 512 GB และ 960 GB / 1 TB
+ * เป็นเงื่อนไขบังคับเมื่อในระบบมีรุ่นที่ถึงขั้นต่ำ ถ้าไม่มีเลยจึงใช้รุ่นที่มี
+ */
+export const MIN_STORAGE_GB: Record<UsageType, number> = {
+  office: 240,
+  gaming: 480,
+  streaming: 480,
+  creator: 960,
 };
 
 export type BudgetInput = {
@@ -265,6 +280,39 @@ function rankByScore<T extends PartOf<'cpu'> | PartOf<'gpu'>>(
   return within.length ? within : [...allowed].sort(byPrice);
 }
 
+/** มี PSU ในแคตตาล็อกอย่างน้อยหนึ่งรุ่นที่จ่ายหัวไฟให้การ์ดจอนี้ได้ครบ (ไม่ติด R16) */
+const poweredBySomePsu = (gpu: PartOf<'gpu'>, psus: readonly PartOf<'psu'>[]) =>
+  psus.some(
+    (psu) => missingGpuConnectors(gpu.spec.powerConnectors, psu.spec.pcieConnectors).length === 0,
+  );
+
+/**
+ * ราคาต่ำสุดของแรม 2 แถวขึ้นไปที่ได้ความจุขั้นต่ำ (ไม่สนชนิดแรมและบอร์ด จึงเป็นขอบล่าง)
+ * ไม่มีชุดแบบนั้นเลย ใช้ชุดถูกสุดที่ได้ความจุขั้นต่ำแทน
+ */
+function cheapestDualRam(kits: readonly PartOf<'ram'>[], minGb: number): number {
+  let dual = Infinity;
+  let any = Infinity;
+  for (const kit of kits) {
+    // ทุกจำนวนชุดที่ใส่ได้ในบอร์ดใหญ่สุด (ไม่เกิน 8 แถว) เช่น 1x16 สองชุด = 2 แถว
+    for (let quantity = 1; kit.spec.sticksInKit * quantity <= 8; quantity++) {
+      const gb = kit.spec.capacityPerStickGb * kit.spec.sticksInKit * quantity;
+      if (gb < minGb) continue;
+      const price = kit.price * quantity;
+      any = Math.min(any, price);
+      if (kit.spec.sticksInKit * quantity >= 2) dual = Math.min(dual, price);
+    }
+  }
+  return Number.isFinite(dual) ? dual : any;
+}
+
+/** ราคาต่ำสุดของที่เก็บข้อมูลที่ถึงความจุขั้นต่ำ ไม่มีเลยใช้ชิ้นถูกสุด (ขอบล่างเหมือน cheapestDualRam) */
+function cheapestStorage(drives: readonly PartOf<'storage'>[], minGb: number): number {
+  const prices = (list: readonly PartOf<'storage'>[]) => list.map((drive) => drive.price);
+  const big = drives.filter((drive) => drive.spec.capacityGb >= minGb);
+  return Math.min(...prices(big.length ? big : drives));
+}
+
 type Context = {
   catalog: Catalog;
   usage: UsageType;
@@ -281,6 +329,18 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
   const prefer = (items: EngineItem[], codes: RuleCode[], s: EngineSettings) =>
     mode === 'best' && hasWarning(items, codes, s);
 
+  // เช็กเร็วก่อนไล่ CPU ทุกรุ่น: ถ้าเพดานของแรมหรือที่เก็บข้อมูลต่ำกว่าชิ้นที่ถูกที่สุดที่ผ่านขั้นต่ำ
+  // (แรม 2 แถวตามความจุขั้นต่ำ · ที่เก็บข้อมูลตามความจุขั้นต่ำ) ประกอบไม่ได้แน่นอน ไม่ต้องลองต่อ
+  if (caps.ram !== undefined && caps.ram < cheapestDualRam(catalog.ram, MIN_RAM_GB[usage].min)) {
+    return null;
+  }
+  if (
+    caps.storage !== undefined &&
+    caps.storage < cheapestStorage(catalog.storage, MIN_STORAGE_GB[usage])
+  ) {
+    return null;
+  }
+
   const cpus = ctx.cpuBrand
     ? catalog.cpu.filter((cpu) => cpu.brandName.toLowerCase() === ctx.cpuBrand?.toLowerCase())
     : catalog.cpu;
@@ -292,7 +352,14 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
   if (officeFirst) {
     cpuOrder = [...cpuOrder].sort((a, b) => Number(b.spec.hasIgpu) - Number(a.spec.hasIgpu));
   }
-  const gpuOrder = rankByScore(catalog.gpu, base.gpu, caps.gpu, mode);
+  const ranked = rankByScore(catalog.gpu, base.gpu, caps.gpu, mode);
+  // โหมดปกติ: การ์ดจอที่มี PSU ในระบบจ่ายหัวไฟได้ครบ (ไม่ติด R16) มาก่อน ลำดับเดิมในแต่ละกลุ่มไม่เปลี่ยน
+  // การ์ดที่ต้องใช้หัวแปลงยังเลือกได้ถ้าไม่มีทางอื่น
+  const powered = (gpu: PartOf<'gpu'>) => poweredBySomePsu(gpu, catalog.psu);
+  const gpuOrder =
+    mode === 'best'
+      ? [...ranked.filter(powered), ...ranked.filter((gpu) => !powered(gpu))]
+      : ranked;
 
   for (const cpu of cpuOrder) {
     const skipGpu = officeFirst && cpu.spec.hasIgpu;
@@ -338,7 +405,7 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
       const withMb = [...core, asItem(mb)];
 
       // ข้อ 5 แรมที่ผ่าน R04–R06
-      const ram = pickRam(withMb, mb, alloc.ram, capsIn.ram, u, modeIn);
+      const ram = pickRam(mb, alloc.ram, capsIn.ram, u, modeIn);
       if (!ram) continue;
       const withRam = [...withMb, ram];
 
@@ -398,7 +465,6 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
   }
 
   function pickRam(
-    withMb: EngineItem[],
     mb: PartOf<'motherboard'>,
     limit: number,
     cap: number | undefined,
@@ -416,11 +482,20 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
         return { kit, quantity, gb, sticks, price: kit.price * quantity };
       });
     });
-    const valid = options
-      .filter((o) => o.gb >= min && (cap === undefined || o.price <= cap))
-      .filter((o) =>
-        passes([...withMb, asItem(o.kit, o.quantity)], ['R04', 'R05', 'R06'], settings),
-      )
+    // R04–R06 ดูแค่แรมกับเมนบอร์ด จึงตรวจตรงๆ ไม่ต้องรัน Engine ทั้งชุดทุกตัวเลือก (ขั้นนี้ถูกเรียกหลายพันครั้ง)
+    // เงื่อนไขเดียวกับกฎ: ชนิดแรมตรงบอร์ด · จำนวนแถวไม่เกินช่อง · ความจุรวมไม่เกินที่บอร์ดรับ
+    const fitsBoard = options.filter(
+      (o) =>
+        o.gb >= min &&
+        norm(o.kit.spec.type) === norm(mb.spec.memoryType) &&
+        o.sticks <= mb.spec.memorySlots &&
+        o.gb <= mb.spec.maxMemoryGb,
+    );
+    // 2 แถวขึ้นไป (Dual Channel) เป็นเงื่อนไขบังคับเมื่อบอร์ดนี้ใส่ได้ ไม่ใช่แค่ตัวเลือกที่ดีกว่า
+    // ไม่งั้นขั้นลดรุ่นจะลดเป็นแถวเดียวเพื่อประหยัดไม่กี่สิบบาท และเสียความเร็วมากกว่าที่ได้
+    const dual = fitsBoard.filter((o) => o.sticks >= 2);
+    const valid = (dual.length ? dual : fitsBoard)
+      .filter((o) => cap === undefined || o.price <= cap)
       .map((o) => ({
         ...o,
         // ตัวเลือกที่ดีกว่ามาก่อน: 2 แถวขึ้นไป (Dual Channel) และความเร็วไม่เกินบอร์ด (ไม่ติด R07)
@@ -442,7 +517,12 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
     cap: number | undefined,
     modeIn: Mode,
   ): PartOf<'storage'> | null {
-    const fits = catalog.storage.filter((s) => passes([...items, asItem(s)], ['R17'], settings));
+    const fitsSlot = catalog.storage.filter((s) =>
+      passes([...items, asItem(s)], ['R17'], settings),
+    );
+    // ความจุขั้นต่ำตามประเภทการใช้งาน บังคับเมื่อในระบบมีรุ่นที่ถึง (ดู MIN_STORAGE_GB)
+    const bigEnough = fitsSlot.filter((s) => s.spec.capacityGb >= MIN_STORAGE_GB[usage]);
+    const fits = bigEnough.length ? bigEnough : fitsSlot;
     // ข้อ 6 ใช้ NVMe เสมอถ้าในระบบมี การลดรุ่นลดเป็น NVMe ความจุน้อยลง ไม่เปลี่ยนเป็น SATA
     const nvme = fits.filter((s) => s.spec.type === 'NVMe');
     const pool = (nvme.length ? nvme : fits).filter((s) => cap === undefined || s.price <= cap);
@@ -521,6 +601,8 @@ function buildForTarget(ctx: Context, target: number, upgrade: boolean): EngineI
     for (let round = 0; round < MAX_ROUNDS && target - total(items) > target * 0.05; round++) {
       const current: EngineItem[] = items;
       const leftover = target - total(current);
+      const currentScore = score(current);
+      const currentHasR16 = hasWarning(current, ['R16'], ctx.settings);
       let improved: EngineItem[] | null = null;
       for (const cat of order) {
         const item = find(current, cat);
@@ -538,10 +620,11 @@ function buildForTarget(ctx: Context, target: number, upgrade: boolean): EngineI
         // ทีละขั้น: ลองรุ่นที่แรงขึ้นถัดไปก่อน แล้วประกอบชิ้นอื่นใหม่ให้เข้ากับรุ่นนั้น
         for (const part of pool) {
           const built = forceCategory(ctx, target, caps, cat, part);
-          if (built && total(built) <= target && score(built) > score(current)) {
-            improved = built;
-            break;
-          }
+          if (!built || total(built) > target || score(built) <= currentScore) continue;
+          // ไม่อัปเกรดไปเป็นชุดที่สายไฟการ์ดจอไม่พอ (R16) ถ้าชุดเดิมไม่มีปัญหานี้
+          if (!currentHasR16 && hasWarning(built, ['R16'], ctx.settings)) continue;
+          improved = built;
+          break;
         }
         if (improved) break;
       }

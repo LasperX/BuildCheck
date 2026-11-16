@@ -8,6 +8,7 @@ import {
   generateBudgetBuilds,
   itemsKey,
   MIN_RAM_GB,
+  MIN_STORAGE_GB,
 } from '@/lib/compat/budget';
 import type { EngineItem, EnginePart } from '@/lib/compat';
 
@@ -347,5 +348,74 @@ describe('itemsKey (รวมการ์ดตัวเลือกที่ไ
       itemsKey(items),
     );
     expect(itemsKey([{ ...first, condition: 'B' }, ...items.slice(1)])).not.toBe(itemsKey(items));
+  });
+});
+
+describe('เงื่อนไขขั้นต่ำของชุดที่จัดให้', () => {
+  const budgets = [16000, 22000, 30000, 40000];
+  const options = (parts: EnginePart[], usage: 'gaming' | 'office' = 'gaming') =>
+    budgets.flatMap((budget) => {
+      const result = generateBudgetBuilds({ budget, usage, catalog: parts });
+      return result.ok ? result.options : [];
+    });
+
+  it('ไม่จัด SSD ที่เล็กกว่าขั้นต่ำให้เครื่องเล่นเกม ถ้าในระบบมีรุ่นที่ถึง', () => {
+    const parts = [
+      ...catalog(),
+      storage({ type: 'NVMe', interface: 'M2', capacityGb: 128 }, 300),
+      storage({ type: 'NVMe', interface: 'M2', capacityGb: 256 }, 450),
+    ];
+    const built = options(parts);
+    expect(built.length).toBeGreaterThan(0);
+    for (const option of built) {
+      const drive = pick(option.items, 'storage')!.part as Extract<
+        EnginePart,
+        { categorySlug: 'storage' }
+      >;
+      expect(drive.spec.capacityGb).toBeGreaterThanOrEqual(MIN_STORAGE_GB.gaming);
+    }
+  });
+
+  it('แรมเป็น 2 แถวขึ้นไปเสมอเมื่อบอร์ดใส่ได้ แม้ชุดแถวเดียวถูกกว่า', () => {
+    // สถานการณ์จริงที่เคยพลาด: ชุดแถวเดียวถูกกว่า 50 บาท ขั้นลดรุ่นเลยลดแรมเป็นแถวเดียว
+    const parts = [
+      ...catalog(),
+      ram({ type: 'DDR4', capacityPerStickGb: 16, sticksInKit: 1, speedMts: 3200 }, 1150),
+      ram({ type: 'DDR5', capacityPerStickGb: 16, sticksInKit: 1, speedMts: 6000 }, 2350),
+    ];
+    const built = Array.from({ length: 40 }, (_, i) => 12000 + i * 500).flatMap((budget) => {
+      const result = generateBudgetBuilds({ budget, usage: 'gaming', catalog: parts });
+      return result.ok ? result.options : [];
+    });
+    expect(built.length).toBeGreaterThan(0);
+    for (const option of built) {
+      const memory = pick(option.items, 'ram')!;
+      const kit = memory.part as Extract<EnginePart, { categorySlug: 'ram' }>;
+      expect(kit.spec.sticksInKit * memory.quantity).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('เลือกการ์ดจอที่ PSU ในระบบจ่ายหัวไฟได้ครบก่อน ไม่จัดชุดที่ติด R16 ถ้ามีทางอื่น', () => {
+    // การ์ดแรงสุดต้องการหัว 12pin ซึ่งไม่มี PSU รุ่นไหนมี
+    const parts = [
+      ...catalog(),
+      gpu({ lengthMm: 300, tbpWatt: 250, perfScore: 95, powerConnectors: { '12pin': 1 } }, 14000),
+    ];
+    const built = options(parts);
+    expect(built.length).toBeGreaterThan(0);
+    for (const option of built) {
+      expect(option.result.issues.map((issue) => issue.code)).not.toContain('R16');
+    }
+  });
+
+  it('ถ้ามีแต่การ์ดจอที่ต้องใช้หัวแปลง ยังจัดได้และแจ้งเตือน R16', () => {
+    const parts = [
+      ...catalog().filter((part) => part.categorySlug !== 'gpu'),
+      gpu({ lengthMm: 300, tbpWatt: 250, perfScore: 70, powerConnectors: { '12pin': 1 } }, 9000),
+    ];
+    const result = generateBudgetBuilds({ budget: 30000, usage: 'gaming', catalog: parts });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.options[1]!.result.issues.map((issue) => issue.code)).toContain('R16');
   });
 });

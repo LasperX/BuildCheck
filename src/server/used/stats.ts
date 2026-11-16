@@ -63,6 +63,8 @@ export async function recomputeUsedStats(
       categorySlug: categories.slug,
       // คะแนนประสิทธิภาพ มีเฉพาะ CPU และการ์ดจอ
       perf: sql<number | null>`coalesce(${cpuSpecs.perfScore}, ${gpuSpecs.perfScore})`,
+      // CPU เทียบกันเฉพาะ Socket เดียวกัน: CPU ต่าง Socket ใช้เมนบอร์ดและแรมคนละชุด ราคาจึงเทียบกันตรงๆ ไม่ได้
+      socket: cpuSpecs.socket,
     })
     .from(parts)
     .innerJoin(categories, eq(parts.categoryId, categories.id))
@@ -171,13 +173,14 @@ export async function recomputeUsedStats(
   });
 
   // รุ่นที่มีแต่มือสองซึ่งยังใช้ราคาประมาณการ: จำกัดให้อยู่ในกรอบของรุ่นที่ยังขายมือหนึ่งที่คะแนนใกล้กัน
+  // (CPU เทียบเฉพาะ Socket เดียวกัน การ์ดจอเทียบทั้งหมวด)
   // (รุ่นที่แรงกว่าไม่ถูกกว่า รุ่นที่ช้ากว่าไม่แพงกว่า) ดู clampToPerfAnchors
   const partById = new Map(partRows.map((part) => [part.id, part]));
   const anchors = new Map<string, PerfAnchor[]>();
   for (const value of values) {
     const part = partById.get(value.partId);
     if (!part || part.availability !== 'new' || part.perf === null) continue;
-    const k = `${part.categorySlug}:${value.grade}`;
+    const k = `${part.categorySlug}:${part.socket ?? ''}:${value.grade}`;
     anchors.set(k, [...(anchors.get(k) ?? []), { perf: part.perf, price: value.medianPrice }]);
   }
   for (const value of values) {
@@ -187,7 +190,7 @@ export async function recomputeUsedStats(
     value.medianPrice = clampToPerfAnchors(
       value.medianPrice,
       part.perf,
-      anchors.get(`${part.categorySlug}:${value.grade}`) ?? [],
+      anchors.get(`${part.categorySlug}:${part.socket ?? ''}:${value.grade}`) ?? [],
     );
   }
 
