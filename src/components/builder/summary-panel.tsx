@@ -1,6 +1,9 @@
 'use client';
 
-import { Recycle } from 'lucide-react';
+import { Cpu, Recycle, Wand2 } from 'lucide-react';
+import Link from 'next/link';
+
+import { Button } from '@/components/ui/button';
 
 import type { CheckResult, Level } from '@/lib/compat';
 import { formatBaht } from '@/lib/parts/catalog';
@@ -16,11 +19,14 @@ export function SummaryPanel({
   itemCount,
   budget,
   onJumpToIssues,
+  onStart,
 }: {
   result: CheckResult;
   itemCount: number;
   budget: number | null;
   onJumpToIssues?: () => void;
+  /** สเปกยังว่าง: ปุ่มเริ่มเลือก CPU */
+  onStart?: () => void;
 }) {
   const status = itemCount === 0 ? null : STATUS_UI[result.status];
   const StatusIcon = status?.icon;
@@ -30,6 +36,9 @@ export function SummaryPanel({
   // ราคารวมวิ่งไปค่าใหม่ · กล่องสถานะเด้งเข้าเมื่อสถานะรวมเปลี่ยน (เช่น แก้ปัญหาจนเข้ากันได้ทั้งหมด)
   const total = useAnimatedNumber(price.total);
   const statusKey = useChangeKey(itemCount === 0 ? null : result.status);
+
+  // ยังไม่เลือกอะไรเลย: บอกวิธีเริ่มแทนตัวเลข ฿0 / 0 W ที่ไม่มีความหมาย
+  if (itemCount === 0) return <EmptySummary onStart={onStart} />;
 
   return (
     <div className="flex flex-col divide-y divide-border">
@@ -142,6 +151,52 @@ export function SummaryPanel({
             </div>
           </dl>
         )}
+      </div>
+    </div>
+  );
+}
+
+const STEPS = [
+  'เลือก CPU ก่อน ระบบจะกรองเมนบอร์ดที่ใส่ได้ให้',
+  'เลือกหมวดที่เหลือ ผลตรวจขึ้นทันทีทุกครั้งที่เลือก',
+  'ดูราคารวม กำลังไฟ และปัญหาที่ต้องแก้ได้ที่แผงนี้',
+];
+
+function EmptySummary({ onStart }: { onStart?: (() => void) | undefined }) {
+  return (
+    <div className="flex flex-col gap-4 p-4">
+      <div>
+        <h2 className="font-semibold">เริ่มจัดสเปก</h2>
+        <p className="text-sm text-muted-foreground">
+          ยังไม่ได้เลือกอะไหล่ ราคารวม กำลังไฟ และผลตรวจจะแสดงที่นี่
+        </p>
+      </div>
+      <ol className="flex flex-col gap-2 text-sm">
+        {STEPS.map((step, index) => (
+          <li key={step} className="flex gap-2.5">
+            <span
+              aria-hidden
+              className="grid size-6 shrink-0 place-items-center rounded-full bg-brand-soft font-mono text-xs font-semibold text-brand-soft-fg"
+            >
+              {index + 1}
+            </span>
+            <span className="pt-0.5">{step}</span>
+          </li>
+        ))}
+      </ol>
+      <div className="flex flex-col gap-2">
+        {onStart ? (
+          <Button type="button" onClick={onStart}>
+            <Cpu aria-hidden />
+            เลือก CPU
+          </Button>
+        ) : null}
+        <Button asChild variant="secondary">
+          <Link href="/budget">
+            <Wand2 aria-hidden />
+            ไม่แน่ใจ ให้ระบบจัดตามงบ
+          </Link>
+        </Button>
       </div>
     </div>
   );

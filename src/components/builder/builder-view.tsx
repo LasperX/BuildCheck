@@ -379,7 +379,12 @@ export function BuilderView({
           aria-label="สรุปสเปก"
           className="hidden self-start rounded-xl border border-border bg-card lg:sticky lg:top-20 lg:block"
         >
-          <SummaryPanel result={result} itemCount={itemCount} budget={meta.budget} />
+          <SummaryPanel
+            result={result}
+            itemCount={itemCount}
+            budget={meta.budget}
+            onStart={() => setPicker({ category: 'cpu' })}
+          />
         </aside>
       </div>
 
@@ -390,15 +395,23 @@ export function BuilderView({
         onClick={() => setSheetOpen(true)}
         className="fixed inset-x-0 bottom-14 z-30 flex items-center justify-between gap-3 border-t border-border bg-surface px-4 py-2 text-left shadow-lg lg:hidden"
       >
-        <span className="min-w-0">
-          <span className="block font-mono text-lg font-semibold">
-            {formatBaht(result.price.total)}
+        {itemCount === 0 ? (
+          // ยังว่าง: บอกวิธีเริ่มแทน ฿0 / 0 W
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold">ยังไม่ได้เลือกอะไหล่</span>
+            <span className="block text-xs text-muted-foreground">แตะเพื่อดูวิธีเริ่มจัดสเปก</span>
           </span>
-          <span className="block text-xs text-muted-foreground">
-            {result.power.totalWatt} W
-            {result.power.load !== null && ` · ${Math.round(result.power.load * 100)}% ของ PSU`}
+        ) : (
+          <span className="min-w-0">
+            <span className="block font-mono text-lg font-semibold">
+              {formatBaht(result.price.total)}
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              {result.power.totalWatt} W
+              {result.power.load !== null && ` · ${Math.round(result.power.load * 100)}% ของ PSU`}
+            </span>
           </span>
-        </span>
+        )}
         <span className="flex items-center gap-2">
           {result.counts.error > 0 && (
             <Badge variant="err">
@@ -435,6 +448,10 @@ export function BuilderView({
             itemCount={itemCount}
             budget={meta.budget}
             onJumpToIssues={() => setSheetOpen(false)}
+            onStart={() => {
+              setSheetOpen(false);
+              setPicker({ category: 'cpu' });
+            }}
           />
         </SheetContent>
       </Sheet>

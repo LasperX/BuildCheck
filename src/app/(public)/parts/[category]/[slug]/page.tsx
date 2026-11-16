@@ -61,62 +61,66 @@ async function PartContent({ params }: { params: Params }) {
         <span aria-current="page">{part.model}</span>
       </nav>
 
-      <section className="mt-3 grid gap-6 md:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_320px]">
-        <PartImage
-          src={part.imageUrl}
-          alt={`รูป ${part.model}`}
-          category={part.categorySlug}
-          size={320}
-          label={part.model}
-          brand={part.brandName}
-          className="h-48 w-full md:h-56 xl:h-70"
-        />
-        <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">
-            {part.brandName}
-            {part.releaseYear ? ` · วางขายปี ${part.releaseYear}` : ''}
-          </p>
-          <h1 className="t-h1 break-words">{part.model}</h1>
-          <div className="mt-2 flex flex-wrap gap-1">
-            {part.chips.map((chip) => (
-              <span
-                key={chip}
-                className="inline-flex h-5.5 items-center rounded-xs bg-surface-2 px-1.5 font-mono text-2xs text-muted-foreground"
-              >
-                {chip}
-              </span>
-            ))}
+      {/* จอกว้าง: กล่องราคาอยู่คอลัมน์ขวาและติดจอตอนเลื่อน แท็บสเปกอยู่ใต้รูปและข้อมูล ไม่มีพื้นที่ว่างใต้กล่องราคา
+          จอแคบ: เรียงลงมา รูปและข้อมูล → กล่องราคา → แท็บ */}
+      <div className="mt-3 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="grid gap-6 md:grid-cols-[240px_minmax(0,1fr)] xl:col-start-1 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <PartImage
+            src={part.imageUrl}
+            alt={`รูป ${part.model}`}
+            category={part.categorySlug}
+            size={320}
+            label={part.model}
+            brand={part.brandName}
+            className="h-48 w-full md:h-56 xl:h-70"
+          />
+          <div className="min-w-0">
+            <p className="text-sm text-muted-foreground">
+              {part.brandName}
+              {part.releaseYear ? ` · วางขายปี ${part.releaseYear}` : ''}
+            </p>
+            <h1 className="t-h1 break-words">{part.model}</h1>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {part.chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="inline-flex h-5.5 items-center rounded-xs bg-surface-2 px-1.5 font-mono text-2xs text-muted-foreground"
+                >
+                  {chip}
+                </span>
+              ))}
+            </div>
+            <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+              <Layers aria-hidden className="size-4" />
+              อยู่ในสเปกของสมาชิก <b className="font-mono">{part.usedInBuilds}</b> ชุด
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {part.specVerified ? (
+                <Badge variant="ok">
+                  <CircleCheck aria-hidden />
+                  ตรวจสเปกแล้ว
+                </Badge>
+              ) : (
+                <Badge variant="warn">
+                  <Clock aria-hidden />
+                  สเปกรอตรวจสอบ
+                </Badge>
+              )}
+              {part.specSourceUrl ? (
+                <a
+                  href={part.specSourceUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-link hover:underline"
+                >
+                  แหล่งอ้างอิงสเปก
+                  <ExternalLink aria-hidden className="size-3.5" />
+                </a>
+              ) : null}
+            </div>
           </div>
-          <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <Layers aria-hidden className="size-4" />
-            อยู่ในสเปกของสมาชิก <b className="font-mono">{part.usedInBuilds}</b> ชุด
-          </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {part.specVerified ? (
-              <Badge variant="ok">
-                <CircleCheck aria-hidden />
-                ตรวจสเปกแล้ว
-              </Badge>
-            ) : (
-              <Badge variant="warn">
-                <Clock aria-hidden />
-                สเปกรอตรวจสอบ
-              </Badge>
-            )}
-            {part.specSourceUrl ? (
-              <a
-                href={part.specSourceUrl}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="inline-flex items-center gap-1 text-xs font-medium text-link hover:underline"
-              >
-                แหล่งอ้างอิงสเปก
-                <ExternalLink aria-hidden className="size-3.5" />
-              </a>
-            ) : null}
-          </div>
-        </div>
-        <Card className="self-start md:col-span-2 xl:col-span-1">
+        </section>
+        <Card className="self-start xl:sticky xl:top-20 xl:col-start-2 xl:row-span-2 xl:row-start-1">
           <CardContent className="flex flex-col gap-3">
             {part.availability === 'used_only' ? (
               // รุ่นที่เลิกขายมือหนึ่งแล้ว: ราคาในระบบคือราคาตอนเปิดตัว ไม่ใช่ราคาที่ซื้อได้
@@ -152,17 +156,19 @@ async function PartContent({ params }: { params: Params }) {
             />
           </CardContent>
         </Card>
-      </section>
 
-      <PartTabs
-        specRows={specRows}
-        history={part.history.map((entry) => ({
-          price: entry.price,
-          date: entry.changedAt.toISOString(),
-        }))}
-        builds={builds}
-        used={{ partId: part.id, detail: used, loggedIn: Boolean(session) }}
-      />
+        <div className="min-w-0 xl:col-start-1">
+          <PartTabs
+            specRows={specRows}
+            history={part.history.map((entry) => ({
+              price: entry.price,
+              date: entry.changedAt.toISOString(),
+            }))}
+            builds={builds}
+            used={{ partId: part.id, detail: used, loggedIn: Boolean(session) }}
+          />
+        </div>
+      </div>
     </>
   );
 }

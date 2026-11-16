@@ -25,14 +25,19 @@ export const CATEGORY_ICONS: Record<CategorySlug, LucideIcon> = {
 };
 
 // สีป้ายแทนรูปตามยี่ห้อ (โทนเข้ม ตัวอักษรขาว อ่านได้ทั้งโหมดสว่างและมืด)
+// ยี่ห้อที่อยู่หมวดเดียวกันบ่อยใช้สีคนละกลุ่มให้แยกออกเมื่อวางติดกัน
+//   CPU: AMD แดง · Intel ฟ้า
+//   การ์ดจอและเมนบอร์ด: MSI ดำ · ASUS เขียวน้ำทะเล · Gigabyte ส้ม · ASRock น้ำตาล · Sapphire น้ำเงินเข้ม
+// ไม่ใช้โทนม่วง เพราะม่วงหมายถึงมือสองทั้งเว็บ
 const BRAND_TINTS: Record<string, string> = {
   amd: 'from-[#b3261e] to-[#5c1410]',
   intel: 'from-[#0b5cad] to-[#083566]',
   nvidia: 'from-[#3f7d0c] to-[#1f4206]',
-  asus: 'from-[#1f3a5f] to-[#101d30]',
-  msi: 'from-[#8a1c1c] to-[#3d0d0d]',
+  msi: 'from-[#3f3f46] to-[#18181b]',
+  asus: 'from-[#0e7490] to-[#083344]',
   gigabyte: 'from-[#b4530a] to-[#5e2b05]',
-  asrock: 'from-[#0f5e5a] to-[#08302e]',
+  asrock: 'from-[#7c5a2a] to-[#3b2a12]',
+  sapphire: 'from-[#1e3a8a] to-[#172554]',
 };
 const DEFAULT_TINT = 'from-[#475569] to-[#1e293b]';
 

@@ -40,7 +40,7 @@ export function PartTabs({
   used: { partId: number; detail: PartUsedDetail; loggedIn: boolean };
 }) {
   return (
-    <Tabs defaultValue="spec" className="mt-6">
+    <Tabs defaultValue="spec">
       <TabsList>
         <TabsTrigger value="spec">สเปกเต็ม</TabsTrigger>
         <TabsTrigger value="history">ประวัติราคา</TabsTrigger>
@@ -49,20 +49,18 @@ export function PartTabs({
       </TabsList>
 
       <TabsContent value="spec" className="mt-4">
-        <div className="max-w-3xl overflow-hidden rounded-lg border border-border bg-surface">
-          <table className="w-full text-sm">
-            <tbody>
-              {specRows.map((row) => (
-                <tr key={row.label} className="border-b border-border last:border-0">
-                  <th scope="row" className="w-2/5 p-3 text-left font-normal text-muted-foreground">
-                    {row.label}
-                  </th>
-                  <td className="p-3 font-mono text-xs break-words">{row.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {/* จอกว้างแสดง 2 คอลัมน์ บรรทัดสั้นลง ชื่อกับค่าไม่ห่างกันจนอ่านข้ามบรรทัดผิด */}
+        <dl className="grid overflow-hidden rounded-lg border border-border bg-surface text-sm md:grid-cols-2">
+          {specRows.map((row) => (
+            <div
+              key={row.label}
+              className="flex items-baseline justify-between gap-4 border-b border-border p-3 md:odd:border-r"
+            >
+              <dt className="text-muted-foreground">{row.label}</dt>
+              <dd className="text-right font-mono text-xs break-words">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
       </TabsContent>
 
       <TabsContent value="history" className="mt-4">
@@ -88,7 +86,7 @@ export function PartTabs({
         {builds.length === 0 ? (
           <p className="text-sm text-muted-foreground">ยังไม่มีสเปกสาธารณะที่ใช้อะไหล่ชิ้นนี้</p>
         ) : (
-          <ul className="grid gap-3 xl:grid-cols-3 md:grid-cols-2">
+          <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {builds.map((build) => (
               <li key={build.id}>
                 <Link
