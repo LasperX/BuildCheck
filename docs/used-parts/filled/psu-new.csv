@@ -1,0 +1,16 @@
+﻿brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,availability,wattage,efficiency,form_factor,modular,pcie_connectors
+Gigabyte,P550SS (GP-P550SS),1210,,,,https://www.gigabyte.com/Power-Supply/GP-P550SS/sp,รอตรวจสอบ,มีขายมือหนึ่ง,550,Silver,ATX,none,8pin:2
+Gigabyte,P650SS (GP-P650SS),1440,,,,https://www.gigabyte.com/Power-Supply/GP-P650SS/sp,รอตรวจสอบ,มีขายมือหนึ่ง,650,Silver,ATX,none,8pin:2
+Corsair,CX650 ATX 3.1 (CP-9020325),1660,,,,https://www.corsair.com/us/en/p/psu/cp-9020325-na/x,ตรวจแล้ว,มีขายมือหนึ่ง,650,Gold,ATX,none,8pin:2|16pin:1
+Cooler Master,MWE Bronze 650 V3 230V (MPE-6501-ACABW-3B),1420,,,,https://www.coolermaster.com/en-global/products/mwe-bronze-650-v3-230v.html,ตรวจแล้ว,มีขายมือหนึ่ง,650,Bronze,ATX,none,8pin:4
+Cooler Master,MWE Gold 650 V3 ATX 3.1 Non-Modular (MPE-6502-ACAAG-3B),1850,,,,https://www.coolermaster.com/en-global/products/mwe-gold-v3-atx-3-1-non-modular-series.html,ตรวจแล้ว,มีขายมือหนึ่ง,650,Gold,ATX,none,8pin:4
+MSI,MAG A850GL PCIE5,3170,,,,https://storage-asset.msi.com/datasheet/power-supply/global/MAG-A850GL-PCIE5.pdf,ตรวจแล้ว,มีขายมือหนึ่ง,850,Gold,ATX,full,8pin:4|16pin:1
+Gigabyte,UD850GM PG5 V2 ICE,3590,,,,https://www.gigabyte.com/Power-Supply/GP-UD850GM-PG5-V2/sp,ตรวจแล้ว,มีขายมือหนึ่ง,850,Gold,ATX,full,8pin:4|16pin:1
+Thermaltake,Toughpower GT 850W (PS-TPT-0850FNFAG*-3),3210,,,,https://www.thermaltake.com/toughpower-gt-850w-atx31.html,ตรวจแล้ว,มีขายมือหนึ่ง,850,Gold,ATX,full,8pin:4|16pin:1
+ASUS,Prime 850W Gold (PRIME-850G),4190,,,,https://www.asus.com/motherboards-components/power-supply-units/prime/prime-850g/techspec/,ตรวจแล้ว,มีขายมือหนึ่ง,850,Gold,ATX,full,8pin:3|16pin:1
+Cooler Master,MWE Gold 850 V3 ATX 3.1 Non-Modular White (MPE-8506-ACAG-G),2480,,,,https://www.coolermaster.com/en-global/products/mwe-gold-v3-atx-3-1-white-edition-non-modular-series.html,ตรวจแล้ว,มีขายมือหนึ่ง,850,Gold,ATX,none,8pin:4|16pin:1
+Corsair,RM1000e ATX 3.1 (CP-9020297),4850,,,,https://www.corsair.com/us/en/p/psu/cp-9020297-na/x,ตรวจแล้ว,มีขายมือหนึ่ง,1000,Gold,ATX,full,8pin:2|16pin:1
+Gigabyte,UD1000GM PG5 V2,4600,,,,https://www.gigabyte.com/Power-Supply/GP-UD1000GM-PG5-V2/sp,ตรวจแล้ว,มีขายมือหนึ่ง,1000,Gold,ATX,full,8pin:4|16pin:1
+NZXT,C1000 Gold Core (PA-0G3BB-US),4790,,,,https://support.nzxt.com/hc/en-us/articles/41580453683355-C-Series-Gold-Core-2025-Specs,ตรวจแล้ว,มีขายมือหนึ่ง,1000,Gold,ATX,full,8pin:3|16pin:1
+ASUS,ROG Strix 1200W Platinum (ROG-STRIX-1200P-GAMING),12780,,,,https://rog.asus.com/power-supply-units/rog-strix/rog-strix-1200p-gaming/spec/,รอตรวจสอบ,มีขายมือหนึ่ง,1200,Platinum,ATX,full,8pin:4|16pin:1
+Cooler Master,V SFX Platinum 1300 (MPZ-D001-SFBP-BEU),9200,,,,https://www.coolermaster.com/en-global/products/v-sfx-platinum-1300.html,ตรวจแล้ว,มีขายมือหนึ่ง,1300,Platinum,SFX,full,8pin:3|16pin:1
