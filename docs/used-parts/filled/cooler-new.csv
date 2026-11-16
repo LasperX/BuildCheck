@@ -1,0 +1,13 @@
+brand,model,price,release_year,power_watt,image_url,spec_source_url,verified,availability,type,supported_sockets,height_mm,radiator_mm,max_tdp_watt
+ID-COOLING,SE-214-XT V2 PLUS,830,,,,https://www.idcooling.com/product/detail?id=583&name=SE-214-XT+V2+PLUS,ตรวจแล้ว,มีขายมือหนึ่ง,air,LGA1851|LGA1700|LGA1200|LGA1150|LGA1151|LGA1155|AM5|AM4,150,,220
+MSI,MAG COREFROZR AA13,990,,,,https://www.msi.com/Air-Cooling/MAG-COREFROZR-AA13/Specification,ตรวจแล้ว,มีขายมือหนึ่ง,air,LGA1700|LGA1851|AM5|AM4,152,,240
+be quiet!,Pure Rock 3 Black (BK039),1050,,,,https://www.bequiet.com/en/cpucooler/5591,ตรวจแล้ว,มีขายมือหนึ่ง,air,LGA1851|LGA1700|LGA1200|LGA1150|LGA1151|LGA1155|AM5|AM4,154,,190
+be quiet!,Pure Rock Pro 3 Black (BK042),1650,,,,https://www.bequiet.com/en/cpucooler/5600,ตรวจแล้ว,มีขายมือหนึ่ง,air,LGA1851|LGA1700|LGA1200|LGA1150|LGA1151|LGA1155|AM5|AM4,155,,250
+Thermaltake,ASTRIA 400 ARGB (CL-P120-CA12SW-A),1690,,,,https://www.thermaltake.com/astria-400-argb-lighting-cpu-cooler.html,ตรวจแล้ว,มีขายมือหนึ่ง,air,LGA2066|LGA2011|LGA1851|LGA1700|LGA1200|LGA1156|LGA1155|LGA1151|LGA1150|AM5|AM4,160,,230
+ID-COOLING,FROZN A620 SLK,1790,,,,https://www.idcooling.com/product/detail?id=594&name=FROZN+A620+SLK,ตรวจแล้ว,มีขายมือหนึ่ง,air,LGA1954|LGA1851|LGA1700|LGA1200|LGA1151|LGA1150|LGA1155|LGA1156|AM5|AM4,160,,260
+DeepCool,AK500 G2,1890,,,,https://www.deepcool.com/products/Cooling/cpuaircoolers/AK500-G2-Wood-Grain-Top-Cover-CPU-Cooler/2025/21986.shtml,ตรวจแล้ว,มีขายมือหนึ่ง,air,LGA1851|LGA1700|LGA1200|LGA1150|LGA1151|LGA1155|AM5|AM4,159,,260
+be quiet!,Dark Rock 5 (BK035),2390,,,,https://www.bequiet.com/en/cpucooler/5110,ตรวจแล้ว,มีขายมือหนึ่ง,air,LGA1851|LGA1700|LGA1200|LGA1150|LGA1151|LGA1155|AM5|AM4,161,,210
+DeepCool,AK700 DIGITAL NYX,2490,,,,https://www.deepcool.com/products/Cooling/cpuaircoolers/AK700-DIGITAL-NYX-AI-Dynamic-Adjustment-CPU-Cooler-with-Digital-Display/2025/21815.shtml,ตรวจแล้ว,มีขายมือหนึ่ง,air,LGA1851|LGA1700|LGA1200|LGA1150|LGA1151|LGA1155|AM5|AM4,157,,280
+ID-COOLING,FX240 INF,1820,,,,https://www.idcooling.com/product/detail?id=507&name=FX240+INF,ตรวจแล้ว,มีขายมือหนึ่ง,aio,LGA1851|LGA1700|LGA1200|LGA1150|LGA1151|LGA1155|AM5|AM4,,240,300
+ID-COOLING,FX360 TD,2990,,,,https://www.idcooling.com/product/detail?id=568&name=FX360+TD,ตรวจแล้ว,มีขายมือหนึ่ง,aio,LGA1851|LGA1700|LGA1200|LGA1150|LGA1151|LGA1155|AM5|AM4,,360,350
+DeepCool,LE360 V2,2990,,,,https://www.deepcool.com/products/Cooling/cpuliquidcoolers/LE360-V2-Liquid-CPU-Cooler-1851-1700-AM5/2025/20138.shtml,ตรวจแล้ว,มีขายมือหนึ่ง,aio,LGA1851|LGA1700|LGA1200|LGA1151|LGA1150|LGA1155|AM5|AM4,,360,300

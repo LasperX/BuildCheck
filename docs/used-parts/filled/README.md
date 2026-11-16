@@ -91,3 +91,11 @@
 - `รอตรวจสอบ` 3 รุ่น: Gigabyte P550SS / P650SS และ ASUS ROG Strix 1200W หน้าผู้ผลิตไม่ได้ระบุชนิดสายถอดได้ ช่อง `modular` ใช้ตามร้าน ค่าอื่นตรวจกับผู้ผลิตแล้ว
 - 550 W มีแค่ Gigabyte เพราะร้านไม่มี 550 W ของยี่ห้ออื่นที่อยู่ในระบบ · 750 W ไม่ได้เพิ่ม เพราะในระบบมีแล้ว 2 ยี่ห้อ (Cooler Master, Corsair) และรุ่นที่ร้านมีขายไม่ตรงรหัสกับหน้าผู้ผลิต
 - ตัดออกเพราะหาสเปกที่ยืนยันได้ไม่เจอหรือรหัสไม่ตรง: Antec ATOM B750, Thermaltake Smart BX1 650 / TR2 S 650 / Toughpower GT 1000, Corsair RM850x SHIFT, ASUS TUF Gaming 850W Gold EVO
+
+## `cooler-new.csv` — ชุดระบายความร้อน 12 รุ่น (ซิงก์ลม 9 · ชุดน้ำ 3)
+
+- เลือกจากรุ่นที่มีขายในหมวด CPU Cooler / Liquid Cooling ของ advice.co.th และหมวดพัดลมซีพียู / ชุดน้ำ 360 มม. ของ jib.co.th วันที่ 16 พ.ย. 2026 และ `price` คือราคาหน้าเว็บร้านวันนั้น (SE-214-XT V2 PLUS และ FX240 INF ราคา Advice · ที่เหลือราคา JIB) เฉพาะยี่ห้อที่มีในระบบแล้ว
+- Socket ความสูง ขนาดหม้อน้ำ และ TDP ตรวจจากหน้าผู้ผลิต (ลิงก์ในช่อง `spec_source_url`) · TDP ของ DeepCool มาจากตาราง TDP & CPU Socket Compatibility ของ DeepCool (AK500 G2 260 W, AK700 DIGITAL NYX 280 W, LE360 V2 300 W) เพราะหน้าสินค้าไม่ได้เขียนไว้
+- ผู้ผลิตเขียน `115X` ใส่เป็น LGA1150|LGA1151|LGA1155 ตามแบบแถว DeepCool ที่มีในระบบ · `height_mm` คือความสูงรวมพัดลม
+- `max_tdp_watt` เป็นช่องบังคับ จึงตัดรุ่นที่ผู้ผลิตไม่ได้ระบุ TDP ออก: Noctua ทุกรุ่น, ARCTIC, Thermalright (Peerless Assassin, Frozen Warframe), Montech NX400, MSI MAG CORELIQUID A13 240/360, Cooler Master MasterLiquid 240 Core II, Corsair Nautilus 240, be quiet! Light Loop 360, Thermaltake TH360-S V3
+- ในระบบมี DeepCool อยู่แล้ว 5 รุ่น (AG400 PLUS, AK400, AK620, LE520, LE720) นำเข้าแล้วจะมีทั้งหมด 17 รุ่น
