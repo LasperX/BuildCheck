@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  ChevronDown,
   ChevronUp,
   CircleCheck,
   CircleX,
@@ -92,6 +93,8 @@ export function BuilderView({
   const hydrated = useBuilderHydrated();
   const items = useBuilderStore((s) => s.items);
   const meta = useBuilderStore((s) => s.meta);
+  const defaultCondition = useBuilderStore((s) => s.defaultCondition);
+  const smartFilter = useBuilderStore((s) => s.smartFilter);
   const canUndo = useBuilderStore((s) => s.past.length > 0);
   const canRedo = useBuilderStore((s) => s.future.length > 0);
   const store = useBuilderStore.getState;
@@ -268,48 +271,71 @@ export function BuilderView({
             </div>
           </div>
 
-          <div className="mt-4 grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-[180px_160px_minmax(0,1fr)]">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="usage">ประเภทการใช้งาน</Label>
-              <NativeSelect
-                id="usage"
-                value={meta.usageType}
-                onChange={(event) =>
-                  store().setMeta({ usageType: event.target.value as UsageType })
-                }
-              >
-                {(Object.keys(USAGE_LABELS) as UsageType[]).map((usage) => (
-                  <option key={usage} value={usage}>
-                    {USAGE_LABELS[usage]}
-                  </option>
-                ))}
-              </NativeSelect>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="budget">งบ (บาท)</Label>
-              <Input
-                id="budget"
-                inputMode="numeric"
-                className="font-mono"
-                placeholder="ไม่กำหนด"
-                value={meta.budget ?? ''}
-                onChange={(event) => {
-                  const digits = event.target.value.replace(/\D/g, '').slice(0, 8);
-                  store().setMeta({ budget: digits ? Number(digits) : null });
-                }}
+          {/* ตั้งค่าสเปก (ประเภทการใช้งาน งบ คำอธิบาย สภาพอะไหล่ กรองอัจฉริยะ) พับไว้เป็นแถวเดียว
+              แถวสรุปบอกค่าปัจจุบันครบ ผู้ใช้จึงเห็นช่องเลือกอะไหล่ทันทีโดยไม่ต้องเลื่อน แล้วค่อยกดเปิดเมื่ออยากเปลี่ยน */}
+          <details className="group/settings mt-4 rounded-xl border border-border bg-card">
+            <summary className="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 hover:bg-surface-2 [&::-webkit-details-marker]:hidden">
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">ตั้งค่าสเปก</span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {USAGE_LABELS[meta.usageType]} ·{' '}
+                  {meta.budget ? `งบ ${formatBaht(meta.budget)}` : 'ไม่กำหนดงบ'} · ชิ้นที่เพิ่ม{' '}
+                  {defaultCondition === 'new' ? 'มือหนึ่ง' : `มือสอง ${defaultCondition}`} ·
+                  กรองอัจฉริยะ
+                  {smartFilter ? 'เปิด' : 'ปิด'}
+                </span>
+              </span>
+              <ChevronDown
+                aria-hidden
+                className="size-4 shrink-0 text-muted-foreground transition-transform group-open/settings:rotate-180"
               />
+            </summary>
+            <div className="flex flex-col gap-3 border-t border-border p-4">
+              <div className="grid gap-3 sm:grid-cols-[180px_160px_minmax(0,1fr)]">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="usage">ประเภทการใช้งาน</Label>
+                  <NativeSelect
+                    id="usage"
+                    value={meta.usageType}
+                    onChange={(event) =>
+                      store().setMeta({ usageType: event.target.value as UsageType })
+                    }
+                  >
+                    {(Object.keys(USAGE_LABELS) as UsageType[]).map((usage) => (
+                      <option key={usage} value={usage}>
+                        {USAGE_LABELS[usage]}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="budget">งบ (บาท)</Label>
+                  <Input
+                    id="budget"
+                    inputMode="numeric"
+                    className="font-mono"
+                    placeholder="ไม่กำหนด"
+                    value={meta.budget ?? ''}
+                    onChange={(event) => {
+                      const digits = event.target.value.replace(/\D/g, '').slice(0, 8);
+                      store().setMeta({ budget: digits ? Number(digits) : null });
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="description">คำอธิบาย</Label>
+                  <Input
+                    id="description"
+                    maxLength={1000}
+                    placeholder="เช่น เน้นเล่นเกม 1080p เงียบ ไม่แรงเกินงบ"
+                    value={meta.description}
+                    onChange={(event) => store().setMeta({ description: event.target.value })}
+                  />
+                </div>
+              </div>
+              <ConditionBar items={items} parts={parts} />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="description">คำอธิบาย</Label>
-              <Input
-                id="description"
-                maxLength={1000}
-                placeholder="เช่น เน้นเล่นเกม 1080p เงียบ ไม่แรงเกินงบ"
-                value={meta.description}
-                onChange={(event) => store().setMeta({ description: event.target.value })}
-              />
-            </div>
-          </div>
+          </details>
 
           {error && (
             <p
@@ -324,7 +350,6 @@ export function BuilderView({
             <h2 id="slots-title" className="sr-only">
               ช่องอะไหล่ 8 หมวด
             </h2>
-            <ConditionBar items={items} parts={parts} />
             {CATEGORY_SLUGS.map((category) => (
               <PartSlot
                 key={category}

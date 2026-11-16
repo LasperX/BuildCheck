@@ -7,6 +7,7 @@ import { Suspense } from 'react';
 import { AddToBuildButton } from '@/components/parts/add-to-build-button';
 import { PartImage } from '@/components/parts/part-icon';
 import { PartTabs } from '@/components/parts/part-tabs';
+import { UsedPriceSummary } from '@/components/parts/used-price-summary';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,6 +67,8 @@ async function PartContent({ params }: { params: Params }) {
           alt={`รูป ${part.model}`}
           category={part.categorySlug}
           size={320}
+          label={part.model}
+          brand={part.brandName}
           className="h-48 w-full md:h-56 xl:h-70"
         />
         <div className="min-w-0">
@@ -131,11 +134,15 @@ async function PartContent({ params }: { params: Params }) {
               </div>
             ) : (
               <div>
-                <p className="text-sm text-muted-foreground">ราคาอ้างอิงล่าสุด</p>
+                <p className="text-sm text-muted-foreground">ราคามือหนึ่ง (อ้างอิง)</p>
                 <p className="text-4xl font-semibold">{formatBaht(part.price)}</p>
                 <p className="text-xs text-subtle">อัปเดตโดยแอดมิน · ราคาอ้างอิง ไม่ใช่ราคาขาย</p>
               </div>
             )}
+            {/* ราคามือสองทุกเกรดเห็นได้ทันที ทั้งรุ่นที่ยังขายและที่มีแต่มือสอง */}
+            <div className="border-t border-border pt-3">
+              <UsedPriceSummary prices={used.prices} />
+            </div>
             <AddToBuildButton
               partId={part.id}
               categorySlug={part.categorySlug}

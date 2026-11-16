@@ -11,7 +11,7 @@ import type { BuilderPart } from '@/lib/builder/types';
 import type { ItemCondition } from '@/lib/compat';
 import { type BuildItem, useBuilderStore } from '@/stores/builder-store';
 
-// แถบตัวเลือกเหนือช่องอะไหล่: กรองอัจฉริยะ + สภาพอะไหล่ รวมเป็นแถวเดียว ไม่ดันช่อง CPU ลงไปไกล
+// ตัวเลือกการเลือกอะไหล่ในกล่อง "ตั้งค่าสเปก": กรองอัจฉริยะ + สภาพอะไหล่ รวมเป็นแถวเดียว
 // สภาพอะไหล่: จัดสเปกมือสองทั้งชุดได้โดยไม่ต้องกดทีละชิ้น
 // 1. ค่าตั้งต้นของชิ้นที่เพิ่มต่อจากนี้ (เบราว์เซอร์จำไว้)
 // 2. ปุ่มเปลี่ยนทั้งชุดในครั้งเดียว ย้อนกลับได้ด้วย Ctrl+Z
@@ -48,7 +48,8 @@ export function ConditionBar({
   return (
     <section
       aria-label="ตัวเลือกการเลือกอะไหล่"
-      className="rounded-xl border border-border bg-card px-4 py-3"
+      // อยู่ในกล่อง "ตั้งค่าสเปก" ของหน้าจัดสเปก จึงคั่นด้วยเส้นบน ไม่ทำกรอบซ้อน
+      className="border-t border-border pt-3"
     >
       <div className="grid gap-3 md:grid-cols-[auto_minmax(0,1fr)_minmax(0,1.6fr)] md:items-end">
         {/* สวิตช์อยู่นอกหน้าต่างเลือก ผู้ใช้เห็นและตั้งค่าได้ก่อนกดเลือก ใช้ค่าเดียวกันทุกหมวด */}
