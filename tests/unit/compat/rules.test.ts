@@ -332,6 +332,58 @@ describe('R16 ช่องเสียบไฟการ์ดจอ', () => {
     expect(find(items, 'R16')[0].message).toContain('12VHPWR ต้องการ 1 มี 0');
   });
 
+  it('หัว 6+2 pin ของ PSU (8pin) ใช้กับช่อง 6pin ของการ์ดได้', () => {
+    const b = goodBuild();
+    const items = toItems({
+      ...b,
+      gpu: gpu({ powerConnectors: { '6pin': 1, '8pin': 1 } }),
+      psu: psu({ pcieConnectors: { '8pin': 2 } }),
+    });
+    expect(codes(items)).not.toContain('R16');
+  });
+
+  it('หัว 6+2 หัวเดียวใช้ได้ช่องเดียว เตือนเมื่อเหลือไม่พอสำหรับช่อง 6pin', () => {
+    const b = goodBuild();
+    const items = toItems({
+      ...b,
+      gpu: gpu({ powerConnectors: { '6pin': 1, '8pin': 1 } }),
+      psu: psu({ pcieConnectors: { '8pin': 1 } }),
+    });
+    const [issue] = find(items, 'R16');
+    expect(issue.message).toContain('6pin ต้องการ 1 มี 0');
+    expect(issue.message).not.toContain('8pin ต้องการ');
+  });
+
+  it('นับหัว 6pin ของ PSU รวมกับหัว 6+2 ที่เหลือ', () => {
+    const b = goodBuild();
+    const items = toItems({
+      ...b,
+      gpu: gpu({ powerConnectors: { '6pin': 2 } }),
+      psu: psu({ pcieConnectors: { '6pin': 1, '8pin': 1 } }),
+    });
+    expect(codes(items)).not.toContain('R16');
+  });
+
+  it('หัว 6pin ของ PSU ใช้แทนช่อง 8pin ไม่ได้', () => {
+    const b = goodBuild();
+    const items = toItems({
+      ...b,
+      gpu: gpu({ powerConnectors: { '8pin': 1 } }),
+      psu: psu({ pcieConnectors: { '6pin': 2 } }),
+    });
+    expect(find(items, 'R16')[0].message).toContain('8pin ต้องการ 1 มี 0');
+  });
+
+  it('หัว 8pin ใช้แทน 16pin ไม่ได้ (ต้องใช้สายแปลง จึงเตือน)', () => {
+    const b = goodBuild();
+    const items = toItems({
+      ...b,
+      gpu: gpu({ powerConnectors: { '16pin': 1 } }),
+      psu: psu({ pcieConnectors: { '8pin': 4 } }),
+    });
+    expect(find(items, 'R16')[0].message).toContain('16pin ต้องการ 1 มี 0');
+  });
+
   it('ไม่ตรวจการ์ดที่ไม่ต้องใช้ไฟเลี้ยงเพิ่ม (none)', () => {
     const b = goodBuild();
     const items = toItems({

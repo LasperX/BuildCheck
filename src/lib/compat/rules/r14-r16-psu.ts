@@ -71,15 +71,22 @@ export const r15PsuCase: Rule = ({ psu, pcCase }) => {
 
 // R16 สายไฟเลี้ยงการ์ดจอ: นับหัวต่อตามชื่อที่แอดมินกรอก เช่น { "8pin": 2 }
 // PSU ต้องมีหัวชนิดเดียวกันอย่างน้อยเท่าที่การ์ดจอต้องการ ไม่แปลงข้ามชนิด (มติในหัวข้อ C)
+// ยกเว้นข้อเดียว: หัว 8pin ของ PSU คือหัว 6+2 pin ถอดเหลือ 6 pin ได้ หัวที่เหลือจากช่อง 8pin ของการ์ด
+// จึงนับเป็น 6pin ได้ด้วย (หัวเดียวใช้ได้ช่องเดียว) ส่วน 16pin ต้องมีหัว 16pin จริง
 // ใช้หัวแปลงได้ จึงเป็นแค่ "เตือน"
 /** หัวไฟที่การ์ดจอต้องการแต่ PSU มีไม่พอ (ว่าง = พอ) ใช้ทั้งในกฎและตอนจัดตามงบ */
 export function missingGpuConnectors(
   need: Readonly<Record<string, number>>,
   have: Readonly<Record<string, number>>,
 ): { name: string; count: number; has: number }[] {
+  const spare8pin = Math.max(0, (have['8pin'] ?? 0) - (need['8pin'] ?? 0));
   return Object.entries(need)
     .filter(([name, count]) => name !== 'none' && count > 0)
-    .map(([name, count]) => ({ name, count, has: have[name] ?? 0 }))
+    .map(([name, count]) => ({
+      name,
+      count,
+      has: (have[name] ?? 0) + (name === '6pin' ? spare8pin : 0),
+    }))
     .filter((row) => row.has < row.count);
 }
 

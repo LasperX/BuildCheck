@@ -51,7 +51,10 @@ export async function uploadImage(
       bytes = new Uint8Array(await toProductImage(bytes));
       type = { ext: 'webp', contentType: 'image/webp' };
     } catch {
-      return { ok: false, error: 'อ่านไฟล์รูปไม่ได้ ไฟล์อาจเสีย ลองบันทึกรูปใหม่แล้วอัปโหลดอีกครั้ง' };
+      return {
+        ok: false,
+        error: 'อ่านไฟล์รูปไม่ได้ ไฟล์อาจเสีย ลองบันทึกรูปใหม่แล้วอัปโหลดอีกครั้ง',
+      };
     }
   }
 

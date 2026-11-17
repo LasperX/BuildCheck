@@ -110,11 +110,13 @@ export async function getParts(query: PartsQuery): Promise<PartsResponse> {
     .groupBy(buildItems.partId)
     .as('usage');
 
+  // ปิดท้ายด้วยรหัสอะไหล่เสมอ อะไหล่ที่ราคาหรือวันที่เท่ากันจะเรียงเหมือนเดิมทุกครั้ง
+  // ไม่งั้น Postgres สลับลำดับได้ระหว่างหน้า บางชิ้นขึ้นซ้ำ บางชิ้นไม่ขึ้นเลย
   const orderBy = {
-    popular: [desc(sql`coalesce(${usage.uses}, 0)`), asc(parts.price)],
-    newest: [desc(parts.releaseYear), desc(parts.createdAt)],
-    price_asc: [asc(parts.price)],
-    price_desc: [desc(parts.price)],
+    popular: [desc(sql`coalesce(${usage.uses}, 0)`), asc(parts.price), asc(parts.id)],
+    newest: [desc(parts.releaseYear), desc(parts.createdAt), desc(parts.id)],
+    price_asc: [asc(parts.price), asc(parts.id)],
+    price_desc: [desc(parts.price), desc(parts.id)],
   }[sort];
 
   const baseRows = db

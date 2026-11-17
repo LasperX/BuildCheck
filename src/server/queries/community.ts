@@ -88,8 +88,8 @@ export async function listCommunityBuilds(
     query.tab === 'new'
       ? [desc(builds.createdAt), desc(builds.id)]
       : query.tab === 'week'
-        ? [desc(weekScore), desc(builds.voteScore), desc(builds.createdAt)]
-        : [desc(builds.voteScore), desc(builds.createdAt)];
+        ? [desc(weekScore), desc(builds.voteScore), desc(builds.createdAt), desc(builds.id)]
+        : [desc(builds.voteScore), desc(builds.createdAt), desc(builds.id)];
 
   const [items, [totalRow]] = await Promise.all([
     db

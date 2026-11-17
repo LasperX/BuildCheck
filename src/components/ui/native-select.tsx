@@ -14,7 +14,7 @@ export function NativeSelect({
       <select
         ref={ref}
         className={cn(
-          'bc-select h-10 w-full cursor-pointer appearance-none rounded-md border border-input bg-surface pr-9 pl-3 text-sm outline-none transition-[border-color,box-shadow] duration-150 hover:border-border-strong focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring disabled:opacity-50 aria-invalid:border-destructive',
+          'bc-select h-10 w-full cursor-pointer appearance-none rounded-md border border-input bg-surface pr-9 pl-3 text-sm transition-[border-color,box-shadow] duration-150 outline-none hover:border-border-strong focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring disabled:opacity-50 aria-invalid:border-destructive',
           className,
         )}
         {...props}

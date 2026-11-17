@@ -32,7 +32,10 @@ async function makeImage(opts: {
 
 /** สัดส่วนของกล่องสีน้ำเงินในรูปผลลัพธ์ (ตามแนวกว้างที่สุด) */
 async function boxShare(image: Buffer) {
-  const { data, info } = await sharp(image).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(image)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   let min = info.width;
   let max = -1;
   const row = Math.floor(info.height / 2);

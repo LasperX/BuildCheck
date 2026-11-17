@@ -408,6 +408,23 @@ describe('เงื่อนไขขั้นต่ำของชุดที�
     }
   });
 
+  it('การ์ดจอที่ใช้หัว 6pin จัดคู่กับ PSU ที่มีหัว 6+2 (8pin) ได้โดยไม่ติด R16', () => {
+    // การ์ดมือสองรุ่นเก่าหลายรุ่นใช้ 6pin + 8pin ส่วน PSU ในระบบกรอกหัว 6+2 เป็น 8pin ทั้งหมด
+    const parts = [
+      ...catalog().filter((part) => part.categorySlug !== 'gpu'),
+      gpu(
+        { lengthMm: 280, tbpWatt: 185, perfScore: 60, powerConnectors: { '6pin': 1, '8pin': 1 } },
+        6000,
+      ),
+    ];
+    const result = generateBudgetBuilds({ budget: 30000, usage: 'gaming', catalog: parts });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    for (const option of result.options) {
+      expect(option.result.issues.map((issue) => issue.code)).not.toContain('R16');
+    }
+  });
+
   it('ถ้ามีแต่การ์ดจอที่ต้องใช้หัวแปลง ยังจัดได้และแจ้งเตือน R16', () => {
     const parts = [
       ...catalog().filter((part) => part.categorySlug !== 'gpu'),

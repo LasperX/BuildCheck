@@ -260,7 +260,7 @@ export const SPEC_FIELDS: Record<CategorySlug, SpecField[]> = {
       label: 'สายไฟการ์ดจอ',
       kind: 'connectors',
       required: true,
-      hint: 'รูปแบบ ชื่อ:จำนวน เช่น 8pin:2 ใช้ชื่อเดียวกับการ์ดจอ',
+      hint: 'รูปแบบ ชื่อ:จำนวน เช่น 8pin:2 ใช้ชื่อเดียวกับการ์ดจอ · หัว 6+2 pin กรอกเป็น 8pin (ใช้กับช่อง 6pin ของการ์ดได้)',
     },
   ],
   case: [

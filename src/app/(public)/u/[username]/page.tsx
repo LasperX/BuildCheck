@@ -89,7 +89,7 @@ async function ProfileContent({ params }: { params: Params }) {
       {profile.builds.length === 0 ? (
         <p className="text-muted-foreground">ยังไม่มีสเปกสาธารณะ</p>
       ) : (
-        <ul className="grid gap-4 xl:grid-cols-3 sm:grid-cols-2">
+        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {profile.builds.map((build) => (
             <li key={build.id}>
               <BuildCardView build={build} showOwner={false} />

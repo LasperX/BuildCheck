@@ -102,7 +102,7 @@ async function DashboardContent({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-3 xl:grid-cols-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Card icon={Users} label="สมาชิกทั้งหมด" value={cards.members} />
         <Card
           icon={UserPlus}
@@ -263,7 +263,7 @@ export default function AdminPage({ searchParams }: PageProps<'/admin'>) {
       <h1 className="mb-4 t-h1">ภาพรวม</h1>
       <Suspense
         fallback={
-          <div className="grid gap-3 xl:grid-cols-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }, (_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}

@@ -39,7 +39,10 @@ export async function toProductImage(bytes: Uint8Array): Promise<Buffer> {
   }
   const { width = 1, height = 1 } = await sharp(trimmed).metadata();
 
-  const inner = Math.min(Math.round(PRODUCT_IMAGE_SIZE * (1 - 2 * MARGIN)), Math.max(width, height));
+  const inner = Math.min(
+    Math.round(PRODUCT_IMAGE_SIZE * (1 - 2 * MARGIN)),
+    Math.max(width, height),
+  );
   const pad = Math.round((inner * MARGIN) / (1 - 2 * MARGIN));
 
   return sharp(trimmed)

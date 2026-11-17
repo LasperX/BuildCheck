@@ -79,7 +79,7 @@ export async function listUsers(filters: {
       })
       .from(users)
       .where(and(...where))
-      .orderBy(desc(users.createdAt))
+      .orderBy(desc(users.createdAt), desc(users.id))
       .limit(ADMIN_LIST_SIZE)
       .offset((filters.page - 1) * ADMIN_LIST_SIZE),
     db

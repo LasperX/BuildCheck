@@ -89,7 +89,8 @@ export async function listAdminParts(filters: {
       .innerJoin(categories, eq(parts.categoryId, categories.id))
       .innerJoin(brands, eq(parts.brandId, brands.id))
       .where(where)
-      .orderBy(asc(categories.sortOrder), desc(parts.createdAt))
+      // อะไหล่ที่นำเข้า CSV รอบเดียวกันได้เวลาสร้างเท่ากันทั้งชุด จึงปิดท้ายด้วยรหัสให้ลำดับคงที่ทุกหน้า
+      .orderBy(asc(categories.sortOrder), desc(parts.createdAt), desc(parts.id))
       .limit(ADMIN_PAGE_SIZE)
       .offset((filters.page - 1) * ADMIN_PAGE_SIZE),
     db

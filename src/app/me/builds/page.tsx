@@ -35,7 +35,7 @@ async function MyBuildsContent() {
   }
 
   return (
-    <ul className="mt-5 grid gap-4 xl:grid-cols-3 sm:grid-cols-2">
+    <ul className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {builds.map((build) => (
         <li key={build.id}>
           <BuildCardView
@@ -69,7 +69,7 @@ export default function MyBuildsPage() {
       </div>
       <Suspense
         fallback={
-          <div className="mt-5 grid gap-4 xl:grid-cols-3 sm:grid-cols-2">
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <Skeleton className="h-64" />
             <Skeleton className="h-64" />
           </div>

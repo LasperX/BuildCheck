@@ -109,7 +109,7 @@
 | `efficiency` | 80 Plus | เลือกหนึ่งค่า (White, Bronze, Silver, Gold, Platinum, Titanium) | ใช่ |
 | `form_factor` | ขนาด | เลือกหนึ่งค่า (ATX, SFX) | ใช่ |
 | `modular` | Modular | เลือกหนึ่งค่า (none, semi, full) | ใช่ |
-| `pcie_connectors` | สายไฟการ์ดจอ · รูปแบบ ชื่อ:จำนวน เช่น 8pin:2 ใช้ชื่อเดียวกับการ์ดจอ | ช่องไฟ เช่น 8pin:1|6pin:2 | ใช่ |
+| `pcie_connectors` | สายไฟการ์ดจอ · รูปแบบ ชื่อ:จำนวน เช่น 8pin:2 ใช้ชื่อเดียวกับการ์ดจอ · หัว 6+2 pin กรอกเป็น 8pin (ใช้กับช่อง 6pin ของการ์ดได้) | ช่องไฟ เช่น 8pin:1|6pin:2 | ใช่ |
 
 ## เคส (`case.csv`)
 
