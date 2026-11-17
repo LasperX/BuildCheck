@@ -19,8 +19,13 @@ import { isUsedOnly } from './availability';
 import { checkBuild } from './index';
 import { buildContext } from './context';
 import { calculatePower, recommendedPsuWatt } from './power';
-import { norm } from './rules/helpers';
-import { missingGpuConnectors } from './rules/r14-r16-psu';
+import { norm, type Rule } from './rules/helpers';
+import { r01CpuSocket } from './rules/r01-cpu-socket';
+import { r02CpuChipset, r03CpuBios } from './rules/r02-r03-cpu-generation';
+import { r08BoardCase, r09GpuLength, r10CoolerHeight, r11Radiator } from './rules/r08-r11-case-fit';
+import { r12CoolerSocket, r13CoolerTdp } from './rules/r12-r13-cooler';
+import { missingGpuConnectors, r15PsuCase, r16GpuConnectors } from './rules/r14-r16-psu';
+import { r17StorageSlots } from './rules/r17-storage-slots';
 import { resolveSettings } from './settings';
 import type { UsedGrade } from './used-price';
 import type {
@@ -248,17 +253,55 @@ function redistribute(
   return next;
 }
 
-/** ไม่มีปัญหาระดับผิดพลาดในกฎที่ระบุ */
-function passes(items: EngineItem[], codes: RuleCode[], settings: EngineSettings): boolean {
-  return !checkBuild({ items, settings }).issues.some(
-    (issue) => issue.level === 'error' && codes.includes(issue.code),
-  );
+/**
+ * กฎที่ขั้นเลือกอะไหล่ใช้คัดหรือเรียงตัวเลือก ทุกข้อดูอะไหล่แค่ 2 หมวด ไม่ใช้กำลังไฟ ราคา หรือคะแนน
+ * จึงรันเฉพาะกฎที่ต้องการแทน checkBuild ซึ่งคำนวณกำลังไฟ ราคา คะแนน และรันครบทุกกฎทุกครั้ง
+ * (เดิมเรียก checkBuild ทุกครั้งที่ลองอะไหล่ 1 ชิ้น งบต่ำจึงใช้เวลาหลายวินาที)
+ * ผลเหมือน checkBuild ทุกประการ เพราะปัญหาของรหัสกฎแต่ละข้อมาจากฟังก์ชันของกฎข้อนั้นเท่านั้น
+ */
+const STEP_RULES = {
+  R01: r01CpuSocket,
+  R02: r02CpuChipset,
+  R03: r03CpuBios,
+  R08: r08BoardCase,
+  R09: r09GpuLength,
+  R10: r10CoolerHeight,
+  R11: r11Radiator,
+  R12: r12CoolerSocket,
+  R13: r13CoolerTdp,
+  R15: r15PsuCase,
+  R16: r16GpuConnectors,
+  R17: r17StorageSlots,
+} satisfies Partial<Record<RuleCode, Rule>>;
+
+type StepCode = keyof typeof STEP_RULES;
+
+function stepIssues(items: EngineItem[], codes: readonly StepCode[], settings: EngineSettings) {
+  const ctx = buildContext(items, settings);
+  const wanted: readonly RuleCode[] = codes;
+  return codes
+    .flatMap((code) => STEP_RULES[code](ctx))
+    .filter((issue) => wanted.includes(issue.code));
 }
 
-function hasWarning(items: EngineItem[], codes: RuleCode[], settings: EngineSettings): boolean {
-  return checkBuild({ items, settings }).issues.some(
-    (issue) => issue.level === 'warning' && codes.includes(issue.code),
-  );
+/** ไม่มีปัญหาระดับผิดพลาดในกฎที่ระบุ */
+function passes(items: EngineItem[], codes: readonly StepCode[], settings: EngineSettings) {
+  return !stepIssues(items, codes, settings).some((issue) => issue.level === 'error');
+}
+
+function hasWarning(items: EngineItem[], codes: readonly StepCode[], settings: EngineSettings) {
+  return stepIssues(items, codes, settings).some((issue) => issue.level === 'warning');
+}
+
+/**
+ * เรียงชิ้นที่ไม่ติดคำเตือนก่อน ระดับเดียวกันเรียงตามราคา
+ * ตรวจคำเตือนครั้งเดียวต่อชิ้นก่อนเรียง ไม่ตรวจในตัวเปรียบเทียบ ซึ่งจะตรวจซ้ำทุกครั้งที่เทียบ
+ */
+function warnedLast<T extends EnginePart>(parts: readonly T[], warned: (part: T) => boolean): T[] {
+  return parts
+    .map((part) => ({ part, warned: Number(warned(part)) }))
+    .sort((a, b) => a.warned - b.warned || byPrice(a.part, b.part))
+    .map(({ part }) => part);
 }
 
 /**
@@ -313,20 +356,90 @@ function cheapestStorage(drives: readonly PartOf<'storage'>[], minGb: number): n
   return Math.min(...prices(big.length ? big : drives));
 }
 
+type RamOption = {
+  kit: PartOf<'ram'>;
+  quantity: number;
+  gb: number;
+  sticks: number;
+  price: number;
+  penalty: number;
+};
+
+/**
+ * ผลของขั้นเลือกอะไหล่ที่ใช้ซ้ำได้ภายในการจัดหนึ่งครั้ง (สร้างใหม่ทุกครั้งที่เรียก generateBudgetBuilds)
+ * ขั้นลดรุ่นและอัปเกรดประกอบสเปกใหม่หลายร้อยรอบ แต่ละรอบลอง CPU เมนบอร์ด และ PSU ชุดเดิมซ้ำ
+ * กฎใน STEP_RULES ดูอะไหล่แค่ 2 หมวด ผลจึงขึ้นกับ 2 ชิ้นนั้นเท่านั้น จำผลตามรหัสอะไหล่ได้
+ * ส่วนแคตตาล็อก ประเภทการใช้งาน และการตั้งค่า คงที่ตลอดการจัดหนึ่งครั้ง (forceCategory เปลี่ยนแค่รายการ CPU หรือการ์ดจอ)
+ */
+type StepCache = {
+  /** รหัสอะไหล่อีกหมวดที่ผ่านกฎเมื่อใส่คู่กับชิ้นนี้ คีย์ = รหัสกฎ|รหัสชิ้นนี้ */
+  fits: Map<string, Set<number>>;
+  /** เมนบอร์ดของ CPU นี้ เรียงตามลำดับที่จะลอง คีย์ = รหัส CPU|โหมด */
+  boards: Map<string, PartOf<'motherboard'>[]>;
+  /** ตัวเลือกแรมของบอร์ดนี้ก่อนตัดตามเพดาน */
+  rams: Map<number, RamOption[]>;
+  /** ที่เก็บข้อมูลที่ใส่บอร์ดนี้ได้และถึงเงื่อนไขขั้นต่ำ ก่อนตัดตามเพดาน */
+  drives: Map<number, PartOf<'storage'>[]>;
+  /** PSU ทุกรุ่น เรียงตามลำดับที่จะลองกับการ์ดจอนี้ คีย์ = รหัสการ์ดจอ (ไม่มี = 0)|โหมด */
+  psus: Map<string, PartOf<'psu'>[]>;
+  /** ชุดระบายความร้อนที่ใส่กับ CPU นี้ได้ เรียงตามลำดับที่จะลอง คีย์ = รหัส CPU|โหมด */
+  coolers: Map<string, PartOf<'cooler'>[]>;
+  /** การ์ดจอนี้มี PSU ในระบบที่จ่ายหัวไฟได้ครบไหม */
+  powered: Map<number, boolean>;
+};
+
+const newStepCache = (): StepCache => ({
+  fits: new Map(),
+  boards: new Map(),
+  rams: new Map(),
+  drives: new Map(),
+  psus: new Map(),
+  coolers: new Map(),
+  powered: new Map(),
+});
+
+function remember<K, V>(map: Map<K, V>, key: K, compute: () => V): V {
+  const hit = map.get(key);
+  if (hit !== undefined) return hit;
+  const value = compute();
+  map.set(key, value);
+  return value;
+}
+
 type Context = {
   catalog: Catalog;
   usage: UsageType;
   ratios: BudgetRatios;
   settings: EngineSettings;
   cpuBrand: string | null;
+  cache: StepCache;
 };
+
+/** รหัสของชิ้นใน others ที่ไม่ติดปัญหาระดับผิดพลาดของกฎ codes เมื่อใส่คู่กับ part */
+function fitsWith(
+  ctx: Context,
+  part: EnginePart,
+  others: readonly EnginePart[],
+  codes: readonly StepCode[],
+): Set<number> {
+  return remember(
+    ctx.cache.fits,
+    `${codes.join()}|${part.id}`,
+    () =>
+      new Set(
+        others
+          .filter((other) => passes([asItem(part), asItem(other)], codes, ctx.settings))
+          .map((other) => other.id),
+      ),
+  );
+}
 
 /** ประกอบสเปก 1 ชุดตามขั้นตอนข้อ 1–9 คืน null ถ้าประกอบไม่ได้ภายใต้เพดานที่ให้ */
 function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineItem[] | null {
   const { catalog, usage, ratios, settings } = ctx;
   const base = allocate(target, ratios);
   // โหมดปกติเลือกชิ้นที่ไม่มีคำเตือนก่อน (ยอมจ่ายเพิ่มเล็กน้อย) ส่วนโหมดหาชุดถูกสุดดูราคาอย่างเดียว
-  const prefer = (items: EngineItem[], codes: RuleCode[], s: EngineSettings) =>
+  const prefer = (items: EngineItem[], codes: readonly StepCode[], s: EngineSettings) =>
     mode === 'best' && hasWarning(items, codes, s);
 
   // เช็กเร็วก่อนไล่ CPU ทุกรุ่น: ถ้าเพดานของแรมหรือที่เก็บข้อมูลต่ำกว่าชิ้นที่ถูกที่สุดที่ผ่านขั้นต่ำ
@@ -355,7 +468,8 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
   const ranked = rankByScore(catalog.gpu, base.gpu, caps.gpu, mode);
   // โหมดปกติ: การ์ดจอที่มี PSU ในระบบจ่ายหัวไฟได้ครบ (ไม่ติด R16) มาก่อน ลำดับเดิมในแต่ละกลุ่มไม่เปลี่ยน
   // การ์ดที่ต้องใช้หัวแปลงยังเลือกได้ถ้าไม่มีทางอื่น
-  const powered = (gpu: PartOf<'gpu'>) => poweredBySomePsu(gpu, catalog.psu);
+  const powered = (gpu: PartOf<'gpu'>) =>
+    remember(ctx.cache.powered, gpu.id, () => poweredBySomePsu(gpu, catalog.psu));
   const gpuOrder =
     mode === 'best'
       ? [...ranked.filter(powered), ...ranked.filter((gpu) => !powered(gpu))]
@@ -379,8 +493,10 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
   return null;
 
   // ข้อ 4–9 หลังได้ CPU และการ์ดจอแล้ว
+  // ผลตรวจกฎของแต่ละขั้นจำไว้ใน ctx.cache (ดู StepCache) ได้ลำดับและชิ้นที่เลือกเหมือนตรวจใหม่ทุกครั้ง
+  // กฎแต่ละข้อตรวจกับอะไหล่ 2 ชิ้นที่กฎข้อนั้นดูเท่านั้น (ดู STEP_RULES) ผลจึงเหมือนตรวจทั้งชุด
   function completeRest(
-    { catalog: c, usage: u }: Context,
+    { catalog: c, usage: u, cache }: Context,
     alloc: Record<CategorySlug, number>,
     capsIn: Caps,
     modeIn: Mode,
@@ -391,15 +507,15 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
     const core = [asItem(cpu), ...(gpu ? [asItem(gpu)] : [])];
 
     // ข้อ 4 เมนบอร์ดที่ผ่าน R01–R02 ราคาถูกสุด มีช่อง M.2 อย่างน้อย 1 ช่อง (บอร์ดที่ไม่ต้องอัปเดต BIOS มาก่อน)
-    const boards = c.motherboard
-      .filter(
-        (mb) => mb.spec.m2Slots >= 1 && passes([...core, asItem(mb)], ['R01', 'R02'], settings),
-      )
-      .sort(
-        (a, b) =>
-          Number(prefer([asItem(cpu), asItem(a)], ['R03'], settings)) -
-            Number(prefer([asItem(cpu), asItem(b)], ['R03'], settings)) || byPrice(a, b),
-      );
+    const boards = remember(cache.boards, `${cpu.id}|${mode}`, () =>
+      warnedLast(
+        c.motherboard.filter(
+          (mb) =>
+            mb.spec.m2Slots >= 1 && passes([asItem(cpu), asItem(mb)], ['R01', 'R02'], settings),
+        ),
+        (mb) => prefer([asItem(cpu), asItem(mb)], ['R03'], settings),
+      ),
+    );
 
     for (const mb of boards.slice(0, 3)) {
       const withMb = [...core, asItem(mb)];
@@ -410,7 +526,7 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
       const withRam = [...withMb, ram];
 
       // ข้อ 6 SSD NVMe ความจุมากสุดในงบหมวด
-      const storage = pickStorage(withRam, alloc.storage, capsIn.storage, modeIn);
+      const storage = pickStorage(mb, alloc.storage, capsIn.storage, modeIn);
       if (!storage) continue;
       const withStorage = [...withRam, asItem(storage)];
 
@@ -421,19 +537,27 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
         power.totalWatt + (needCooler ? 15 : 0),
         settings.psuHeadroom,
       );
-      const psus = c.psu
-        .filter((psu) => psu.spec.wattage >= estimated)
-        .sort(
-          (a, b) =>
-            Number(prefer([...withStorage, asItem(a)], ['R16'], settings)) -
-              Number(prefer([...withStorage, asItem(b)], ['R16'], settings)) || byPrice(a, b),
-        );
+      // ลำดับ PSU ทุกรุ่นกับการ์ดจอนี้ (ไม่ติด R16 มาก่อน แล้วตามราคา) จำไว้ แล้วค่อยตัดตามวัตต์ ลำดับไม่เปลี่ยน
+      const psus = remember(cache.psus, `${gpu?.id ?? 0}|${mode}`, () =>
+        warnedLast(c.psu, (psu) =>
+          prefer([...(gpu ? [asItem(gpu)] : []), asItem(psu)], ['R16'], settings),
+        ),
+      ).filter((psu) => psu.spec.wattage >= estimated);
 
       for (const psu of psus.slice(0, 3)) {
         const withPsu = [...withStorage, asItem(psu)];
-        // ข้อ 8–9 เคสที่ผ่าน R08 R09 R15 และชุดระบายความร้อนที่ผ่าน R10–R13 (ถ้า CPU ไม่มีพัดลมแถม)
+        // ข้อ 8–9 เคสที่ผ่าน R08 (กับบอร์ด) R09 (กับการ์ดจอ) R15 (กับ PSU)
+        // และชุดระบายความร้อนที่ผ่าน R10–R13 (ถ้า CPU ไม่มีพัดลมแถม)
+        const forBoard = fitsWith(ctx, mb, c.case, ['R08']);
+        const forGpu = gpu ? fitsWith(ctx, gpu, c.case, ['R09']) : null;
+        const forPsu = fitsWith(ctx, psu, c.case, ['R15']);
         const cases = c.case
-          .filter((pcCase) => passes([...withPsu, asItem(pcCase)], ['R08', 'R09', 'R15'], settings))
+          .filter(
+            (pcCase) =>
+              forBoard.has(pcCase.id) &&
+              (!forGpu || forGpu.has(pcCase.id)) &&
+              forPsu.has(pcCase.id),
+          )
           .sort(byPrice);
         for (const pcCase of cases) {
           const withCase = [...withPsu, asItem(pcCase)];
@@ -441,15 +565,17 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
             if (isClean(withCase)) return withCase;
             continue;
           }
-          const coolers = c.cooler
-            .filter((cooler) =>
-              passes([...withCase, asItem(cooler)], ['R10', 'R11', 'R12', 'R13'], settings),
-            )
-            .sort(
-              (a, b) =>
-                Number(prefer([...withCase, asItem(a)], ['R13'], settings)) -
-                  Number(prefer([...withCase, asItem(b)], ['R13'], settings)) || byPrice(a, b),
-            );
+          // ชุดที่ใส่กับ CPU นี้ได้ (R12) เรียงไว้แล้ว (ไม่ติด R13 มาก่อน แล้วตามราคา)
+          // ตัดเหลือชุดที่ใส่เคสนี้ได้ (R10 R11) ลำดับไม่เปลี่ยน
+          const forCase = fitsWith(ctx, pcCase, c.cooler, ['R10', 'R11']);
+          const coolers = remember(cache.coolers, `${cpu.id}|${mode}`, () =>
+            warnedLast(
+              c.cooler.filter((cooler) =>
+                passes([asItem(cpu), asItem(cooler)], ['R12', 'R13'], settings),
+              ),
+              (cooler) => prefer([asItem(cpu), asItem(cooler)], ['R13'], settings),
+            ),
+          ).filter((cooler) => forCase.has(cooler.id));
           for (const cooler of coolers.slice(0, 2)) {
             const full = [...withCase, asItem(cooler)];
             if (isClean(full)) return full;
@@ -472,6 +598,21 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
     modeIn: Mode,
   ): EngineItem | null {
     const { min, preferred } = MIN_RAM_GB[u];
+    // ตัวเลือกของบอร์ดนี้ไม่ขึ้นกับเพดาน จึงจำไว้ต่อบอร์ด แล้วค่อยตัดตามเพดานและเรียงทุกครั้ง
+    const valid = remember(ctx.cache.rams, mb.id, () => ramOptions(mb, min))
+      .filter((o) => cap === undefined || o.price <= cap)
+      .sort((a, b) => a.penalty - b.penalty || a.price - b.price || a.kit.id - b.kit.id);
+    if (valid.length === 0) return null;
+    if (modeIn === 'best' && preferred > min) {
+      const bigger = valid.find((o) => o.gb >= preferred && o.price <= limit);
+      if (bigger) return asItem(bigger.kit, bigger.quantity);
+    }
+    const chosen = valid[0];
+    return asItem(chosen.kit, chosen.quantity);
+  }
+
+  /** ตัวเลือกแรมที่ใส่บอร์ดนี้ได้และถึงความจุขั้นต่ำ (ยังไม่ตัดตามเพดานและยังไม่เรียง) */
+  function ramOptions(mb: PartOf<'motherboard'>, min: number): RamOption[] {
     // ทุกชุด × จำนวนชุดที่ใส่ได้ เช่น 8 GB × 2 จำนวน 2 ชุด
     const options = catalog.ram.flatMap((kit) => {
       const maxQty = Math.floor(mb.spec.memorySlots / kit.spec.sticksInKit);
@@ -494,38 +635,32 @@ function assemble(ctx: Context, target: number, caps: Caps, mode: Mode): EngineI
     // 2 แถวขึ้นไป (Dual Channel) เป็นเงื่อนไขบังคับเมื่อบอร์ดนี้ใส่ได้ ไม่ใช่แค่ตัวเลือกที่ดีกว่า
     // ไม่งั้นขั้นลดรุ่นจะลดเป็นแถวเดียวเพื่อประหยัดไม่กี่สิบบาท และเสียความเร็วมากกว่าที่ได้
     const dual = fitsBoard.filter((o) => o.sticks >= 2);
-    const valid = (dual.length ? dual : fitsBoard)
-      .filter((o) => cap === undefined || o.price <= cap)
-      .map((o) => ({
-        ...o,
-        // ตัวเลือกที่ดีกว่ามาก่อน: 2 แถวขึ้นไป (Dual Channel) และความเร็วไม่เกินบอร์ด (ไม่ติด R07)
-        penalty: (o.sticks >= 2 ? 0 : 2) + (o.kit.spec.speedMts > mb.spec.maxMemorySpeed ? 1 : 0),
-      }))
-      .sort((a, b) => a.penalty - b.penalty || a.price - b.price || a.kit.id - b.kit.id);
-    if (valid.length === 0) return null;
-    if (modeIn === 'best' && preferred > min) {
-      const bigger = valid.find((o) => o.gb >= preferred && o.price <= limit);
-      if (bigger) return asItem(bigger.kit, bigger.quantity);
-    }
-    const chosen = valid[0];
-    return asItem(chosen.kit, chosen.quantity);
+    return (dual.length ? dual : fitsBoard).map((o) => ({
+      ...o,
+      // ตัวเลือกที่ดีกว่ามาก่อน: 2 แถวขึ้นไป (Dual Channel) และความเร็วไม่เกินบอร์ด (ไม่ติด R07)
+      penalty: (o.sticks >= 2 ? 0 : 2) + (o.kit.spec.speedMts > mb.spec.maxMemorySpeed ? 1 : 0),
+    }));
   }
 
   function pickStorage(
-    items: EngineItem[],
+    mb: PartOf<'motherboard'>,
     limit: number,
     cap: number | undefined,
     modeIn: Mode,
   ): PartOf<'storage'> | null {
-    const fitsSlot = catalog.storage.filter((s) =>
-      passes([...items, asItem(s)], ['R17'], settings),
-    );
-    // ความจุขั้นต่ำตามประเภทการใช้งาน บังคับเมื่อในระบบมีรุ่นที่ถึง (ดู MIN_STORAGE_GB)
-    const bigEnough = fitsSlot.filter((s) => s.spec.capacityGb >= MIN_STORAGE_GB[usage]);
-    const fits = bigEnough.length ? bigEnough : fitsSlot;
-    // ข้อ 6 ใช้ NVMe เสมอถ้าในระบบมี การลดรุ่นลดเป็น NVMe ความจุน้อยลง ไม่เปลี่ยนเป็น SATA
-    const nvme = fits.filter((s) => s.spec.type === 'NVMe');
-    const pool = (nvme.length ? nvme : fits).filter((s) => cap === undefined || s.price <= cap);
+    // ชิ้นที่ใส่บอร์ดนี้ได้ (R17) ไม่ขึ้นกับเพดาน จึงจำไว้ต่อบอร์ด แล้วค่อยตัดตามเพดานทุกครั้ง
+    const drives = remember(ctx.cache.drives, mb.id, () => {
+      const fitsSlot = catalog.storage.filter((s) =>
+        passes([asItem(mb), asItem(s)], ['R17'], settings),
+      );
+      // ความจุขั้นต่ำตามประเภทการใช้งาน บังคับเมื่อในระบบมีรุ่นที่ถึง (ดู MIN_STORAGE_GB)
+      const bigEnough = fitsSlot.filter((s) => s.spec.capacityGb >= MIN_STORAGE_GB[usage]);
+      const fits = bigEnough.length ? bigEnough : fitsSlot;
+      // ข้อ 6 ใช้ NVMe เสมอถ้าในระบบมี การลดรุ่นลดเป็น NVMe ความจุน้อยลง ไม่เปลี่ยนเป็น SATA
+      const nvme = fits.filter((s) => s.spec.type === 'NVMe');
+      return nvme.length ? nvme : fits;
+    });
+    const pool = drives.filter((s) => cap === undefined || s.price <= cap);
     if (pool.length === 0) return null;
     if (modeIn === 'cheapest') return [...pool].sort(byPrice)[0];
     const bySize = (a: PartOf<'storage'>, b: PartOf<'storage'>) =>
@@ -664,6 +799,7 @@ export function generateBudgetBuilds(input: BudgetInput): BudgetResult {
     ratios,
     settings,
     cpuBrand: hasBrand ? brand : null,
+    cache: newStepCache(),
   };
 
   const make = (kind: BudgetOptionKind, target: number, picked: EngineItem[]): BudgetOption => {

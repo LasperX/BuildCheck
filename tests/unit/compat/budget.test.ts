@@ -259,6 +259,20 @@ describe('generateBudgetBuilds', () => {
     expect(result.ok).toBe(true);
     expect(performance.now() - start).toBeLessThan(2000);
   });
+
+  it('งบต่ำก็ยังเร็ว: ทุกประเภทการใช้งาน รวมกรณีงบไม่พอที่ต้องหางบขั้นต่ำ (เดิมใช้หลายวินาที)', () => {
+    // หมวดละหลายสิบชิ้น ราคาไม่ซ้ำกัน ขั้นลดรุ่นจึงต้องประกอบใหม่หลายร้อยรอบ เหมือนแคตตาล็อกจริง
+    const big = Array.from({ length: 16 }, (_, i) =>
+      catalog().map((part) => ({ ...part, price: Math.round(part.price * (1 + i * 0.03)) })),
+    ).flat();
+    const start = performance.now();
+    const results = (['gaming', 'office', 'creator', 'streaming'] as const).flatMap((usage) =>
+      [15000, 25000, 35000].map((budget) => generateBudgetBuilds({ budget, usage, catalog: big })),
+    );
+    expect(results.some((result) => result.ok)).toBe(true);
+    expect(results.some((result) => !result.ok && result.minimumBudget)).toBe(true);
+    expect(performance.now() - start).toBeLessThan(1000);
+  });
 });
 
 describe('ยอมใช้มือสอง', () => {
