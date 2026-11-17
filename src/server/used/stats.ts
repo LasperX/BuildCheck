@@ -16,6 +16,7 @@ import {
   clampToPerfAnchors,
   type PerfAnchor,
   resolveUsedStat,
+  roundTo50,
   surveyForGrade,
   USED_GRADES,
   type UsedGrade,
@@ -174,7 +175,7 @@ export async function recomputeUsedStats(
 
   // รุ่นที่มีแต่มือสองซึ่งยังใช้ราคาประมาณการ: จำกัดให้อยู่ในกรอบของรุ่นที่ยังขายมือหนึ่งที่คะแนนใกล้กัน
   // (CPU เทียบเฉพาะ Socket เดียวกัน การ์ดจอเทียบทั้งหมวด)
-  // (รุ่นที่แรงกว่าไม่ถูกกว่า รุ่นที่ช้ากว่าไม่แพงกว่า) ดู clampToPerfAnchors
+  // (ไม่ถูกกว่ารุ่นที่ช้ากว่าซึ่งคะแนนใกล้ที่สุด ไม่แพงกว่ารุ่นที่แรงกว่า และไม่เกินราคาเปิดตัว) ดู clampToPerfAnchors
   const partById = new Map(partRows.map((part) => [part.id, part]));
   const anchors = new Map<string, PerfAnchor[]>();
   for (const value of values) {
@@ -191,6 +192,8 @@ export async function recomputeUsedStats(
       value.medianPrice,
       part.perf,
       anchors.get(`${part.categorySlug}:${part.socket ?? ''}:${value.grade}`) ?? [],
+      // มือสองไม่แพงกว่าราคาเปิดตัว (ราคาในระบบของรุ่นที่มีแต่มือสองคือราคาเปิดตัว) คูณตัวคูณเกรด
+      roundTo50(part.price * settings.gradeFactors[value.grade]),
     );
   }
 

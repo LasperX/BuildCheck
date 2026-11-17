@@ -257,21 +257,32 @@ export type PerfAnchor = { perf: number; price: number };
  * กรอบราคาประมาณการของรุ่นที่มีแต่มือสอง (เฉพาะหมวดที่มีคะแนนประสิทธิภาพ: CPU และการ์ดจอ)
  * เทียบกับราคามือสองของรุ่นที่ยังขายมือหนึ่งในหมวดเดียวกันและเกรดเดียวกัน (anchors)
  *
- *   ขั้นต่ำ = ราคาสูงสุดของรุ่นที่ยังขายมือหนึ่งซึ่งคะแนน ≤ รุ่นนี้   (รุ่นที่แรงกว่า ไม่ควรถูกกว่า)
+ *   ขั้นต่ำ = ราคาต่ำสุดในกลุ่มรุ่นที่ยังขายซึ่งคะแนนใกล้ที่สุดจากด้านล่าง (คะแนน ≤ รุ่นนี้)
+ *             รุ่นที่แรงกว่า ไม่ควรถูกกว่ารุ่นที่ช้ากว่าซึ่งคะแนนใกล้กันที่สุด
  *   เพดาน  = ราคาต่ำสุดของรุ่นที่ยังขายมือหนึ่งซึ่งคะแนน ≥ รุ่นนี้   (รุ่นที่ช้ากว่า ไม่ควรแพงกว่า)
+ *             และไม่เกิน ceiling ที่ส่งมา (ราคาเปิดตัว × ตัวคูณเกรด: มือสองไม่ควรแพงกว่าตอนวางขายใหม่)
  *
- * ถ้าขั้นต่ำสูงกว่าเพดาน (ราคารุ่นมือหนึ่งไม่ได้เรียงตามคะแนนพอดี) ใช้เพดานเป็นหลัก
- * ไม่มีรุ่นให้เทียบฝั่งไหน ฝั่งนั้นไม่จำกัด
+ * ขั้นต่ำไม่ใช้ราคาสูงสุดของทุกรุ่นที่ช้ากว่า เพราะราคามือหนึ่งไม่ได้เรียงตามคะแนนเสมอ
+ * เช่นการ์ดรุ่นใหม่คะแนน 65 ราคาสูงกว่ารุ่นคะแนน 66 เกือบเท่าตัว ถ้าใช้ราคาสูงสุด รุ่นคะแนน 68
+ * จะถูกดันขึ้นไปเกินราคาเปิดตัวของตัวเอง ทั้งที่รุ่นคะแนน 66 ที่แรงกว่ารุ่นแพงนั้นขายถูกกว่ามาก
+ * ส่วน CPU รุ่นมีกราฟิกในตัวหรือรุ่น APU ที่แพงกว่าแต่คะแนนต่ำกว่า ก็ไม่ดันราคารุ่นอื่นแล้วเหมือนกัน
+ *
+ * ถ้าขั้นต่ำสูงกว่าเพดาน ใช้เพดานเป็นหลัก · ไม่มีรุ่นให้เทียบฝั่งไหน ฝั่งนั้นไม่จำกัด
  */
 export function clampToPerfAnchors(
   estimate: number,
   perf: number,
   anchors: readonly PerfAnchor[],
+  ceiling = Infinity,
 ): number {
-  const slower = anchors.filter((anchor) => anchor.perf <= perf).map((anchor) => anchor.price);
+  const slower = anchors.filter((anchor) => anchor.perf <= perf);
+  const nearestPerf = Math.max(...slower.map((anchor) => anchor.perf));
+  const nearest = slower
+    .filter((anchor) => anchor.perf === nearestPerf)
+    .map((anchor) => anchor.price);
   const faster = anchors.filter((anchor) => anchor.perf >= perf).map((anchor) => anchor.price);
-  const cap = faster.length ? Math.min(...faster) : Infinity;
-  const floor = Math.min(slower.length ? Math.max(...slower) : 0, cap);
+  const cap = Math.min(...faster, ceiling);
+  const floor = Math.min(nearest.length ? Math.min(...nearest) : 0, cap);
   return Math.min(Math.max(estimate, floor), cap);
 }
 
