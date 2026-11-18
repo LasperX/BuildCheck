@@ -178,7 +178,7 @@ describe('เลือกแหล่งราคากลาง', () => {
     expect(stat.confidence).toBe('medium');
   });
 
-  it('รายงานไม่พอ ใช้ราคาสำรวจที่ไม่เกิน 90 วัน', () => {
+  it('รายงานไม่พอ ใช้ราคาสำรวจของแอดมิน', () => {
     const stat = resolveUsedStat({
       part,
       grade: 'B',
@@ -195,13 +195,25 @@ describe('เลือกแหล่งราคากลาง', () => {
     });
   });
 
-  it('ราคาสำรวจเก่ากว่า 90 วัน ใช้สูตรประมาณการ', () => {
+  it('ราคาสำรวจเก่าแค่ไหนก็ยังใช้ จนกว่าแอดมินจะบันทึกราคาใหม่ (ไม่มีวันหมดอายุ)', () => {
+    // สำรวจไว้เกือบ 2 ปีก่อน TODAY (เดิมเกิน 90 วันแล้วตกไปใช้สูตร)
+    const stat = resolveUsedStat({
+      part: { ...part, availability: 'used_only' },
+      grade: 'B',
+      reports: [],
+      survey: { minPrice: 6500, maxPrice: 7500, surveyedAt: '2024-07-01' },
+      today: TODAY,
+    });
+    expect(stat).toMatchObject({ source: 'survey', confidence: 'medium', median: 7000 });
+  });
+
+  it('ราคาสำรวจที่ลงวันที่ในอนาคต ยังไม่ใช้ ใช้สูตรประมาณการแทน', () => {
     // รุ่นที่มีแต่มือสอง: หักตามอายุ 2 ปี → 12,000 × 0.75² × 0.90 = 6,075 → 6,100
     const stat = resolveUsedStat({
       part: { ...part, availability: 'used_only' },
       grade: 'B',
       reports: [],
-      survey: { minPrice: 6500, maxPrice: 7500, surveyedAt: '2026-01-01' },
+      survey: { minPrice: 6500, maxPrice: 7500, surveyedAt: '2026-07-01' },
       today: TODAY,
     });
     expect(stat).toMatchObject({

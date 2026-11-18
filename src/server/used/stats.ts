@@ -53,7 +53,6 @@ export async function recomputeUsedStats(
 ): Promise<RecomputeSummary> {
   const today = todayInThailand();
   const since = daysAgo(today, settings.reportWindowDays);
-  const surveySince = daysAgo(today, 90);
 
   const partRows = await db
     .select({
@@ -106,6 +105,7 @@ export async function recomputeUsedStats(
         ),
       ),
     // ราคาสำรวจล่าสุดของแต่ละรุ่นและเกรด (เรียงใหม่สุดก่อน แล้วเลือกแถวแรก)
+    // ไม่จำกัดอายุ ใช้ไปจนกว่าแอดมินจะบันทึกราคาใหม่ ไม่นับราคาที่ลงวันที่ในอนาคต
     db
       .select({
         partId: partUsedPrices.partId,
@@ -115,7 +115,7 @@ export async function recomputeUsedStats(
         surveyedAt: partUsedPrices.surveyedAt,
       })
       .from(partUsedPrices)
-      .where(and(inArray(partUsedPrices.partId, ids), gte(partUsedPrices.surveyedAt, surveySince)))
+      .where(and(inArray(partUsedPrices.partId, ids), lte(partUsedPrices.surveyedAt, today)))
       .orderBy(desc(partUsedPrices.surveyedAt), desc(partUsedPrices.id)),
   ]);
 

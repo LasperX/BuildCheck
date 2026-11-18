@@ -22,7 +22,6 @@ import {
   weeklyTrend,
   weightedPercentile,
   reportWeight,
-  SURVEY_MAX_AGE_DAYS,
 } from '@/lib/compat/used-price';
 import { db } from '@/lib/db';
 import { type CategorySlug, isCategorySlug } from '@/lib/parts/spec-fields';
@@ -427,17 +426,15 @@ export type UsedOnlyMissingSurvey = {
 };
 
 /**
- * รุ่นที่มีแต่มือสองแต่ยังไม่มีราคาสำรวจที่ใช้ได้ (ภายใน 90 วัน)
+ * รุ่นที่มีแต่มือสองแต่ยังไม่มีราคาสำรวจเลย (ราคาสำรวจไม่มีวันหมดอายุ ไม่นับราคาที่ลงวันที่ในอนาคต)
  * รุ่นพวกนี้ไม่มีราคามือหนึ่งให้เทียบ ราคาประมาณจากราคาตอนเปิดตัวอาจคลาดจากตลาดมาก แอดมินจึงควรสำรวจก่อน
  */
 export async function getUsedOnlyMissingSurvey(today: string): Promise<UsedOnlyMissingSurvey[]> {
-  const since = new Date(`${today}T00:00:00Z`);
-  since.setUTCDate(since.getUTCDate() - SURVEY_MAX_AGE_DAYS);
-  const recent = await db
+  const recorded = await db
     .selectDistinct({ partId: partUsedPrices.partId })
     .from(partUsedPrices)
-    .where(gte(partUsedPrices.surveyedAt, since.toISOString().slice(0, 10)));
-  const surveyed = new Set(recent.map((row) => row.partId));
+    .where(lte(partUsedPrices.surveyedAt, today));
+  const surveyed = new Set(recorded.map((row) => row.partId));
 
   const rows = await db
     .select({

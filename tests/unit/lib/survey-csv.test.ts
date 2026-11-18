@@ -91,10 +91,20 @@ describe('surveyForGrade', () => {
     });
   });
 
-  it('ราคาสำรวจเก่าเกิน 90 วันไม่ใช้ และไม่มีราคาสำรวจเลยคืน null', () => {
-    const old = { minPrice: 1400, maxPrice: 1600, surveyedAt: '2026-08-01' };
-    expect(surveyForGrade({ B: old }, 'A', TODAY)).toBeNull();
-    expect(surveyForGrade({ B: old }, 'B', TODAY)).toBeNull();
+  it('ราคาสำรวจเก่าแค่ไหนก็ยังใช้ (ไม่มีวันหมดอายุ) ทั้งเกรดตัวเองและเกรดที่เทียบจากเกรดนั้น', () => {
+    const old = { minPrice: 1400, maxPrice: 1600, surveyedAt: '2025-01-15' };
+    expect(surveyForGrade({ B: old }, 'B', TODAY)).toBe(old);
+    expect(surveyForGrade({ B: old }, 'A', TODAY)).toEqual({
+      minPrice: 1550,
+      maxPrice: 1800,
+      surveyedAt: '2025-01-15',
+    });
+  });
+
+  it('ราคาที่ลงวันที่ในอนาคตยังไม่ใช้ และไม่มีราคาสำรวจเลยคืน null', () => {
+    const future = { minPrice: 1400, maxPrice: 1600, surveyedAt: '2026-11-20' };
+    expect(surveyForGrade({ B: future }, 'B', TODAY)).toBeNull();
+    expect(surveyForGrade({ B: future }, 'A', TODAY)).toBeNull();
     expect(surveyForGrade({}, 'B', TODAY)).toBeNull();
   });
 });

@@ -6,7 +6,7 @@ import type { CategorySlug } from '@/lib/parts/spec-fields';
 //
 // ระบบเลือกราคากลางจาก 3 แหล่งตามลำดับ
 //   1. รายงานจากสมาชิกที่แอดมินอนุมัติ ช่วง 60 วันล่าสุด ต้องมีอย่างน้อย 3 รายงานในเกรดนั้น
-//   2. ราคาที่แอดมินสำรวจตลาดเอง ไม่เกิน 90 วัน
+//   2. ราคาที่แอดมินสำรวจตลาดเอง ใช้ราคาล่าสุดไปจนกว่าแอดมินจะบันทึกราคาใหม่ (ไม่มีวันหมดอายุ)
 //   3. สูตรประมาณค่าเสื่อมจากราคาใหม่
 
 export type UsedGrade = 'A' | 'B' | 'C';
@@ -40,8 +40,6 @@ export const DEFAULT_USED_SETTINGS: UsedSettings = {
   reportWindowDays: 60,
 };
 
-/** ราคาสำรวจเก่ากว่านี้ไม่ใช้ (หัวข้อ 4.6 แหล่งที่ 2) */
-export const SURVEY_MAX_AGE_DAYS = 90;
 /** ต้องมีรายงานอย่างน้อยเท่านี้จึงใช้แหล่งรายงาน */
 export const MIN_REPORTS = 3;
 /** รายงานตั้งแต่เท่านี้ขึ้นไป ความน่าเชื่อถือ "สูง" */
@@ -216,14 +214,18 @@ export function estimateUsedPrice(
   return roundTo50(newPrice * rate ** years * factor);
 }
 
-const isFreshSurvey = (survey: UsedSurvey, today: string) => {
-  const age = daysBetween(survey.surveyedAt, today);
-  return age >= 0 && age <= SURVEY_MAX_AGE_DAYS;
-};
+/**
+ * ราคาสำรวจของแอดมินใช้ได้ไหม (หัวข้อ 4.6 แหล่งที่ 2)
+ * ไม่มีวันหมดอายุ: แอดมินอัปเดตราคาเอง ระบบใช้ราคาล่าสุดไปจนกว่าจะบันทึกราคาใหม่
+ * (เดิมใช้ได้ 90 วัน แล้วตกไปใช้สูตรค่าเสื่อม ราคาที่แอดมินตั้งใจกรอกจึงหายไปเอง)
+ * ยกเว้นราคาที่ลงวันที่ในอนาคต ยังไม่ใช้จนกว่าจะถึงวันนั้น
+ */
+const isUsableSurvey = (survey: UsedSurvey, today: string) =>
+  daysBetween(survey.surveyedAt, today) >= 0;
 
 /**
  * ราคาสำรวจที่ใช้กับเกรดหนึ่ง
- * - เกรดนั้นมีราคาสำรวจที่ยังไม่เก่า → ใช้ตามนั้น
+ * - เกรดนั้นมีราคาสำรวจ → ใช้ตามนั้น
  * - ไม่มี แต่เกรดอื่นของรุ่นเดียวกันมี → เทียบจากเกรดนั้นด้วยตัวคูณเกรด
  *     P_เกรดนี้ = P_เกรดที่สำรวจ × k_เกรดนี้ ÷ k_เกรดที่สำรวจ   (ปัดหลัก 50)
  *   เช่นสำรวจเกรด B ได้ 1,400 บาท (k = 0.90) เกรด A (k = 1.00) = 1,400 × 1.00 ÷ 0.90 ≈ 1,550 บาท
@@ -237,10 +239,10 @@ export function surveyForGrade(
   settings: UsedSettings = DEFAULT_USED_SETTINGS,
 ): UsedSurvey | null {
   const own = surveys[grade];
-  if (own && isFreshSurvey(own, today)) return own;
+  if (own && isUsableSurvey(own, today)) return own;
   for (const from of ['B', 'A', 'C'] as const) {
     const base = surveys[from];
-    if (from === grade || !base || !isFreshSurvey(base, today)) continue;
+    if (from === grade || !base || !isUsableSurvey(base, today)) continue;
     const ratio = settings.gradeFactors[grade] / settings.gradeFactors[from];
     return {
       minPrice: roundTo50(base.minPrice * ratio),
@@ -322,20 +324,17 @@ export function resolveUsedStat(input: UsedPriceInput): UsedStat {
   }
 
   const survey = input.survey;
-  if (survey) {
-    const age = daysBetween(survey.surveyedAt, input.today);
-    if (age >= 0 && age <= SURVEY_MAX_AGE_DAYS) {
-      return {
-        grade,
-        // ราคากลางของช่วงที่สำรวจ = จุดกึ่งกลางระหว่างต่ำสุดกับสูงสุด
-        median: roundTo50((survey.minPrice + survey.maxPrice) / 2),
-        p25: survey.minPrice,
-        p75: survey.maxPrice,
-        reportCount: 0,
-        source: 'survey',
-        confidence: 'medium',
-      };
-    }
+  if (survey && isUsableSurvey(survey, input.today)) {
+    return {
+      grade,
+      // ราคากลางของช่วงที่สำรวจ = จุดกึ่งกลางระหว่างต่ำสุดกับสูงสุด
+      median: roundTo50((survey.minPrice + survey.maxPrice) / 2),
+      p25: survey.minPrice,
+      p75: survey.maxPrice,
+      reportCount: 0,
+      source: 'survey',
+      confidence: 'medium',
+    };
   }
 
   const currentYear = Number(input.today.slice(0, 4));
