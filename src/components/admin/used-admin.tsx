@@ -169,7 +169,8 @@ export function SurveyForm({ today }: { today: string }) {
       }}
     >
       <PartSearchField value={part} onChange={setPart} />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {/* ฟอร์มอยู่ในกล่องครึ่งจอ 4 คอลัมน์แคบจนช่องเกรดและวันที่ขาด จึงใช้ 2 คอลัมน์ทุกขนาดจอ */}
+      <div className="grid gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="survey-grade">เกรด</Label>
           <NativeSelect
