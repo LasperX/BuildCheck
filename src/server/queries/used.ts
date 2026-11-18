@@ -17,14 +17,17 @@ import type { UsedPriceSet, UsedStatView } from '@/lib/builder/used-types';
 import {
   resolveUsedStat,
   roundTo50,
+  surveyForGrade,
   USED_GRADES,
   type UsedGrade,
+  type UsedSurvey,
   weeklyTrend,
   weightedPercentile,
   reportWeight,
 } from '@/lib/compat/used-price';
 import { db } from '@/lib/db';
 import { type CategorySlug, isCategorySlug } from '@/lib/parts/spec-fields';
+import type { SurveyExportRow } from '@/lib/used/survey-csv';
 import { todayInThailand } from '@/server/used/stats';
 
 import { getSystemConfig } from './settings';
@@ -130,9 +133,34 @@ export type TrendPoint = { week: string; median: number; count: number };
 
 export type PartUsedDetail = {
   prices: UsedPriceSet | null;
+  /** วันที่สำรวจของเกรดที่ราคามาจากการสำรวจของแอดมิน (เกรดที่เทียบจากเกรดอื่นใช้วันที่ของเกรดนั้น) */
+  surveyedAt: Partial<Record<UsedGrade, string>>;
   trend: Record<UsedGrade, TrendPoint[]>;
   latest: PublicReport[];
 };
+
+/**
+ * ราคาสำรวจล่าสุดของแต่ละเกรดของอะไหล่ชิ้นเดียว (ไม่นับราคาที่ลงวันที่ในอนาคต)
+ * เลือกแบบเดียวกับตอนคำนวณราคากลาง: ใหม่สุดก่อน วันเดียวกันใช้รายการที่บันทึกทีหลัง
+ */
+async function latestSurveys(
+  partId: number,
+  today: string,
+): Promise<Partial<Record<UsedGrade, UsedSurvey>>> {
+  const rows = await db
+    .select({
+      grade: partUsedPrices.grade,
+      minPrice: partUsedPrices.minPrice,
+      maxPrice: partUsedPrices.maxPrice,
+      surveyedAt: partUsedPrices.surveyedAt,
+    })
+    .from(partUsedPrices)
+    .where(and(eq(partUsedPrices.partId, partId), lte(partUsedPrices.surveyedAt, today)))
+    .orderBy(desc(partUsedPrices.surveyedAt), desc(partUsedPrices.id));
+  const latest: Partial<Record<UsedGrade, UsedSurvey>> = {};
+  for (const { grade, ...survey } of rows) latest[grade] ??= survey;
+  return latest;
+}
 
 /** แท็บราคามือสองในหน้ารายละเอียดอะไหล่: ราคากลาง กราฟรายสัปดาห์ 26 สัปดาห์ และรายงานล่าสุด */
 export async function getPartUsedDetail(partId: number): Promise<PartUsedDetail> {
@@ -141,8 +169,9 @@ export async function getPartUsedDetail(partId: number): Promise<PartUsedDetail>
   cacheLife('hours');
 
   const today = todayInThailand();
-  const [sets, reports] = await Promise.all([
+  const [sets, surveys, reports] = await Promise.all([
     getUsedPriceSets([partId]),
+    latestSurveys(partId, today),
     db
       .select(publicReportColumns)
       .from(usedPriceReports)
@@ -159,7 +188,50 @@ export async function getPartUsedDetail(partId: number): Promise<PartUsedDetail>
   const trend = Object.fromEntries(
     USED_GRADES.map((grade) => [grade, weeklyTrend(reports.filter((r) => r.grade === grade))]),
   ) as Record<UsedGrade, TrendPoint[]>;
-  return { prices: sets[partId] ?? null, trend, latest: reports.slice(0, 10) };
+  // ราคาสำรวจไม่มีวันหมดอายุ จึงบอกวันที่สำรวจให้ผู้ใช้ดูว่าราคานี้เก่าแค่ไหน
+  const prices = sets[partId] ?? null;
+  const surveyedAt: Partial<Record<UsedGrade, string>> = {};
+  for (const grade of USED_GRADES) {
+    const stat = prices?.[grade];
+    if (stat?.source !== 'survey') continue;
+    const survey = surveyForGrade(surveys, grade, today);
+    if (survey) surveyedAt[grade] = survey.surveyedAt;
+  }
+  return { prices, surveyedAt, trend, latest: reports.slice(0, 10) };
+}
+
+/**
+ * ราคาสำรวจล่าสุดของทุกรุ่นและเกรด สำหรับส่งออก CSV (ไฟล์สำรองหรือแก้ราคาหลายรุ่นใน Excel)
+ * เรียงตามยี่ห้อ ชื่อรุ่น แล้วเกรด
+ */
+export async function listLatestSurveysForExport(today: string): Promise<SurveyExportRow[]> {
+  const rows = await db
+    .select({
+      partId: partUsedPrices.partId,
+      brand: brands.name,
+      model: parts.model,
+      grade: partUsedPrices.grade,
+      minPrice: partUsedPrices.minPrice,
+      maxPrice: partUsedPrices.maxPrice,
+      surveyedAt: partUsedPrices.surveyedAt,
+      sourceNote: partUsedPrices.sourceNote,
+    })
+    .from(partUsedPrices)
+    .innerJoin(parts, eq(parts.id, partUsedPrices.partId))
+    .innerJoin(brands, eq(brands.id, parts.brandId))
+    .where(lte(partUsedPrices.surveyedAt, today))
+    .orderBy(desc(partUsedPrices.surveyedAt), desc(partUsedPrices.id));
+  const latest = new Map<string, SurveyExportRow>();
+  for (const { partId, ...row } of rows) {
+    const key = `${partId}:${row.grade}`;
+    if (!latest.has(key)) latest.set(key, row);
+  }
+  return [...latest.values()].sort(
+    (a, b) =>
+      a.brand.localeCompare(b.brand, 'en') ||
+      a.model.localeCompare(b.model, 'en') ||
+      a.grade.localeCompare(b.grade),
+  );
 }
 
 export type MarketPart = {

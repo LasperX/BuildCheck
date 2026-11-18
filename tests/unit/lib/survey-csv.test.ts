@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { surveyForGrade } from '@/lib/compat/used-price';
-import { parseSurveyCsv, surveyMatchKey } from '@/lib/used/survey-csv';
+import { BOM } from '@/lib/parts/csv';
+import { parseSurveyCsv, surveyMatchKey, surveysToCsv } from '@/lib/used/survey-csv';
 
 const HEAD = 'brand,model,grade,min_price,max_price,surveyed_at,source_note';
 const TODAY = '2026-11-14';
@@ -106,5 +107,57 @@ describe('surveyForGrade', () => {
     expect(surveyForGrade({ B: future }, 'B', TODAY)).toBeNull();
     expect(surveyForGrade({ B: future }, 'A', TODAY)).toBeNull();
     expect(surveyForGrade({}, 'B', TODAY)).toBeNull();
+  });
+});
+
+describe('surveysToCsv', () => {
+  it('ส่งออกราคาสำรวจแล้วนำเข้ากลับได้ค่าเดิม (หมายเหตุที่มีจุลภาคก็อ่านถูก)', () => {
+    const exported = surveysToCsv([
+      {
+        brand: 'MSI',
+        model: 'GeForce GTX 1050 Ti GAMING X 4G',
+        grade: 'B',
+        minPrice: 1500,
+        maxPrice: 1700,
+        surveyedAt: '2026-11-10',
+        sourceNote: 'กลุ่มซื้อขาย, Facebook',
+      },
+      {
+        brand: 'AMD',
+        model: 'Ryzen 5 3600',
+        grade: 'A',
+        minPrice: 2200,
+        maxPrice: 2500,
+        surveyedAt: '2025-06-01',
+        sourceNote: null,
+      },
+    ]);
+    expect(exported.startsWith(BOM)).toBe(true);
+    expect(exported.slice(BOM.length).split('\r\n')[0]).toBe(HEAD);
+
+    const parsed = parseSurveyCsv(exported, TODAY);
+    expect(parsed.ok && parsed.errors).toEqual([]);
+    expect(parsed.ok && parsed.rows).toEqual([
+      {
+        row: 2,
+        brand: 'MSI',
+        model: 'GeForce GTX 1050 Ti GAMING X 4G',
+        grade: 'B',
+        minPrice: 1500,
+        maxPrice: 1700,
+        surveyedAt: '2026-11-10',
+        sourceNote: 'กลุ่มซื้อขาย, Facebook',
+      },
+      {
+        row: 3,
+        brand: 'AMD',
+        model: 'Ryzen 5 3600',
+        grade: 'A',
+        minPrice: 2200,
+        maxPrice: 2500,
+        surveyedAt: '2025-06-01',
+        sourceNote: '',
+      },
+    ]);
   });
 });

@@ -16,6 +16,7 @@ import {
 
 import { brands, categories, partPriceHistory, parts } from '@/db/schema';
 import { db } from '@/lib/db';
+import type { CsvExportPart } from '@/lib/parts/csv';
 import { type CategorySlug, isCategorySlug, SPEC_FIELDS } from '@/lib/parts/spec-fields';
 import type { PartFormValues } from '@/lib/validators/parts';
 
@@ -203,6 +204,49 @@ export async function getPartForEdit(id: number) {
     spec: specToForm(category, (part[category] ?? {}) as Record<string, unknown>),
   };
   return { values, history, category };
+}
+
+/**
+ * อะไหล่ทั้งหมวดพร้อมสเปกสำหรับส่งออก CSV รวมชิ้นที่ซ่อนอยู่ (ไฟล์สำรองต้องครบ)
+ * เรียงตามยี่ห้อแล้วชื่อรุ่น ให้เปิดใน Excel แล้วหาง่าย และไฟล์ที่ส่งออกแต่ละครั้งเทียบกันได้
+ */
+export async function listPartsForExport(category: CategorySlug): Promise<CsvExportPart[]> {
+  const [target] = await db
+    .select({ id: categories.id })
+    .from(categories)
+    .where(eq(categories.slug, category));
+  if (!target) return [];
+  const rows = await db.query.parts.findMany({
+    where: eq(parts.categoryId, target.id),
+    with: {
+      brand: true,
+      cpu: true,
+      motherboard: true,
+      ram: true,
+      gpu: true,
+      storage: true,
+      psu: true,
+      case: true,
+      cooler: true,
+    },
+  });
+  return rows
+    .map((part) => ({
+      brandName: part.brand.name,
+      model: part.model,
+      price: part.price,
+      releaseYear: part.releaseYear,
+      powerWatt: part.powerWatt,
+      imageUrl: part.imageUrl,
+      specSourceUrl: part.specSourceUrl,
+      specVerified: part.specVerified,
+      availability: part.availability,
+      spec: (part[category] ?? {}) as Record<string, unknown>,
+    }))
+    .sort(
+      (a, b) =>
+        a.brandName.localeCompare(b.brandName, 'en') || a.model.localeCompare(b.model, 'en'),
+    );
 }
 
 export const REVIEW_PAGE_SIZE = 10;

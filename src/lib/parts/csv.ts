@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 
-import { type CategorySlug, SPEC_FIELDS } from '@/lib/parts/spec-fields';
+import { type CategorySlug, SPEC_FIELDS, type SpecField } from '@/lib/parts/spec-fields';
 import { type PartInput, partInputSchema } from '@/lib/validators/parts';
 
 // อ่านไฟล์ CSV ที่แอดมินเตรียมเอง แล้วแปลงแต่ละแถวเป็นค่าที่ผ่านกฎตรวจชุดเดียวกับฟอร์ม
@@ -110,6 +110,61 @@ export function matchExistingParts(
 }
 
 export const MAX_CSV_ROWS = 1000;
+
+/** อักขระ BOM หน้าไฟล์ UTF-8 ทำให้ Excel รู้ว่าเป็น UTF-8 และแสดงภาษาไทยถูก */
+export const BOM = String.fromCharCode(0xfeff);
+
+/** อะไหล่ 1 ชิ้นที่จะส่งออก (ค่าตามที่เก็บในฐานข้อมูล) */
+export type CsvExportPart = {
+  brandName: string;
+  model: string;
+  price: number;
+  releaseYear: number | null;
+  powerWatt: number | null;
+  imageUrl: string | null;
+  specSourceUrl: string | null;
+  specVerified: boolean;
+  availability: 'new' | 'used_only';
+  spec: Record<string, unknown>;
+};
+
+const AVAILABILITY_LABELS = { new: 'มีขายมือหนึ่ง', used_only: 'มีแต่มือสอง' } as const;
+
+/** ค่าสเปก 1 ช่องเป็นข้อความในไฟล์ รูปแบบเดียวกับที่ parsePartsCsv อ่าน (หลายค่าคั่นด้วย |) */
+export function specCsvValue(field: SpecField, value: unknown): string {
+  if (field.kind === 'bool') return value ? 'true' : 'false';
+  if (value === null || value === undefined) return '';
+  if (field.kind === 'connectors') {
+    return Object.entries(value as Record<string, number>)
+      .map(([name, count]) => `${name}:${count}`)
+      .join('|');
+  }
+  if (Array.isArray(value)) return value.join('|');
+  // ตัวเลขทศนิยมจากฐานข้อมูลอาจมาเป็น "3.70" ส่งออกเป็น 3.7
+  if (field.kind === 'int' || field.kind === 'decimal') return String(Number(value));
+  return String(value);
+}
+
+/**
+ * ส่งออกอะไหล่เป็น CSV รูปแบบเดียวกับไฟล์นำเข้า แก้ใน Excel แล้วนำเข้ากลับได้ทันที และใช้เป็นไฟล์สำรองได้
+ * ใส่ BOM หน้าไฟล์ให้ Excel อ่านภาษาไทยถูก (ตอนนำเข้าระบบตัด BOM ออกเอง)
+ * สถานะซ่อน/แสดงไม่อยู่ในไฟล์ เหมือนไฟล์นำเข้า (นำเข้ากลับแล้วชิ้นเดิมคงสถานะเดิม)
+ */
+export function partsToCsv(category: CategorySlug, parts: readonly CsvExportPart[]): string {
+  const data = parts.map((part) => [
+    part.brandName,
+    part.model,
+    String(part.price),
+    part.releaseYear === null ? '' : String(part.releaseYear),
+    part.powerWatt === null ? '' : String(part.powerWatt),
+    part.imageUrl ?? '',
+    part.specSourceUrl ?? '',
+    part.specVerified ? VERIFIED_LABEL : UNVERIFIED_LABEL,
+    AVAILABILITY_LABELS[part.availability],
+    ...SPEC_FIELDS[category].map((field) => specCsvValue(field, part.spec[field.key])),
+  ]);
+  return `${BOM}${Papa.unparse({ fields: csvHeaderFor(category), data }, { newline: '\r\n' })}`;
+}
 
 /** ตรวจไฟล์ทั้งไฟล์โดยยังไม่เขียนฐานข้อมูล ผลลัพธ์นี้ใช้แสดงพรีวิวและใช้ตอนยืนยันนำเข้า */
 export function parsePartsCsv(

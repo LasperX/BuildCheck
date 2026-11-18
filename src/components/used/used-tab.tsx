@@ -65,7 +65,13 @@ export function UsedTab({
                 <div className="mt-1">
                   <UsedPriceLine stat={stat} />
                 </div>
-                <p className="mt-1 text-xs text-subtle">{SOURCE_LABELS[stat.source]}</p>
+                <p className="mt-1 text-xs text-subtle">
+                  {SOURCE_LABELS[stat.source]}
+                  {/* ราคาสำรวจไม่มีวันหมดอายุ บอกวันที่ไว้ให้ดูว่าราคานี้เก่าแค่ไหน */}
+                  {stat.source === 'survey' && detail.surveyedAt[grade]
+                    ? ` · สำรวจเมื่อ ${formatDate(detail.surveyedAt[grade])}`
+                    : null}
+                </p>
               </li>
             );
           })}

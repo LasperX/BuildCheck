@@ -58,3 +58,8 @@ export async function login(page: Page, user: TestUser) {
   await page.getByRole('button', { name: 'เข้าสู่ระบบ', exact: true }).click();
   await expect(page).not.toHaveURL(/\/login/);
 }
+
+/** ตั้งบัญชีทดสอบเป็นแอดมินในฐานข้อมูลโดยตรง (หน้าเว็บไม่มีทางให้สมาชิกตั้งตัวเองเป็นแอดมิน) */
+export async function makeAdmin(email: string) {
+  await db().query(`UPDATE users SET role = 'admin' WHERE email = $1`, [email]);
+}

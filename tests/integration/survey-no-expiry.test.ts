@@ -6,7 +6,7 @@ import { DEFAULT_USED_SETTINGS } from '@/lib/compat/used-price';
 import { db } from '@/lib/db';
 import { csvHeaderFor } from '@/lib/parts/csv';
 import { importPartsCsv } from '@/server/actions/admin-parts';
-import { getUsedOnlyMissingSurvey } from '@/server/queries/used';
+import { getPartUsedDetail, getUsedOnlyMissingSurvey } from '@/server/queries/used';
 import { recomputeUsedStats, todayInThailand } from '@/server/used/stats';
 
 import { actAs, cleanupAccounts, createAccount, type TestAccount } from './helpers';
@@ -134,5 +134,14 @@ describe('ราคาสำรวจของแอดมินไม่มี�
     const missing = new Set((await getUsedOnlyMissingSurvey(today)).map((part) => part.partId));
     expect(missing.has(ids.OLD)).toBe(false);
     expect(missing.has(ids.FUTURE)).toBe(true);
+  });
+
+  it('หน้าอะไหล่บอกวันที่สำรวจ ทั้งเกรดที่สำรวจเองและเกรดที่เทียบจากเกรดนั้น', async () => {
+    const date = shiftDays(today, -400);
+    const detail = await getPartUsedDetail(ids.OLD);
+    expect(detail.prices?.B.source).toBe('survey');
+    expect(detail.surveyedAt).toEqual({ A: date, B: date, C: date });
+    // ราคามาจากสูตร (ราคาสำรวจลงวันที่ในอนาคต) ไม่ต้องบอกวันที่สำรวจ
+    expect((await getPartUsedDetail(ids.FUTURE)).surveyedAt).toEqual({});
   });
 });

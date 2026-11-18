@@ -1,4 +1,4 @@
-import { ImageIcon } from 'lucide-react';
+import { FileDown, ImageIcon } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -11,6 +11,7 @@ import {
   UsedSettingsForm,
 } from '@/components/admin/used-admin';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CHANNEL_LABELS, REPORT_TYPE_LABELS } from '@/lib/builder/used-types';
 import { assessOffer } from '@/lib/compat';
@@ -214,6 +215,19 @@ async function UsedAdminContent() {
             นำเข้าหลายรุ่นพร้อมกันจากไฟล์ CSV
           </h3>
           <SurveyCsvImport />
+          <h3 className="mt-6 mb-1 border-t border-border pt-4 text-sm font-semibold">
+            ส่งออกราคาสำรวจล่าสุด
+          </h3>
+          <p className="mb-3 text-xs text-muted-foreground">
+            ได้ไฟล์รูปแบบเดียวกับไฟล์นำเข้า (ราคาล่าสุดของทุกรุ่นและเกรด) เก็บไว้เป็นไฟล์สำรอง
+            หรือแก้ราคาหลายรุ่นใน Excel แล้วนำเข้ากลับด้านบนได้เลย
+          </p>
+          <Button asChild variant="secondary" size="sm">
+            <a href="/admin/used-prices/export">
+              <FileDown />
+              ส่งออก CSV
+            </a>
+          </Button>
         </section>
 
         <section

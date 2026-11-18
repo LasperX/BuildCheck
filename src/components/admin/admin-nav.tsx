@@ -20,7 +20,7 @@ const ITEMS = [
   { href: '/admin', label: 'ภาพรวม', icon: LayoutDashboard, exact: true },
   { href: '/admin/parts', label: 'จัดการอะไหล่', icon: Package, exact: true },
   { href: '/admin/parts/review', label: 'ตรวจสเปก', icon: ClipboardCheck, exact: true },
-  { href: '/admin/parts/import', label: 'นำเข้า CSV', icon: FileUp, exact: true },
+  { href: '/admin/parts/import', label: 'นำเข้า/ส่งออก CSV', icon: FileUp, exact: true },
   { href: '/admin/used-prices', label: 'ราคามือสอง', icon: Recycle, exact: true },
   { href: '/admin/users', label: 'จัดการผู้ใช้', icon: Users, exact: true },
   { href: '/admin/reports', label: 'จัดการรายงาน', icon: Flag, exact: true },

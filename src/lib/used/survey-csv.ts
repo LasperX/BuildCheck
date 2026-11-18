@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 import { z } from 'zod';
 
 import type { UsedGrade } from '@/lib/compat/used-price';
+import { BOM } from '@/lib/parts/csv';
 
 // นำเข้าราคาสำรวจมือสองทีละหลายรุ่นจาก CSV (แหล่งที่ 2 ของราคากลาง หัวข้อ 4.6)
 // ฟังก์ชันล้วน ไม่อ่านฐานข้อมูล การจับคู่รุ่นกับอะไหล่ในระบบทำใน Server Action
@@ -114,3 +115,31 @@ export function parseSurveyCsv(text: string, today: string): SurveyCsvResult {
 /** กุญแจจับคู่รุ่นในไฟล์กับอะไหล่ในระบบ ไม่สนตัวพิมพ์เล็กใหญ่และช่องว่างซ้ำ */
 export const surveyMatchKey = (brand: string, model: string) =>
   `${brand.trim().toLowerCase()}|${model.trim().replace(/\s+/g, ' ').toLowerCase()}`;
+
+/** ราคาสำรวจ 1 รายการที่จะส่งออก (ราคาล่าสุดของรุ่นและเกรดนั้น) */
+export type SurveyExportRow = {
+  brand: string;
+  model: string;
+  grade: UsedGrade;
+  minPrice: number;
+  maxPrice: number;
+  surveyedAt: string;
+  sourceNote: string | null;
+};
+
+/**
+ * ส่งออกราคาสำรวจเป็น CSV รูปแบบเดียวกับไฟล์นำเข้า แก้ราคาใน Excel แล้วนำเข้ากลับได้ และใช้เป็นไฟล์สำรองได้
+ * ใส่ BOM หน้าไฟล์ให้ Excel อ่านภาษาไทยถูก (ตอนนำเข้าระบบตัด BOM ออกเอง)
+ */
+export function surveysToCsv(rows: readonly SurveyExportRow[]): string {
+  const data = rows.map((row) => [
+    row.brand,
+    row.model,
+    row.grade,
+    String(row.minPrice),
+    String(row.maxPrice),
+    row.surveyedAt,
+    row.sourceNote ?? '',
+  ]);
+  return `${BOM}${Papa.unparse({ fields: [...SURVEY_CSV_COLUMNS], data }, { newline: '\r\n' })}`;
+}

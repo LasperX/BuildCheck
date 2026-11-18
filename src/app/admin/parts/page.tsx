@@ -199,7 +199,8 @@ async function PartsContent({
       </div>
 
       <p className="mt-4 text-xs text-muted-foreground">
-        ทั้งหมด {total.toLocaleString('en-US')} รายการ
+        ทั้งหมด {total.toLocaleString('en-US')} รายการ · เติมรูป: กดช่องรูป ลากไฟล์มาวาง
+        หรือคัดลอกรูปจากเว็บแล้วชี้ที่ช่องรูปกด Ctrl+V
       </p>
 
       <div className="mt-2 overflow-x-auto rounded-lg border border-border bg-surface">
@@ -308,7 +309,7 @@ export default function AdminPartsPage({ searchParams }: PageProps<'/admin/parts
           <Button asChild variant="secondary">
             <Link href="/admin/parts/import">
               <FileUp />
-              นำเข้า CSV
+              นำเข้า/ส่งออก CSV
             </Link>
           </Button>
           <Button asChild>

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleX, ImagePlus } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { Controller, type FieldError, type Resolver, useForm, useWatch } from 'react-hook-form';
 
 import { FormAlert, FormField } from '@/components/auth/form-field';
@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
+import { clipboardImage, isTypingTarget } from '@/lib/clipboard-image';
 import { type CategorySlug, SPEC_FIELDS } from '@/lib/parts/spec-fields';
 import { type PartFormValues, partInputSchema } from '@/lib/validators/parts';
 import { uploadPartImage, upsertPart } from '@/server/actions/admin-parts';
@@ -72,19 +73,41 @@ export function PartForm({
     router.refresh();
   }
 
-  async function onPickImage(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  async function uploadImage(file: File) {
     setUploading(true);
     setFormError(null);
     const data = new FormData();
     data.set('file', file);
-    const result = await uploadPartImage(data);
-    if (result.ok) setValue('imageUrl', result.url, { shouldDirty: true });
-    else setFormError(result.error);
-    setUploading(false);
-    event.target.value = '';
+    try {
+      const result = await uploadPartImage(data);
+      if (result.ok) setValue('imageUrl', result.url, { shouldDirty: true });
+      else setFormError(result.error);
+    } catch {
+      setFormError('อัปโหลดรูปไม่สำเร็จ ลองใหม่อีกครั้ง');
+    } finally {
+      setUploading(false);
+    }
   }
+
+  async function onPickImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file) await uploadImage(file);
+  }
+
+  // วางรูปที่คัดลอกไว้ด้วย Ctrl+V ที่ไหนก็ได้ในหน้า ยกเว้นตอนกำลังพิมพ์ในช่องกรอก (วางข้อความตามปกติ)
+  const onPaste = useEffectEvent((event: ClipboardEvent) => {
+    if (uploading || isTypingTarget(event.target)) return;
+    const file = clipboardImage(event.clipboardData);
+    if (!file) return;
+    event.preventDefault();
+    void uploadImage(file);
+  });
+
+  useEffect(() => {
+    document.addEventListener('paste', onPaste);
+    return () => document.removeEventListener('paste', onPaste);
+  }, []);
 
   const specError = (key: string) => (errors.spec?.[key] as FieldError | undefined)?.message;
 
@@ -232,7 +255,9 @@ export function PartForm({
                   ลบรูป
                 </Button>
               ) : null}
-              <span className="text-xs text-subtle">JPG, PNG หรือ WebP ไม่เกิน 2 MB</span>
+              <span className="text-xs text-subtle">
+                JPG, PNG หรือ WebP ไม่เกิน 2 MB · หรือคัดลอกรูปจากเว็บแล้วกด Ctrl+V ในหน้านี้
+              </span>
             </div>
           </div>
 

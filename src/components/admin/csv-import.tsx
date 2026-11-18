@@ -1,6 +1,6 @@
 'use client';
 
-import { CircleCheck, CircleX, Clock, Download, Plus, RefreshCw } from 'lucide-react';
+import { CircleCheck, CircleX, Clock, Download, FileDown, Plus, RefreshCw } from 'lucide-react';
 import { useState, useTransition } from 'react';
 
 import { FormAlert, FormField } from '@/components/auth/form-field';
@@ -106,7 +106,18 @@ export function CsvImport() {
                 ไฟล์ตัวอย่าง {CATEGORY_LABELS[category]}
               </a>
             </Button>
+            <Button asChild variant="secondary">
+              <a href={`/admin/parts/export/${category}`}>
+                <FileDown />
+                ส่งออกข้อมูลปัจจุบัน {CATEGORY_LABELS[category]}
+              </a>
+            </Button>
           </div>
+          <p className="text-xs text-muted-foreground">
+            ส่งออกข้อมูลปัจจุบัน: ได้ไฟล์รูปแบบเดียวกับไฟล์นำเข้า รวมชิ้นที่ซ่อนอยู่
+            เก็บไว้เป็นไฟล์สำรอง หรือแก้ราคาและสเปกหลายรุ่นใน Excel แล้วนำเข้ากลับได้เลย
+            (สถานะซ่อน/แสดงไม่อยู่ในไฟล์)
+          </p>
           <p className="text-xs text-muted-foreground">
             คอลัมน์ verified ใส่ &quot;รอตรวจสอบ&quot; หรือ &quot;ตรวจแล้ว&quot; · หลายค่าคั่นด้วย |
             · ยี่ห้อต้องมีในระบบก่อน
