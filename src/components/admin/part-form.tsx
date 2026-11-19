@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
 import { clipboardImage, isTypingTarget } from '@/lib/clipboard-image';
+import { prepareImage } from '@/lib/image-upload';
 import { type CategorySlug, SPEC_FIELDS } from '@/lib/parts/spec-fields';
 import { type PartFormValues, partInputSchema } from '@/lib/validators/parts';
 import { uploadPartImage, upsertPart } from '@/server/actions/admin-parts';
@@ -76,8 +77,15 @@ export function PartForm({
   async function uploadImage(file: File) {
     setUploading(true);
     setFormError(null);
+    // รูปใหญ่เกิน 2 MB หรือชนิดอื่น ย่อและแปลงในเบราว์เซอร์ก่อนส่ง
+    const prepared = await prepareImage(file);
+    if (!prepared.ok) {
+      setFormError(prepared.error);
+      setUploading(false);
+      return;
+    }
     const data = new FormData();
-    data.set('file', file);
+    data.set('file', prepared.file);
     try {
       const result = await uploadPartImage(data);
       if (result.ok) setValue('imageUrl', result.url, { shouldDirty: true });
@@ -239,7 +247,7 @@ export function PartForm({
                 {uploading ? 'กำลังอัปโหลด...' : 'เลือกรูป'}
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/*"
                   className="sr-only"
                   disabled={uploading}
                   onChange={onPickImage}
@@ -256,7 +264,7 @@ export function PartForm({
                 </Button>
               ) : null}
               <span className="text-xs text-subtle">
-                JPG, PNG หรือ WebP ไม่เกิน 2 MB · หรือคัดลอกรูปจากเว็บแล้วกด Ctrl+V ในหน้านี้
+                รูปใหญ่ระบบย่อให้เอง · หรือคัดลอกรูปจากเว็บแล้วกด Ctrl+V ในหน้านี้
               </span>
             </div>
           </div>

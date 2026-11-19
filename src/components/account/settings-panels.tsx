@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { authClient, authErrorMessage } from '@/lib/auth-client';
+import { prepareImage } from '@/lib/image-upload';
 import {
   type ChangePasswordInput,
   changePasswordSchema,
@@ -171,19 +172,31 @@ function ProfilePanel({ user }: { user: SettingsUser }) {
 
   async function onPickAvatar(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+    event.target.value = '';
     if (!file) return;
     setUploading(true);
+    // รูปใหญ่เกิน 2 MB หรือชนิดอื่น ย่อและแปลงในเบราว์เซอร์ก่อนส่ง
+    const prepared = await prepareImage(file);
+    if (!prepared.ok) {
+      setFeedback({ variant: 'err', text: prepared.error });
+      setUploading(false);
+      return;
+    }
     const data = new FormData();
-    data.set('file', file);
-    const result = await updateAvatar(data);
-    setFeedback(
-      result.ok
-        ? { variant: 'ok', text: 'เปลี่ยนรูปโปรไฟล์แล้ว' }
-        : { variant: 'err', text: result.error },
-    );
-    setUploading(false);
-    event.target.value = '';
-    if (result.ok) router.refresh();
+    data.set('file', prepared.file);
+    try {
+      const result = await updateAvatar(data);
+      setFeedback(
+        result.ok
+          ? { variant: 'ok', text: 'เปลี่ยนรูปโปรไฟล์แล้ว' }
+          : { variant: 'err', text: result.error },
+      );
+      if (result.ok) router.refresh();
+    } catch {
+      setFeedback({ variant: 'err', text: 'อัปโหลดรูปไม่สำเร็จ ลองใหม่อีกครั้ง' });
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function onSubmit(values: ProfileInput) {
@@ -221,13 +234,13 @@ function ProfilePanel({ user }: { user: SettingsUser }) {
                 {uploading ? 'กำลังอัปโหลด...' : 'เปลี่ยนรูป'}
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/*"
                   className="sr-only"
                   disabled={uploading}
                   onChange={onPickAvatar}
                 />
               </label>
-              <p className="mt-1 text-xs text-subtle">JPG, PNG หรือ WebP ไม่เกิน 2 MB</p>
+              <p className="mt-1 text-xs text-subtle">ไฟล์รูปทั่วไป รูปใหญ่ระบบย่อให้เอง</p>
             </div>
           </div>
           <FormField id="displayName" label="ชื่อที่แสดง" error={errors.displayName?.message}>

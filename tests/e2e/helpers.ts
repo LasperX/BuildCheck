@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
 import { expect, type Page } from '@playwright/test';
+import sharp from 'sharp';
 import pg from 'pg';
 
 // เครื่องมือช่วยของ E2E test
@@ -62,4 +63,40 @@ export async function login(page: Page, user: TestUser) {
 /** ตั้งบัญชีทดสอบเป็นแอดมินในฐานข้อมูลโดยตรง (หน้าเว็บไม่มีทางให้สมาชิกตั้งตัวเองเป็นแอดมิน) */
 export async function makeAdmin(email: string) {
   await db().query(`UPDATE users SET role = 'admin' WHERE email = $1`, [email]);
+}
+
+/** รูปถ่ายใหญ่สำหรับทดสอบการย่อรูป: PNG สุ่มจุด 2600 × 2000 px ราว 15 MB (บีบอัดยากที่สุด) */
+export async function bigPhoto() {
+  const width = 2600;
+  const height = 2000;
+  const png = await sharp(randomBytes(width * height * 3), { raw: { width, height, channels: 3 } })
+    .png({ compressionLevel: 1 })
+    .toBuffer();
+  expect(png.length).toBeGreaterThan(10 * 1024 * 1024);
+  return { name: 'photo.png', mimeType: 'image/png', buffer: png };
+}
+
+/**
+ * เก็บเนื้อคำขอ Server Action ทุกคำขอแล้วยกเลิกก่อนถึงเซิร์ฟเวอร์
+ * ใช้ทดสอบการอัปโหลดรูปโดยไม่ให้รูปทดสอบไปลงที่เก็บรูปจริง
+ */
+export async function captureServerActions(page: Page) {
+  const bodies: Buffer[] = [];
+  await page.route('**/*', async (route) => {
+    const request = route.request();
+    if (request.method() === 'POST' && request.headers()['next-action']) {
+      bodies.push(request.postDataBuffer() ?? Buffer.alloc(0));
+      await route.abort();
+      return;
+    }
+    await route.continue();
+  });
+  return bodies;
+}
+
+/** รูปในคำขอถูกย่อเป็น WebP แล้ว และทั้งคำขอไม่เกิน 2 MB (เผื่อหัวข้อมูลของฟอร์ม 64 KB) */
+export function expectCompressed(body: Buffer | undefined) {
+  expect(body).toBeDefined();
+  expect(body!.length).toBeLessThan(2 * 1024 * 1024 + 64 * 1024);
+  expect(body!.toString('latin1')).toMatch(/filename="photo\.webp"\r\nContent-Type: image\/webp/);
 }

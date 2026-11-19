@@ -7,6 +7,7 @@ import { useEffect, useEffectEvent, useRef, useState, useTransition } from 'reac
 import { PartImage } from '@/components/parts/part-icon';
 import { TableCell } from '@/components/ui/table';
 import { clipboardImage, isTypingTarget } from '@/lib/clipboard-image';
+import { prepareImage } from '@/lib/image-upload';
 import type { CategorySlug } from '@/lib/parts/spec-fields';
 import { cn } from '@/lib/utils';
 import { setPartImage } from '@/server/actions/admin-parts';
@@ -46,9 +47,15 @@ export function PartImageCell({
     }
     setError(null);
     start(async () => {
+      // รูปใหญ่เกิน 2 MB หรือชนิดอื่น ย่อและแปลงในเบราว์เซอร์ก่อนส่ง
+      const prepared = await prepareImage(file);
+      if (!prepared.ok) {
+        setError(prepared.error);
+        return;
+      }
       const data = new FormData();
       data.set('id', String(id));
-      data.set('file', file);
+      data.set('file', prepared.file);
       try {
         const result = await setPartImage(data);
         if (!result.ok) {
@@ -134,7 +141,7 @@ export function PartImageCell({
       <input
         ref={input}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/*"
         hidden
         onChange={(event) => {
           upload(event.target.files?.[0]);

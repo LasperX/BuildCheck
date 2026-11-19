@@ -2,7 +2,16 @@ import { readFile } from 'node:fs/promises';
 
 import { expect, test } from '@playwright/test';
 
-import { cleanupTestUsers, login, makeAdmin, newUser, register } from './helpers';
+import {
+  bigPhoto,
+  captureServerActions,
+  cleanupTestUsers,
+  expectCompressed,
+  login,
+  makeAdmin,
+  newUser,
+  register,
+} from './helpers';
 
 // เครื่องมือหลังบ้านสำหรับเติมข้อมูลเอง: ส่งออก CSV และวางรูปที่คัดลอกไว้ด้วย Ctrl+V
 // ตอนทดสอบวางรูป ดักคำขอ Server Action ทุกคำขอไว้ก่อนถึงเซิร์ฟเวอร์ รูปทดสอบจึงไม่ไปลงที่เก็บรูปจริง
@@ -94,4 +103,45 @@ test('แอดมินชี้ที่ช่องรูปแล้วว�
   // React ส่ง FormData ของ Server Action โดยเติมคำนำหน้าชื่อช่อง เช่น "_1_id"
   expect(uploads[0]?.match(/name="(?:_?\d+_)?id"\r\n\r\n(\d+)\r\n/)?.[1]).toBe(partId);
   await expect(page.getByRole('alert').filter({ hasText: 'อัปโหลดไม่สำเร็จ' })).toBeVisible();
+});
+
+test('รูปอะไหล่ใหญ่ 15 MB ในช่องรูปของตาราง ถูกย่อเป็น WebP ไม่เกิน 2 MB ก่อนส่ง', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await login(page, admin);
+  const uploads = await captureServerActions(page);
+
+  await page.goto('/admin/parts');
+  await page
+    .locator('td input[type="file"]')
+    .first()
+    .setInputFiles(await bigPhoto());
+  await expect.poll(() => uploads.length, { timeout: 45_000 }).toBe(1);
+  expectCompressed(uploads[0]);
+});
+
+test('รูปอะไหล่ใหญ่ 15 MB ในหน้าแก้ไขอะไหล่ ถูกย่อเป็น WebP ไม่เกิน 2 MB ก่อนส่ง', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await login(page, admin);
+  await page.goto('/admin/parts');
+  const editHref = await page
+    .getByRole('row')
+    .nth(1)
+    .getByRole('link', { name: /.+/ })
+    .first()
+    .getAttribute('href');
+  expect(editHref).toMatch(/^\/admin\/parts\/\d+$/);
+
+  const uploads = await captureServerActions(page);
+  await page.goto(editHref!);
+  await page
+    .locator('input[type="file"]')
+    .first()
+    .setInputFiles(await bigPhoto());
+  await expect.poll(() => uploads.length, { timeout: 45_000 }).toBe(1);
+  expectCompressed(uploads[0]);
+  await expect(page.getByText('อัปโหลดรูปไม่สำเร็จ ลองใหม่อีกครั้ง')).toBeVisible();
 });

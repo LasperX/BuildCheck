@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { CHANNEL_LABELS, GRADE_LABELS, REPORT_TYPE_LABELS } from '@/lib/builder/used-types';
 import { USED_GRADES } from '@/lib/compat';
+import { prepareImage } from '@/lib/image-upload';
 import { usedReportSchema } from '@/lib/validators/used';
 import { submitUsedReport } from '@/server/actions/used';
 
@@ -48,14 +49,22 @@ export function UsedReportForm({
     if (!part) return setError('กรุณาเลือกรุ่นอะไหล่');
     if (!check.success) return setError(check.error.issues[0]?.message ?? 'ข้อมูลไม่ถูกต้อง');
     const proof = form.get('proof');
-    if (proof instanceof File && proof.size > 2 * 1024 * 1024) {
-      return setError('รูปต้องมีขนาดไม่เกิน 2 MB');
-    }
     startTransition(async () => {
-      const result = await submitUsedReport(form);
-      if (!result.ok) return setError(result.error);
-      setDone(true);
-      formRef.current?.reset();
+      // รูปหลักฐานใหญ่เกิน 2 MB หรือชนิดอื่น ย่อและแปลงในเบราว์เซอร์ก่อนส่ง (ไม่แนบรูปก็ส่งได้)
+      if (proof instanceof File && proof.size > 0) {
+        const prepared = await prepareImage(proof);
+        if (!prepared.ok) return setError(prepared.error);
+        form.set('proof', prepared.file);
+      }
+      try {
+        const result = await submitUsedReport(form);
+        if (!result.ok) return setError(result.error);
+        setDone(true);
+        formRef.current?.reset();
+      } catch {
+        // เน็ตหลุดระหว่างส่ง (รูปหลักฐานทำให้คำขอใหญ่และนานขึ้น): บอกในฟอร์ม ไม่ให้ทั้งหน้าพัง
+        setError('ส่งรายงานไม่สำเร็จ ลองใหม่อีกครั้ง');
+      }
     });
   };
 
@@ -153,15 +162,9 @@ export function UsedReportForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="proof">รูปหลักฐาน (ไม่บังคับ)</Label>
-          <Input
-            id="proof"
-            name="proof"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="h-auto py-1.5"
-          />
+          <Input id="proof" name="proof" type="file" accept="image/*" className="h-auto py-1.5" />
           <p className="text-xs text-muted-foreground">
-            JPG, PNG หรือ WebP ไม่เกิน 2 MB ปิดชื่อและเบอร์โทรในรูปก่อนส่ง
+            ไฟล์รูปทั่วไป รูปใหญ่ระบบย่อให้เอง · ปิดชื่อและเบอร์โทรในรูปก่อนส่ง
           </p>
         </div>
       </div>
